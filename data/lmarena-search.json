@@ -1,0 +1,47 @@
+[
+  {
+    "url": "https://github.com/lmarena/p2l",
+    "name": "lmarena/p2l: Prompt-to-Leaderboard",
+    "snippet": "This is the codebase for the paper Prompt-to- Leaderboard . In January 2025 , the router we trained achieved the #1 spot in the Chatbot Arena leaderboard . ...",
+    "host_name": "github.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://huggingface.co/spaces/lmarena-ai/arena-leaderboard/discussions/3",
+    "name": "lmarena-ai/arena-leaderboard · Please expose API endpoint",
+    "snippet": "Please expose API endpoint ... You can read the data from https://huggingface.co/spaces/lmsys/chatbot-arena- leaderboard /blob/main/leaderboard_table_20230802. csv .",
+    "host_name": "huggingface.co",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://apify.com/jungle_synthesizer/lmarena-llm-leaderboard-scraper/api",
+    "name": "LMArena LLM Leaderboard Scraper API",
+    "snippet": "You can start LMArena LLM Leaderboard Scraper with the Apify API by sending an HTTP POST request to the Run Actor endpoint . An Actor's input and its content type ...",
+    "host_name": "apify.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://arena.ai/blog/leaderboard-changelog",
+    "name": "Leaderboard Changelog",
+    "snippet": "This page documents notable updates to our leaderboard —new models, new arenas, updates to the methodology, and more. Stay tuned!",
+    "host_name": "arena.ai",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://x.com/karpathy/status/1917546757929722115",
+    "name": "Andrej Karpathy",
+    "snippet": "LMArena leaderboard : There's a new paper circulating looking in detail at LMArena leaderboard: OpenRouter allows people/companies to quickly ...",
+    "host_name": "x.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  }
+]

@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "Based on the **Text Arena** leaderboard visible in the image, here are the models and their scores:\n\n1.  **claude-fable-5** (Anthropic · Proprietary): **1509 ±6**\n2.  **claude-opus-4-6-thinking** (Anthropic · Proprietary): **1505 ±4**\n3.  **claude-opus-4-7-thinking** (Anthropic · Proprietary): **1502 ±4**\n4.  **claude-opus-4-6** (Anthropic · Proprietary): **1497 ±4**",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1785919074,
+  "id": "2026080516374996d88dc2a4cb4b7b",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "2026080516374996d88dc2a4cb4b7b",
+  "usage": {
+    "completion_tokens": 130,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 918,
+    "prompt_tokens_details": {
+      "cached_tokens": 2
+    },
+    "total_tokens": 1048
+  }
+}

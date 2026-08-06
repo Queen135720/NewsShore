@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "Yes, the **AI Model Leaderboard** section (titled \"Top 5 AI Models\") is clearly visible on the right side of the page.\n\nHere are the **top 3 models** shown with their scores:\n\n1. **GPT-5.6 Sol** (OpenAI) — Score: **57.22**\n2. **Claude Opus 5** (Anthropic) — Score: **56.54**\n3. **Claude Fable 5** (Anthropic) — Score: **56.34**\n\n### Layout Assessment:\nThe layout looks **professional and well-structured**:\n*   **Clean Navigation:** The top bar is organized with clear categories (Latest, AI News, Tech Giants, etc.) and a search icon.\n*   **Visual Hierarchy:** The main headline (\"DeepSeek V3.1...\") is large and prominent, supported by a high-quality background image and clear category tags (\"AI News\", \"verified\", \"China\").\n*   **Sidebar Integration:** The leaderboard is placed logically on the right, using a clean card-style design with progress bars and ranking badges (1, 2, 3) that make the data easy to scan.\n*   **Breaking News Banner:** The red ticker at the top effectively highlights urgent news without cluttering the main content area.\n*   **Typography & Spacing:** The font choices are modern and readable, with adequate whitespace preventing the page from looking crowded.\n\nOverall, it follows standard best practices for a modern tech news portal.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1785916697,
+  "id": "20260805155755dfed6e637fa5466d",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "20260805155755dfed6e637fa5466d",
+  "usage": {
+    "completion_tokens": 312,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 928,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 1240
+  }
+}

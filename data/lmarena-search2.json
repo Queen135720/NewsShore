@@ -1,0 +1,47 @@
+[
+  {
+    "url": "https://arena.ai/blog/webdev-arena",
+    "name": "WebDev Arena: A Live LLM Leaderboard for Web App",
+    "snippet": "Mar 10, 2025 — Results contribute to a live leaderboard ranking LLMs by performance. This ranking system is similar to Elo , commonly used in chess, and ...",
+    "host_name": "arena.ai",
+    "rank": 0,
+    "date": "Mar 10, 2025",
+    "favicon": ""
+  },
+  {
+    "url": "https://arena.ai/how-it-works",
+    "name": "How Arena Works | AI Model Evaluation & Benchmarking",
+    "snippet": "Learn how Arena benchmarks and compares frontier AI models using human preferences and real-world evaluations. helps shape the public AI leaderboards, Prompt- ...",
+    "host_name": "arena.ai",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://arena.ai/leaderboard",
+    "name": "Arena Leaderboard | Compare & Benchmark the Best",
+    "snippet": "Leaderboard Overview. See how leading AI models stack up across text, image, vision, and more. This page provides a high-level snapshot of each Arena.",
+    "host_name": "arena.ai",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://huggingface.co/datasets/lmarena-ai/leaderboard-dataset",
+    "name": "lmarena-ai/leaderboard-dataset",
+    "snippet": "On January 9, 2024, the rating system was updated from Elo to Bradley-Terry. On May 16, 2025 , style control was made the default for text and vision arenas ...",
+    "host_name": "huggingface.co",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://localaimaster.com/blog/lmarena-chatbot-arena-leaderboard",
+    "name": "LMArena Leaderboard (Now Arena): Who's #1 on Chatbot",
+    "snippet": "Mar 18, 2026 — As of August 2026, Claude Fable 5 holds #1 on the overall text leaderboard at roughly 1525 ELO . Arena re-baselined its score on July 12 to ...",
+    "host_name": "localaimaster.com",
+    "rank": 4,
+    "date": "Mar 18, 2026",
+    "favicon": ""
+  }
+]

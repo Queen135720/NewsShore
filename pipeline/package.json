@@ -1,0 +1,14 @@
+{
+  "name": "newsshore-pipeline",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Automation pipeline for NewsShore - fetches, rewrites, and publishes news articles",
+  "main": "fetch-and-publish.js",
+  "scripts": {
+    "start": "node fetch-and-publish.js"
+  },
+  "dependencies": {
+    "rss-parser": "^3.13.0",
+    "@supabase/supabase-js": "^2.45.0"
+  }
+}

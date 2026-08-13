@@ -1,0 +1,37 @@
+# This file goes at: .github/workflows/pipeline.yml (typing that full path
+# when creating a new file on GitHub will auto-create both folders).
+#
+# It tells GitHub: "run the script inside the pipeline/ folder, on a schedule."
+
+name: NewsShore Pipeline
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'   # runs every 5 minutes, all day, every day
+  workflow_dispatch:          # lets you also click a button to run it manually, for testing
+
+jobs:
+  run-pipeline:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: pipeline   # <-- runs everything from inside the pipeline/ folder
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run the pipeline
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GLM_API_KEY: ${{ secrets.GLM_API_KEY }}
+        run: npm start

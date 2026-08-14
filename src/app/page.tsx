@@ -1,11 +1,9 @@
 'use client';
 
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import anime from 'animejs';
 import {
   newsArticles,
-  breakingNews,
-  trendingArticles,
   type NewsArticle,
 } from '@/lib/news-data';
 import {
@@ -65,8 +63,10 @@ const CATEGORY_COLOR: Record<string, string> = {
   'Global & China': 'bg-emerald-100 text-emerald-700',
 };
 
-const GRID_ARTICLES = newsArticles.slice(3);
-const HERO_ARTICLE = newsArticles[0];
+// Fallback articles used before live data loads
+const FALLBACK_HERO = newsArticles[0];
+const FALLBACK_BREAKING = newsArticles.slice(0, 3);
+const FALLBACK_TRENDING = newsArticles.slice(3, 8);
 
 /* ─────────────── helpers ─────────────── */
 const timeAgo = (dateStr: string) => {
@@ -290,10 +290,10 @@ function ArticleDetail({ article, open, onClose, onArticleChange }: { article: N
               <h3 className="font-[family-name:var(--font-lora)] text-lg font-bold text-gray-900 mb-4">Related Stories</h3>
               <Tabs defaultValue={RELATED_TABS[0].category}>
                 <TabsList className="w-full justify-start flex-wrap h-auto gap-1 bg-gray-100 p-1">
-                  {RELATED_TABS.map((tab) => { const count = newsArticles.filter((a) => a.category === tab.category && a.id !== article.id).length; return (<TabsTrigger key={tab.category} value={tab.category} className="text-xs sm:text-sm data-[state=active]:bg-[#0f1b3d] data-[state=active]:text-white">{tab.label}{count > 0 ? ` (${count})` : ''}</TabsTrigger>); })}
+                  {RELATED_TABS.map((tab) => { const count = allArticles.filter((a) => a.category === tab.category && a.id !== article.id).length; return (<TabsTrigger key={tab.category} value={tab.category} className="text-xs sm:text-sm data-[state=active]:bg-[#0f1b3d] data-[state=active]:text-white">{tab.label}{count > 0 ? ` (${count})` : ''}</TabsTrigger>); })}
                 </TabsList>
                 {RELATED_TABS.map((tab) => {
-                  const related = newsArticles.filter((a) => a.category === tab.category && a.id !== article.id).slice(0, 4);
+                  const related = allArticles.filter((a) => a.category === tab.category && a.id !== article.id).slice(0, 4);
                   return (<TabsContent key={tab.category} value={tab.category}>
                     {related.length === 0 ? (<p className="text-sm text-gray-400 py-4 font-[family-name:var(--font-dm-sans)]">No related stories available.</p>) : (
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">{related.map((a) => (<button key={a.id} onClick={() => onArticleChange(a)} className="text-left p-3 rounded-lg border border-gray-100 hover:border-gray-300 hover:shadow-sm transition-all group" style={{ touchAction: 'manipulation' }}>
@@ -447,13 +447,13 @@ function FullLeaderboard({ open, onClose, models, arenaModels, activeTab, onTabC
 }
 
 /* ─────────────── Breaking News Ticker ─────────────── */
-function BreakingTicker() {
+function BreakingTicker({ articles }: { articles: NewsArticle[] }) {
   const innerRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const el = innerRef.current; if (!el) return;
     anime({ targets: el, translateX: [0, -el.scrollWidth / 2], duration: 60000, easing: 'linear', loop: true });
-  }, []);
-  const doubled = [...breakingNews, ...breakingNews];
+  }, [articles]);
+  const doubled = [...articles, ...articles];
   return (
     <div className="bg-red-600 text-white overflow-hidden">
       <div className="flex items-center">
@@ -465,7 +465,7 @@ function BreakingTicker() {
 }
 
 /* ─────────────── Header ─────────────── */
-function Header({ onCategoryClick, onAboutOpen, onArticleSelect }: { onCategoryClick: (cat: string) => void; onAboutOpen: () => void; onArticleSelect: (article: NewsArticle) => void }) {
+function Header({ onCategoryClick, onAboutOpen, onArticleSelect, searchableArticles }: { onCategoryClick: (cat: string) => void; onAboutOpen: () => void; onArticleSelect: (article: NewsArticle) => void; searchableArticles: NewsArticle[] }) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchActive, setSearchActive] = useState(false);
@@ -473,7 +473,7 @@ function Header({ onCategoryClick, onAboutOpen, onArticleSelect }: { onCategoryC
   const searchInputRef = useRef<HTMLInputElement>(null);
   const navRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLElement>(null);
-  const searchResults = searchQuery.length > 1 ? newsArticles.filter((a) => a.title.toLowerCase().includes(searchQuery.toLowerCase()) || a.summary.toLowerCase().includes(searchQuery.toLowerCase())).slice(0, 6) : [];
+  const searchResults = searchQuery.length > 1 ? searchableArticles.filter((a) => a.title.toLowerCase().includes(searchQuery.toLowerCase()) || a.summary.toLowerCase().includes(searchQuery.toLowerCase())).slice(0, 6) : [];
 
   useEffect(() => { const onScroll = () => setScrolled(window.scrollY > 40); window.addEventListener('scroll', onScroll); return () => window.removeEventListener('scroll', onScroll); }, []);
   useEffect(() => { if (headerRef.current) anime({ targets: headerRef.current, translateY: [-80, 0], opacity: [0, 1], duration: 800, easing: 'easeOutExpo' }); }, []);
@@ -510,7 +510,7 @@ function Header({ onCategoryClick, onAboutOpen, onArticleSelect }: { onCategoryC
 }
 
 /* ─────────────── Hero: Single Top News ─────────────── */
-function HeroTopNews({ onArticleClick }: { onArticleClick: (a: NewsArticle) => void }) {
+function HeroTopNews({ heroArticle, onArticleClick }: { heroArticle: NewsArticle; onArticleClick: (a: NewsArticle) => void }) {
   const ref = useRef<HTMLElement>(null);
   useEffect(() => {
     if (!ref.current) return;
@@ -519,20 +519,20 @@ function HeroTopNews({ onArticleClick }: { onArticleClick: (a: NewsArticle) => v
 
   return (
     <section ref={ref} className="lg:col-span-2">
-      <article className="hero-animate group relative rounded-xl sm:rounded-2xl overflow-hidden bg-gray-900 cursor-pointer h-[320px] sm:h-[440px] lg:h-[520px]" onClick={() => onArticleClick(HERO_ARTICLE)} style={{ touchAction: 'manipulation' }}>
-        <img src={HERO_ARTICLE.image} alt={HERO_ARTICLE.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+      <article className="hero-animate group relative rounded-xl sm:rounded-2xl overflow-hidden bg-gray-900 cursor-pointer h-[320px] sm:h-[440px] lg:h-[520px]" onClick={() => onArticleClick(heroArticle)} style={{ touchAction: 'manipulation' }}>
+        <img src={heroArticle.image} alt={heroArticle.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-8 lg:p-10">
           <div className="flex flex-wrap items-center gap-2 mb-2 sm:mb-3">
-            <Badge className={`${CATEGORY_COLOR[HERO_ARTICLE.category] || 'bg-gray-100 text-gray-700'} font-[family-name:var(--font-dm-sans)] text-xs sm:text-sm`}>{HERO_ARTICLE.category}</Badge>
-            <ReliabilityBadge reliability={HERO_ARTICLE.reliability} />
-            <Badge variant="outline" className="bg-white/10 border-white/20 text-white text-[10px] sm:text-xs font-[family-name:var(--font-dm-sans)] gap-1"><Globe className="w-3 h-3" /> {HERO_ARTICLE.region}</Badge>
+            <Badge className={`${CATEGORY_COLOR[heroArticle.category] || 'bg-gray-100 text-gray-700'} font-[family-name:var(--font-dm-sans)] text-xs sm:text-sm`}>{heroArticle.category}</Badge>
+            <ReliabilityBadge reliability={heroArticle.reliability} />
+            <Badge variant="outline" className="bg-white/10 border-white/20 text-white text-[10px] sm:text-xs font-[family-name:var(--font-dm-sans)] gap-1"><Globe className="w-3 h-3" /> {heroArticle.region}</Badge>
           </div>
-          <h1 className="font-[family-name:var(--font-lora)] text-xl sm:text-3xl lg:text-4xl font-bold text-white leading-tight mt-2">{HERO_ARTICLE.title}</h1>
-          <p className="font-[family-name:var(--font-dm-sans)] text-gray-300 mt-2 sm:mt-3 text-sm sm:text-base lg:text-lg line-clamp-2 max-w-2xl">{HERO_ARTICLE.summary}</p>
+          <h1 className="font-[family-name:var(--font-lora)] text-xl sm:text-3xl lg:text-4xl font-bold text-white leading-tight mt-2">{heroArticle.title}</h1>
+          <p className="font-[family-name:var(--font-dm-sans)] text-gray-300 mt-2 sm:mt-3 text-sm sm:text-base lg:text-lg line-clamp-2 max-w-2xl">{heroArticle.summary}</p>
           <div className="flex items-center gap-3 sm:gap-4 mt-3 sm:mt-4">
-            <ReadTimeBadge text={HERO_ARTICLE.body} className="text-gray-300 text-xs sm:text-sm" />
-            <span className="text-gray-400 text-xs sm:text-sm font-[family-name:var(--font-dm-sans)]">{timeAgo(HERO_ARTICLE.publishedAt)}</span>
+            <ReadTimeBadge text={heroArticle.body} className="text-gray-300 text-xs sm:text-sm" />
+            <span className="text-gray-400 text-xs sm:text-sm font-[family-name:var(--font-dm-sans)]">{timeAgo(heroArticle.publishedAt)}</span>
           </div>
         </div>
       </article>
@@ -816,6 +816,24 @@ export default function Home() {
   const [arenaModels, setArenaModels] = useState<ArenaModel[]>([]);
   const [arenaLoading, setArenaLoading] = useState(true);
   const [lbTab, setLbTab] = useState<'benchmark' | 'arena'>('benchmark');
+  const [liveArticles, setLiveArticles] = useState<NewsArticle[]>([]);
+
+  // Fetch pipeline articles from Supabase
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/articles')
+      .then(r => r.json())
+      .then(data => { if (!cancelled && data?.success) setLiveArticles(data.articles ?? []); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
+
+  // Merge: pipeline articles first (newest), then static (dedup by title)
+  const allArticles = useMemo(() => {
+    const seen = new Set(liveArticles.map(a => a.title.toLowerCase()));
+    const staticUnique = newsArticles.filter(a => !seen.has(a.title.toLowerCase()));
+    return [...liveArticles, ...staticUnique];
+  }, [liveArticles]);
 
   const handleScroll = useCallback(() => setShowTop(window.scrollY > 600), []);
   useEffect(() => { window.addEventListener('scroll', handleScroll); return () => window.removeEventListener('scroll', handleScroll); }, [handleScroll]);
@@ -845,16 +863,18 @@ export default function Home() {
     return () => { cancelled = true; };
   }, []);
 
-  const filtered = activeCategory === 'Latest' ? GRID_ARTICLES : newsArticles.filter((a) => a.category === activeCategory);
+  const filtered = activeCategory === 'Latest'
+    ? allArticles.slice(3)
+    : allArticles.filter((a) => a.category === activeCategory);
 
   return (
     <div className="min-h-screen flex flex-col font-[family-name:var(--font-dm-sans)]">
-      <Header onCategoryClick={handleCategoryClick} onAboutOpen={() => setAboutOpen(true)} onArticleSelect={openArticle} />
-      <BreakingTicker />
+      <Header onCategoryClick={handleCategoryClick} onAboutOpen={() => setAboutOpen(true)} onArticleSelect={openArticle} searchableArticles={allArticles} />
+      <BreakingTicker articles={allArticles.length >= 3 ? allArticles.slice(0, 3) : FALLBACK_BREAKING} />
       <main className="flex-1">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-            <HeroTopNews onArticleClick={openArticle} />
+            <HeroTopNews heroArticle={allArticles[0] || FALLBACK_HERO} onArticleClick={openArticle} />
             <div className="lg:col-span-1 flex flex-col gap-4">
               <SidebarLeaderboard onSeeMore={() => setLeaderboardOpen(true)} models={leaderboardModels} loading={leaderboardLoading} arenaModels={arenaModels} arenaLoading={arenaLoading} activeTab={lbTab} onTabChange={setLbTab} />
               <SubscribeSection />
@@ -869,7 +889,7 @@ export default function Home() {
               {filtered.length === 0 ? (<div className="text-center py-16 text-gray-400"><p className="text-lg font-[family-name:var(--font-lora)]">No articles found</p><p className="text-sm mt-1">Try selecting a different category</p></div>) : (<div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">{filtered.map((article, i) => (<NewsCard key={article.id} article={article} index={i} onClick={openArticle} />))}</div>)}
               {activeCategory === 'Latest' && (<div className="mt-8"><Button variant="outline" size="lg" className="w-full sm:w-auto mx-auto flex items-center gap-2 font-[family-name:var(--font-dm-sans)] text-sm text-gray-600 border-gray-300 hover:border-[#0f1b3d] hover:text-[#0f1b3d]" onClick={() => toast.info('More stories coming soon!')}>Load More Stories<ArrowRight className="w-4 h-4" /></Button></div>)}
             </div>
-            <aside className="lg:col-span-1"><div className="lg:sticky lg:top-20 space-y-4 sm:space-y-6"><div className="bg-white rounded-xl border border-gray-100 p-4 sm:p-5"><div className="flex items-center gap-2 mb-4 sm:mb-5"><TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" /><h3 className="font-[family-name:var(--font-lora)] text-base sm:text-lg font-bold text-gray-900">Trending Now</h3></div><div className="space-y-3 sm:space-y-4 max-h-96 overflow-y-auto custom-scrollbar">{trendingArticles.map((article, i) => (<TrendingItem key={article.id} article={article} index={i} onClick={openArticle} />))}</div></div></div></aside>
+            <aside className="lg:col-span-1"><div className="lg:sticky lg:top-20 space-y-4 sm:space-y-6"><div className="bg-white rounded-xl border border-gray-100 p-4 sm:p-5"><div className="flex items-center gap-2 mb-4 sm:mb-5"><TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" /><h3 className="font-[family-name:var(--font-lora)] text-base sm:text-lg font-bold text-gray-900">Trending Now</h3></div><div className="space-y-3 sm:space-y-4 max-h-96 overflow-y-auto custom-scrollbar">{(allArticles.length >= 8 ? allArticles.slice(3, 8) : FALLBACK_TRENDING).map((article, i) => (<TrendingItem key={article.id} article={article} index={i} onClick={openArticle} />))}</div></div></div></aside>
           </div>
         </div>
       </main>

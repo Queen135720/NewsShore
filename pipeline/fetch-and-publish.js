@@ -1,6 +1,14 @@
-// NewsShore automation pipeline (FIXED)
+// NewsShore automation pipeline (FINAL)
 // This script: 1) checks RSS feeds for new articles, 2) rewrites them with AI,
 // 3) saves the result to Supabase so the website can display them.
+//
+// Changes from original:
+//   - Only 19 verified working feeds (33 dead/blocked feeds removed)
+//   - GLM model: glm-4.7-flash (free tier, not glm-5-turbo which is paid)
+//   - Batch cap: 8 articles per run (rest picked up on next cron)
+//   - 4s delay between articles (avoids free-tier rate limits)
+//   - Robust parser config (timeout, user-agent, XML entity handling)
+//   - Better AI prompt (anti-fabrication rules)
 
 import Parser from 'rss-parser';
 import { createClient } from '@supabase/supabase-js';
@@ -15,7 +23,6 @@ const parser = new Parser({
     item: ['media:content', 'media:thumbnail'],
   },
   xml2js: {
-    // Handle entities like & in XML (fixes "Invalid character in entity name" error)
     explicitCharkey: false,
     normalizeTags: true,
     normalize: true,
@@ -28,7 +35,15 @@ const supabase = createClient(
 );
 
 // ---- 1. SOURCES ----
-// Removed dead/blocked feeds (404/403/406), kept working ones
+// Only feeds verified working (tested Aug 2025).
+// Removed: Anthropic(404), VentureBeat(403), Futurefive(406), Tech in Asia(406),
+//   NYT(paywall), Vox(404), ZDNet(blocked), NetworkWorld(blocked), MercuryNews(blocked),
+//   ExtremeTech(404), FossBytes(403), Medgadget(timeout), TechCentral(timeout),
+//   ITNews(blocked), Geeky(timeout), TechpointAfrica(403), TechAfricaNews(403),
+//   PennOlson(404), ScottAaronson(timeout), RoboHub(404), TechXplore(403),
+//   RobotsTomorrow(404), DataCenterNews(404), CiscoBlog(404),
+//   ZAI/Moonshot/DeepSeek rss.app feeds(broken), Musk/x.ai(not RSS),
+//   IBMQuantum(404), GoogleQuantum(404), MIT sub-feeds(404)
 const SOURCES = [
   // AI Companies
   { name: 'OpenAI', url: 'https://openai.com/news/rss.xml', category: 'AI News', region: 'US' },
@@ -81,21 +96,27 @@ async function fetchNewItems() {
         }
       }
     } catch (err) {
-      console.error(`Failed to fetch ${source.name}: ${err.message?.substring(0, 80)}`);
+      console.error(`Failed to fetch ${source.name}: ${err.message?.substring(0, 100)}`);
     }
   }
   return allItems;
 }
 
 // ---- 3. REWRITE WITH AI ----
+// Tries Gemini first. If Gemini fails (rate limit, outage), falls back to GLM.
 async function rewriteArticle(item) {
   const prompt = `You are a neutral tech news writer for a general, non-technical global audience.
 Rewrite the following into:
 1. A clear headline (under 12 words)
 2. A 2-3 sentence summary that captures the key points
-3. A 500-1000 word article body, fully in your own words but accurate and verifiable.
+3. A 500-1000 word article body, fully in your own words but accurate and verifiable. Do not copy phrases from the original.
 4. A "reliability" tag: "verified" if from independent testing/reporting, or "claimed" if it's a company announcement
 5. Three to ten short glossary terms (technical word + one-sentence plain-language explanation)
+
+IMPORTANT RULES:
+- Do not invent quotes, sources, statistics, or links.
+- Do not fabricate any information not present in the source text.
+- If you don't know something, leave it out rather than guessing.
 
 Respond ONLY in this exact JSON format, nothing else:
 {"headline": "...", "summary": "...", "body": "...", "reliability": "...", "glossary": [{"term":"...","definition":"..."}]}
@@ -103,7 +124,6 @@ Respond ONLY in this exact JSON format, nothing else:
 Source title: ${item.title}
 Source content: ${item.contentSnippet || item.content || ''}`;
 
-  // Try Gemini first, then GLM as fallback
   try {
     return await callGemini(prompt);
   } catch (err) {
@@ -145,7 +165,7 @@ async function callGLM(prompt) {
       Authorization: `Bearer ${process.env.GLM_API_KEY}`,
     },
     body: JSON.stringify({
-      model: 'glm-5-turbo',
+      model: 'glm-4.7-flash',  // FREE tier model (glm-5-turbo requires paid plan)
       messages: [{ role: 'user', content: prompt }],
     }),
   });
@@ -158,20 +178,24 @@ async function callGLM(prompt) {
   return JSON.parse(text.replace(/```json|```/g, '').trim());
 }
 
-// ---- fetch image from unsplash ----
+// ---- 4. FETCH IMAGE FROM UNSPLASH ----
 async function fetchImage(headline) {
   if (!process.env.UNSPLASH_ACCESS_KEY) return null;
   const query = encodeURIComponent(headline.split(' ').slice(0, 5).join(' '));
-  const res = await fetch(
-    `https://api.unsplash.com/search/photos?query=${query}&per_page=1&orientation=landscape`,
-    { headers: { Authorization: `Client-ID ${process.env.UNSPLASH_ACCESS_KEY}` } }
-  );
-  if (!res.ok) return null;
-  const data = await res.json();
-  return data.results[0]?.urls?.regular || null;
+  try {
+    const res = await fetch(
+      `https://api.unsplash.com/search/photos?query=${query}&per_page=1&orientation=landscape`,
+      { headers: { Authorization: `Client-ID ${process.env.UNSPLASH_ACCESS_KEY}` } }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.results[0]?.urls?.regular || null;
+  } catch {
+    return null;
+  }
 }
 
-// ---- 4. SAVE TO SUPABASE ----
+// ---- 5. SAVE TO SUPABASE ----
 async function saveArticle(item, rewritten) {
   const imageUrl = await fetchImage(rewritten.headline);
 
@@ -195,21 +219,39 @@ async function saveArticle(item, rewritten) {
   return true;
 }
 
-// ---- MAIN ----
+// ---- 6. MAIN ----
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 async function run() {
   console.log('Checking sources for new articles...');
   const newItems = await fetchNewItems();
   console.log(`Found ${newItems.length} new item(s).`);
 
-  for (const item of newItems) {
+  // Only process a limited batch per run to stay under free-tier rate limits.
+  // The rest will be picked up on the next cron run (every 5 min).
+  const MAX_PER_RUN = 8;
+  const batch = newItems.slice(0, MAX_PER_RUN);
+  if (newItems.length > MAX_PER_RUN) {
+    console.log(`Processing ${MAX_PER_RUN} of ${newItems.length} — the rest will be picked up on the next run.`);
+  }
+
+  let saved = 0;
+  let failed = 0;
+  for (const item of batch) {
     try {
       const rewritten = await rewriteArticle(item);
-      await saveArticle(item, rewritten);
+      const ok = await saveArticle(item, rewritten);
+      if (ok) saved++; else failed++;
     } catch (err) {
-      console.error(`Failed to process "${item.title}": ${err.message}`);
+      console.error(`Skipping "${item.title}" — both AI providers failed: ${err.message}`);
+      failed++;
     }
+    await sleep(4000); // 4s delay between articles to avoid rate limits
   }
-  console.log('Run complete.');
+
+  console.log(`Run complete. Saved: ${saved}, Failed: ${failed}`);
 }
 
 run();

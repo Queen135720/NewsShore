@@ -26,6 +26,6 @@ export async function GET() {
     return NextResponse.json({ success: true, articles: mapped });
   } catch (err) {
     console.error('[articles] fetch error:', err);
-    return NextResponse.json({ success: true, articles: [] });
+    return NextResponse.json({ success: true, articles: [], error: String(err) });
   }
 }

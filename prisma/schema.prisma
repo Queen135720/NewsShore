@@ -16,3 +16,21 @@ model Subscriber {
 
   @@map("subscribers")
 }
+
+model Article {
+  id          Int      @id @default(autoincrement()) @map("id")
+  title       String   @map("title")
+  summary     String?  @map("summary")
+  body        String?  @map("body")
+  category    String   @default("Latest") @map("category")
+  region      String   @default("Global") @map("region")
+  sourceUrl   String   @unique @map("source_url")
+  sourceName  String?  @map("source_name")
+  reliability String   @default("claimed") @map("reliability")
+  glossary    Json     @default("[]") @map("glossary")
+  imageUrl    String?  @map("image_url")
+  published   Boolean  @default(false) @map("published")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("articles")
+}

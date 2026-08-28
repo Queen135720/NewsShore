@@ -18,7 +18,7 @@ model Subscriber {
 }
 
 model Article {
-  id          Int      @id @default(autoincrement()) @map("id")
+  id          String   @id @default(uuid()) @map("id")
   title       String   @map("title")
   summary     String?  @map("summary")
   body        String?  @map("body")

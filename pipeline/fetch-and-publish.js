@@ -1,14 +1,13 @@
-// NewsShore automation pipeline (FINAL v2)
+// NewsShore automation pipeline
 // 1) checks RSS feeds for new articles
-// 2) rewrites with AI (Gemini → GLM → DeepSeek fallback chain)
+// 2) rewrites with AI (Gemini → GLM → Groq → DeepSeek fallback chain)
 // 3) saves to Supabase for the website to display
 //
 // Features:
 //   - 19 verified working feeds (33 dead/blocked removed)
-//   - 3 AI providers with automatic fallback
+//   - 4 AI providers with automatic fallback
 //   - Retry on 429 rate limits (10s wait, 1 retry)
-//   - Batch cap: 8 articles per run
-//   - 4s delay between articles
+//   - 1 article per run (cron handles scheduling every 5 min)
 //   - Robust parser (timeout, user-agent, XML fix)
 
 import Parser from 'rss-parser';
@@ -37,15 +36,6 @@ const supabase = createClient(
 
 // ---- 1. SOURCES ----
 // Only feeds verified working (tested Aug 2025).
-// Removed 33 dead/blocked feeds: Anthropic(404), VentureBeat x3(403),
-//   Futurefive(406), Tech in Asia(406), NYT(paywall), Vox(404),
-//   ZDNet(blocked), NetworkWorld(blocked), MercuryNews(blocked),
-//   ExtremeTech(404), FossBytes(403), Medgadget(timeout), TechCentral(timeout),
-//   ITNews(blocked), Geeky(timeout), TechpointAfrica(403), TechAfricaNews(403),
-//   PennOlson(404), ScottAaronson(timeout), RoboHub(404), TechXplore(403),
-//   RobotsTomorrow(404), DataCenterNews(404), CiscoBlog(404),
-//   rss.app feeds(broken), Musk/x.ai(not RSS), IBMQuantum(404), GoogleQuantum(404),
-//   MIT sub-feeds(404), Arstechnica/self-driving(duplicate)
 const SOURCES = [
   // AI Companies
   { name: 'OpenAI', url: 'https://openai.com/news/rss.xml', category: 'AI News', region: 'US' },
@@ -105,7 +95,7 @@ async function fetchNewItems() {
 }
 
 // ---- 3. REWRITE WITH AI ----
-// Fallback chain: Gemini → GLM → DeepSeek
+// Fallback chain: Gemini → GLM → Groq → DeepSeek
 async function rewriteArticle(item) {
   const prompt = `You are a neutral tech news writer for a general, non-technical global audience.
 Rewrite the following into:
@@ -136,7 +126,13 @@ Source content: ${item.contentSnippet || item.content || ''}`;
   try {
     return await callGLM(prompt);
   } catch (err) {
-    console.warn(`GLM failed, falling back to DeepSeek: ${err.message}`);
+    console.warn(`GLM failed, falling back to Groq: ${err.message}`);
+  }
+  // Then Groq (genuinely free, no balance needed)
+  try {
+    return await callGroq(prompt);
+  } catch (err) {
+    console.warn(`Groq failed, falling back to DeepSeek: ${err.message}`);
   }
   // Finally DeepSeek
   return await callDeepSeek(prompt);
@@ -184,13 +180,35 @@ async function callGLM(prompt) {
       Authorization: `Bearer ${process.env.GLM_API_KEY}`,
     },
     body: JSON.stringify({
-      model: 'glm-4.7-flash',  // FREE tier model
+      model: 'glm-4.7-flash',
       messages: [{ role: 'user', content: prompt }],
     }),
   });
   if (!res.ok) {
     const errBody = await res.text();
     throw new Error(`GLM error: ${res.status} — ${errBody.substring(0, 200)}`);
+  }
+  const data = await res.json();
+  const text = data.choices[0].message.content;
+  return JSON.parse(text.replace(/```json|```/g, '').trim());
+}
+
+async function callGroq(prompt) {
+  if (!process.env.GROQ_API_KEY) throw new Error('GROQ_API_KEY not set');
+  const res = await retryFetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model: 'llama-3.3-70b-versatile',
+      messages: [{ role: 'user', content: prompt }],
+    }),
+  });
+  if (!res.ok) {
+    const errBody = await res.text();
+    throw new Error(`Groq error: ${res.status} — ${errBody.substring(0, 200)}`);
   }
   const data = await res.json();
   const text = data.choices[0].message.content;
@@ -270,8 +288,8 @@ async function run() {
   const newItems = await fetchNewItems();
   console.log(`Found ${newItems.length} new item(s).`);
 
-  // Batch cap: process max 8 per run to stay under free-tier rate limits.
-  // Rest picked up on next cron run (every 5 min).
+  // 1 article per run. Cron runs every 5 min, so ~1 article every 5 min.
+  // Backlog clears gradually without hitting any rate limits.
   const MAX_PER_RUN = 1;
   const batch = newItems.slice(0, MAX_PER_RUN);
   if (newItems.length > MAX_PER_RUN) {
@@ -286,10 +304,9 @@ async function run() {
       const ok = await saveArticle(item, rewritten);
       if (ok) saved++; else failed++;
     } catch (err) {
-      console.error(`Skipping "${item.title}" — all 3 AI providers failed: ${err.message}`);
+      console.error(`Skipping "${item.title}" — all 4 AI providers failed: ${err.message}`);
       failed++;
     }
-    await sleep(60000); // 60s delay between articles
   }
 
   console.log(`Run complete. Saved: ${saved}, Failed: ${failed}`);

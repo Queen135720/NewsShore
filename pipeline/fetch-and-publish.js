@@ -272,7 +272,7 @@ async function run() {
 
   // Batch cap: process max 8 per run to stay under free-tier rate limits.
   // Rest picked up on next cron run (every 5 min).
-  const MAX_PER_RUN = 8;
+  const MAX_PER_RUN = 1;
   const batch = newItems.slice(0, MAX_PER_RUN);
   if (newItems.length > MAX_PER_RUN) {
     console.log(`Processing ${MAX_PER_RUN} of ${newItems.length} — the rest will be picked up on the next run.`);
@@ -289,7 +289,7 @@ async function run() {
       console.error(`Skipping "${item.title}" — all 3 AI providers failed: ${err.message}`);
       failed++;
     }
-    await sleep(4000); // 4s delay between articles
+    await sleep(60000); // 60s delay between articles
   }
 
   console.log(`Run complete. Saved: ${saved}, Failed: ${failed}`);

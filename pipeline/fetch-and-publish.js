@@ -149,6 +149,39 @@ async function retryFetch(url, options) {
   return res;
 }
 
+// Robust JSON parser — handles AI output with unescaped newlines/quotes in strings
+function safeParseJSON(text) {
+  let cleaned = text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+
+  // Try direct parse first
+  try { return JSON.parse(cleaned); } catch (e) { /* continue */ }
+
+  // Extract JSON object from the response
+  const start = cleaned.indexOf('{');
+  const end = cleaned.lastIndexOf('}');
+  if (start === -1 || end === -1) throw new Error('No JSON object in response');
+
+  let jsonStr = cleaned.substring(start, end + 1);
+  try { return JSON.parse(jsonStr); } catch (e) { /* continue */ }
+
+  // Fix unescaped control characters inside string values
+  let result = '';
+  let inString = false;
+  let escaped = false;
+  for (let i = 0; i < jsonStr.length; i++) {
+    const ch = jsonStr[i];
+    if (escaped) { result += ch; escaped = false; continue; }
+    if (ch === '\\') { result += ch; escaped = true; continue; }
+    if (ch === '"') { inString = !inString; result += ch; continue; }
+    if (inString && (ch === '\n' || ch === '\r' || ch === '\t')) {
+      result += ch === '\n' ? '\\n' : ch === '\r' ? '\\r' : '\\t';
+      continue;
+    }
+    result += ch;
+  }
+  try { return JSON.parse(result); } catch (e) { throw new Error('Failed to parse AI JSON'); }
+}
+
 async function callGemini(prompt) {
   if (!process.env.GEMINI_API_KEY) throw new Error('GEMINI_API_KEY not set');
   const res = await retryFetch(
@@ -169,6 +202,7 @@ async function callGemini(prompt) {
   const data = await res.json();
   const text = data.candidates[0].content.parts[0].text;
   return JSON.parse(text.replace(/```json|```/g, '').trim());
+  return safeParseJSON(text);
 }
 
 async function callGLM(prompt) {
@@ -190,7 +224,7 @@ async function callGLM(prompt) {
   }
   const data = await res.json();
   const text = data.choices[0].message.content;
-  return JSON.parse(text.replace(/```json|```/g, '').trim());
+  return safeParseJSON(text);
 }
 
 async function callGroq(prompt) {
@@ -212,7 +246,7 @@ async function callGroq(prompt) {
   }
   const data = await res.json();
   const text = data.choices[0].message.content;
-  return JSON.parse(text.replace(/```json|```/g, '').trim());
+  return safeParseJSON(text);
 }
 
 async function callDeepSeek(prompt) {
@@ -234,7 +268,7 @@ async function callDeepSeek(prompt) {
   }
   const data = await res.json();
   const text = data.choices[0].message.content;
-  return JSON.parse(text.replace(/```json|```/g, '').trim());
+  return safeParseJSON(text);
 }
 
 // ---- 4. FETCH IMAGE FROM UNSPLASH ----

@@ -203,7 +203,7 @@ function AboutScreen({ open, onClose }: { open: boolean; onClose: () => void }) 
 }
 
 /* ─────────────── Article Detail Fullscreen ─────────────── */
-function ArticleDetail({ article, open, onClose, onArticleChange }: { article: NewsArticle | null; open: boolean; onClose: () => void; onArticleChange: (a: NewsArticle) => void }) {
+function ArticleDetail({ article, open, onClose, onArticleChange, allArticles }: { article: NewsArticle | null; open: boolean; onClose: () => void; onArticleChange: (a: NewsArticle) => void; allArticles: NewsArticle[] }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
@@ -895,7 +895,7 @@ export default function Home() {
       </main>
       <Footer onCategoryClick={handleCategoryClick} onAboutOpen={() => setAboutOpen(true)} />
       <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className={`fixed bottom-4 right-4 sm:bottom-6 sm:right-6 w-10 h-10 sm:w-12 sm:h-12 bg-[#0f1b3d] text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-300 z-40 hover:bg-red-600 ${showTop ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`} aria-label="Back to top" style={{ touchAction: 'manipulation' }}><ArrowUp className="w-4 h-4 sm:w-5 sm:h-5" /></button>
-      <ArticleDetail article={selectedArticle} open={articleOpen} onClose={closeArticle} onArticleChange={handleArticleChange} />
+      <ArticleDetail article={selectedArticle} open={articleOpen} onClose={closeArticle} onArticleChange={handleArticleChange} allArticles={allArticles} />
       <AboutScreen open={aboutOpen} onClose={() => setAboutOpen(false)} />
       <FullLeaderboard open={leaderboardOpen} onClose={() => setLeaderboardOpen(false)} models={leaderboardModels} arenaModels={arenaModels} activeTab={lbTab} onTabChange={setLbTab} />
     </div>

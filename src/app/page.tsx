@@ -43,6 +43,19 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 
+const [articles, setArticles] = useState<NewsArticle[]>(FALLBACK_ARTICLES);
+
+useEffect(() => {
+  fetch('/api/articles')
+    .then(res => res.json())
+    .then(data => {
+      if (data.success && data.articles?.length > 0) {
+        setArticles(data.articles);
+      }
+    })
+    .catch(() => {});
+}, []);
+
 /* ─────────────── constants ─────────────── */
 const NAV_CATEGORIES = ['Latest', 'AI News', 'Tech Giants', 'Tech News', 'Startups & Funding', 'Research', 'Deals', 'Global & China'];
 

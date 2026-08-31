@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import React, { Suspense, useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import anime from 'animejs';
 import {
   newsArticles,
@@ -53,6 +54,16 @@ const RELATED_TABS = [
   { label: 'Research', category: 'Research' },
   { label: 'Global & China', category: 'Global & China' },
 ];
+
+const CATEGORY_SLUG: Record<string, string> = {
+  'AI News': 'ai-news',
+  'Tech Giants': 'tech-giants',
+  'Tech News': 'tech-news',
+  'Startups & Funding': 'startups-funding',
+  'Research': 'research',
+  'Deals': 'deals',
+  'Global & China': 'global-china',
+};
 
 const CATEGORY_COLOR: Record<string, string> = {
   'AI News': 'bg-violet-100 text-violet-700',
@@ -804,7 +815,7 @@ function Footer({ onCategoryClick, onAboutOpen }: { onCategoryClick: (cat: strin
 }
 
 /* ─────────────── Main Page ─────────────── */
-export default function Home() {
+function Home() {
   const [activeCategory, setActiveCategory] = useState('Latest');
   const [aboutOpen, setAboutOpen] = useState(false);
   const [showTop, setShowTop] = useState(false);
@@ -817,6 +828,17 @@ export default function Home() {
   const [arenaLoading, setArenaLoading] = useState(true);
   const [lbTab, setLbTab] = useState<'benchmark' | 'arena'>('benchmark');
   const [liveArticles, setLiveArticles] = useState<NewsArticle[]>([]);
+  const router = useRouter();
+  const sp = useSearchParams();
+
+  // Sync category from URL (middleware rewrites /tech-news → /?cat=Tech News)
+  useEffect(() => {
+    const cat = sp.get('cat');
+    if (cat && NAV_CATEGORIES.includes(cat)) {
+      setActiveCategory(cat);
+      setTimeout(() => document.getElementById('latest-stories')?.scrollIntoView({ behavior: 'smooth' }), 50);
+    }
+  }, [sp]);
 
   // Fetch pipeline articles from Supabase
   useEffect(() => {
@@ -838,10 +860,14 @@ export default function Home() {
   const handleScroll = useCallback(() => setShowTop(window.scrollY > 600), []);
   useEffect(() => { window.addEventListener('scroll', handleScroll); return () => window.removeEventListener('scroll', handleScroll); }, [handleScroll]);
 
-  const openArticle = useCallback((article: NewsArticle) => { setSelectedArticle(article); setArticleOpen(true); }, []);
+  const openArticle = useCallback((article: NewsArticle) => { router.push(`/article/${article.id}`); }, [router]);
   const closeArticle = useCallback(() => { setArticleOpen(false); setTimeout(() => setSelectedArticle(null), 300); }, []);
   const handleArticleChange = useCallback((article: NewsArticle) => { setSelectedArticle(article); }, []);
-  const handleCategoryClick = useCallback((cat: string) => { setActiveCategory(cat); document.getElementById('latest-stories')?.scrollIntoView({ behavior: 'smooth' }); }, []);
+  const handleCategoryClick = useCallback((cat: string) => {
+    setActiveCategory(cat);
+    router.push(cat === 'Latest' ? '/' : `/${CATEGORY_SLUG[cat] || cat.toLowerCase().replace(/\s+/g, '-')}`);
+    document.getElementById('latest-stories')?.scrollIntoView({ behavior: 'smooth' });
+  }, [router]);;
 
   useEffect(() => {
     let cancelled = false;
@@ -899,5 +925,13 @@ export default function Home() {
       <AboutScreen open={aboutOpen} onClose={() => setAboutOpen(false)} />
       <FullLeaderboard open={leaderboardOpen} onClose={() => setLeaderboardOpen(false)} models={leaderboardModels} arenaModels={arenaModels} activeTab={lbTab} onTabChange={setLbTab} />
     </div>
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin w-8 h-8 border-4 border-gray-200 border-t-red-600 rounded-full" /></div>}>
+      <Home />
+    </Suspense>
   );
 }

@@ -488,7 +488,7 @@ function Header({ onCategoryClick, onAboutOpen, onArticleSelect, searchableArtic
 
   useEffect(() => { const onScroll = () => setScrolled(window.scrollY > 40); window.addEventListener('scroll', onScroll); return () => window.removeEventListener('scroll', onScroll); }, []);
   useEffect(() => { if (headerRef.current) anime({ targets: headerRef.current, translateY: [-80, 0], opacity: [0, 1], duration: 800, easing: 'easeOutExpo' }); }, []);
-  const handleNavClick = (link: string) => { setMobileOpen(false); if (link === 'About') { onAboutOpen(); } else { onCategoryClick(link); document.getElementById('latest-stories')?.scrollIntoView({ behavior: 'smooth' }); } };
+    const handleNavClick = (link: string) => { setMobileOpen(false); if (link === 'About') { window.location.href = '/about'; } else { onCategoryClick(link); document.getElementById('latest-stories')?.scrollIntoView({ behavior: 'smooth' }); } };
   const openSearch = useCallback(() => { setSearchActive(true); requestAnimationFrame(() => searchInputRef.current?.focus()); }, []);
   const closeSearch = useCallback(() => { setSearchActive(false); setSearchQuery(''); }, []);
   useEffect(() => { if (!searchActive) return; const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') closeSearch(); }; window.addEventListener('keydown', handleKey); return () => window.removeEventListener('keydown', handleKey); }, [searchActive, closeSearch]);

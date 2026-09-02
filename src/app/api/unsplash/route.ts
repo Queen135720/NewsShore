@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const UNSPLASH_ACCESS_KEY = 'yK5YCoU4Tgo1dKbB7Ob-8ddbPyZA6u8pDmhD6d_JZrU';
+const UNSPLASH_ACCESS_KEY = process.env.UNSPLASH_ACCESS_KEY;
 
 export async function GET(request: NextRequest) {
   const query = request.nextUrl.searchParams.get('q');

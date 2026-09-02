@@ -668,9 +668,9 @@ function SidebarLeaderboard({ onSeeMore, models, loading, arenaModels, arenaLoad
           )
         )}
 
-        <button onClick={onSeeMore} className="w-full mt-3 flex items-center justify-center gap-1.5 text-xs sm:text-sm font-[family-name:var(--font-dm-sans)] font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg py-2 transition-colors" style={{ touchAction: 'manipulation' }}>
+        <a href="/leaderboard" className="w-full mt-3 flex items-center justify-center gap-1.5 text-xs sm:text-sm font-[family-name:var(--font-dm-sans)] font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg py-2 transition-colors">
           See Full Leaderboard <ChevronRight className="w-4 h-4" />
-        </button>
+        </a>
       </div>
     </aside>
   );
@@ -895,14 +895,14 @@ function Home() {
 
   return (
     <div className="min-h-screen flex flex-col font-[family-name:var(--font-dm-sans)]">
-      <Header onCategoryClick={handleCategoryClick} onAboutOpen={() => setAboutOpen(true)} onArticleSelect={openArticle} searchableArticles={allArticles} />
+      <Header onCategoryClick={handleCategoryClick} onAboutOpen={() => {}} onArticleSelect={openArticle} searchableArticles={allArticles} />
       <BreakingTicker articles={allArticles.length >= 3 ? allArticles.slice(0, 3) : FALLBACK_BREAKING} />
       <main className="flex-1">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
             <HeroTopNews heroArticle={allArticles[0] || FALLBACK_HERO} onArticleClick={openArticle} />
             <div className="lg:col-span-1 flex flex-col gap-4">
-              <SidebarLeaderboard onSeeMore={() => setLeaderboardOpen(true)} models={leaderboardModels} loading={leaderboardLoading} arenaModels={arenaModels} arenaLoading={arenaLoading} activeTab={lbTab} onTabChange={setLbTab} />
+              <SidebarLeaderboard onSeeMore={() => {}} models={leaderboardModels} loading={leaderboardLoading} arenaModels={arenaModels} arenaLoading={arenaLoading} activeTab={lbTab} onTabChange={setLbTab} />
               <SubscribeSection />
             </div>
           </div>

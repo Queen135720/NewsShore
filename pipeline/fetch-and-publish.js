@@ -272,17 +272,22 @@ async function callDeepSeek(prompt) {
 }
 
 // ---- 4. FETCH IMAGE FROM UNSPLASH ----
-async function fetchImage(headline) {
+async function fetchImage(headline, category) {
   if (!process.env.UNSPLASH_ACCESS_KEY) return null;
-  const query = encodeURIComponent(headline.split(' ').slice(0, 5).join(' '));
+  const contextWord = { 'AI News': 'technology', 'Research': 'science', 'Startups & Funding': 'business',
+    'Tech Giants': 'technology', 'Tech News': 'technology', 'Global & China': 'technology' }[category] || 'technology';
+  const query = encodeURIComponent(`${headline.split(' ').slice(0, 6).join(' ')} ${contextWord}`);
   try {
     const res = await fetch(
-      `https://api.unsplash.com/search/photos?query=${query}&per_page=1&orientation=landscape`,
+      `https://api.unsplash.com/search/photos?query=${query}&per_page=10&orientation=landscape&content_filter=high`,
       { headers: { Authorization: `Client-ID ${process.env.UNSPLASH_ACCESS_KEY}` } }
     );
     if (!res.ok) return null;
     const data = await res.json();
-    return data.results[0]?.urls?.regular || null;
+    const freeResults = (data.results || []).filter(r => !r.premium);
+    if (freeResults.length === 0) return null;
+    const pick = freeResults[Math.floor(Math.random() * Math.min(5, freeResults.length))];
+    return pick?.urls?.regular || null;
   } catch {
     return null;
   }
@@ -290,7 +295,7 @@ async function fetchImage(headline) {
 
 // ---- 5. SAVE TO SUPABASE ----
 async function saveArticle(item, rewritten) {
-  const imageUrl = await fetchImage(rewritten.headline);
+  const imageUrl = await fetchImage(rewritten.headline, item.category);
 
   const { error } = await supabase.from('articles').insert({
     title: rewritten.headline,

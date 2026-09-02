@@ -307,6 +307,7 @@ async function saveArticle(item, rewritten) {
     source_name: item.sourceName,
     reliability: rewritten.reliability,
     glossary: rewritten.glossary,
+    published: true,
     image_url: imageUrl,
   });
   if (error) {

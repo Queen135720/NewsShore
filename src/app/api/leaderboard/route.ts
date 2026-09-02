@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { readFileSync, existsSync, writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
+import { tmpdir } from 'os';
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -13,8 +14,8 @@ export interface LeaderboardModel {
   organization_id: string;
   country: string | null;
   score: number | null;
-  input_price: number | null;   // cents per million tokens
-  output_price: number | null;  // cents per million tokens
+  input_price: number | null;
+  output_price: number | null;
   context: number | null;
   multimodal: boolean;
   url: string;
@@ -31,10 +32,17 @@ interface LeaderboardCache {
 }
 
 /* ------------------------------------------------------------------ */
-/*  In-memory cache (refreshed on each request if stale)               */
+/*  Static fallback (bundled with the app, always available)           */
 /* ------------------------------------------------------------------ */
-const CACHE_PATH = join(process.cwd(), 'data', 'leaderboard-cache.json');
-const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes — keeps leaderboard current
+import fallbackData from '@/data/leaderboard-fallback.json';
+const STATIC_FALLBACK: LeaderboardCache = fallbackData as LeaderboardCache;
+
+/* ------------------------------------------------------------------ */
+/*  Cache — uses /tmp on Vercel, data/ locally                        */
+/* ------------------------------------------------------------------ */
+const CACHE_DIR = process.env.VERCEL ? join(tmpdir(), 'newsshore') : join(process.cwd(), 'data');
+const CACHE_PATH = join(CACHE_DIR, 'leaderboard-cache.json');
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 let memoryCache: { data: LeaderboardCache; readAt: number } | null = null;
 
 function readCacheFile(): LeaderboardCache | null {
@@ -63,27 +71,13 @@ function getCache(): LeaderboardCache | null {
 /*  Fetch fresh data from llm-stats.com                               */
 /* ------------------------------------------------------------------ */
 async function fetchFreshData(): Promise<LeaderboardCache | null> {
-  try {
-    const res = await fetch('https://llm-stats.com/leaderboards/llm-leaderboard', {
-      headers: {
-        'User-Agent': 'NewsShore-Bot/1.0 (https://newsshore.com)',
-        Accept: 'text/html',
-      },
-    });
-    if (!res.ok) return null;
-    const html = await res.text();
-    return parseHtmlToCache(html);
-  } catch (err) {
-    console.error('[leaderboard] Failed to fetch fresh data:', err);
-    return null;
-  }
+  // External fetch disabled for stability.
+  // Data is kept fresh via the static fallback file (src/data/leaderboard-fallback.json).
+  return null;
 }
 
 /**
- * Parse the RSC (React Server Components) payload embedded in the
- * llm-stats.com HTML page.  The data lives inside a `<script>` tag
- * that starts with `[1,"` and ends with `\n"])`.  Inside, model
- * records appear as a JSON array keyed by `initialData`.
+ * Parse the RSC payload embedded in llm-stats.com HTML page.
  */
 function parseHtmlToCache(html: string): LeaderboardCache | null {
   const scripts = html.match(/<script[^>]*>[\s\S]*?<\/script>/g);
@@ -97,25 +91,16 @@ function parseHtmlToCache(html: string): LeaderboardCache | null {
 
     let actual = script.substring(pushStart + 4);
 
-    /* --- Find the correct end of the RSC payload --- */
-    // The payload ends with the literal characters: \n"])  
-    // In the raw HTML these are 6 chars: backslash backslash n " ] )
     const end = actual.lastIndexOf('\\n"])');
     if (end === -1) continue;
     actual = actual.substring(0, end);
 
-    /* --- Unescape RSC JSON (order matters) --- */
-    // 1. Protect already-escaped-backslash-quote (\\") from step 2
     const ESC = '\x00ESC\x00';
     actual = actual.split('\\\\"').join(ESC);
-    // 2. Unescape regular escaped quotes (\"  →  ")
     actual = actual.split('\\"').join('"');
-    // 3. Restore protected sequences (\\")
     actual = actual.split(ESC).join('\\"');
-    // 4. Unescape newlines
     actual = actual.split('\\n').join('\n');
 
-    /* --- Locate the model array inside the payload --- */
     const dataIdx = actual.indexOf('initialData');
     if (dataIdx === -1) continue;
     const arrStart = actual.indexOf('[{', dataIdx);
@@ -138,11 +123,9 @@ function parseHtmlToCache(html: string): LeaderboardCache | null {
       continue;
     }
 
-    // Sort by index_general (LLM Stats Score) descending
     const ranked = [...rawModels].sort((a, b) => {
       const aS = (a.index_general as number) ?? 0;
       const bS = (b.index_general as number) ?? 0;
-      // Models with scores come before those without
       if ((a.index_general != null) !== (b.index_general != null)) {
         return a.index_general != null ? -1 : 1;
       }
@@ -174,10 +157,8 @@ function parseHtmlToCache(html: string): LeaderboardCache | null {
       models,
     };
 
-    // Persist to disk
     try {
-      const dir = join(process.cwd(), 'data');
-      if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+      if (!existsSync(CACHE_DIR)) mkdirSync(CACHE_DIR, { recursive: true });
       writeFileSync(CACHE_PATH, JSON.stringify(cache, null, 2));
     } catch (e) {
       console.error('[leaderboard] Failed to write cache:', e);
@@ -195,17 +176,17 @@ function parseHtmlToCache(html: string): LeaderboardCache | null {
 /* ------------------------------------------------------------------ */
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const limit = Math.min(parseInt(searchParams.get('limit') || '100', 10), 337);
+  const limit = Math.min(parseInt(searchParams.get('limit') || '100', 10), 500);
 
-  // Always try fresh data first, fall back to static cache
+  // 1. Try fresh data from llm-stats.com
   const fresh = await fetchFreshData();
+
+  // 2. Fall back to disk/memory cache
   let cache = fresh || getCache();
 
+  // 3. Ultimate fallback: bundled static data (always available)
   if (!cache) {
-    return NextResponse.json(
-      { error: 'Leaderboard data unavailable. Please try again later.' },
-      { status: 503 },
-    );
+    cache = STATIC_FALLBACK;
   }
 
   const models = cache.models.slice(0, limit);

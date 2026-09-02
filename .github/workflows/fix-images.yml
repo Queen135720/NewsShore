@@ -1,0 +1,34 @@
+# One-time manual workflow to fix old article images.
+# Goes at: .github/workflows/fix-images.yml
+# Run it ONCE from the Actions tab (click "Run workflow"), then you can delete
+# this file and fix-old-images.js from your repo — you won't need them again.
+
+name: Fix Old Article Images
+
+on:
+  workflow_dispatch:   # manual trigger only — this should never run on a schedule
+
+jobs:
+  fix-images:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: pipeline
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run the image cleanup
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
+        run: node fix-old-images.js

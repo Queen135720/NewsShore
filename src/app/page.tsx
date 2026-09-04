@@ -817,11 +817,9 @@ function Footer({ onCategoryClick, onAboutOpen }: { onCategoryClick: (cat: strin
 /* ─────────────── Main Page ─────────────── */
 function Home() {
   const [activeCategory, setActiveCategory] = useState('Latest');
-  const [aboutOpen, setAboutOpen] = useState(false);
   const [showTop, setShowTop] = useState(false);
   const [selectedArticle, setSelectedArticle] = useState<NewsArticle | null>(null);
   const [articleOpen, setArticleOpen] = useState(false);
-  const [leaderboardOpen, setLeaderboardOpen] = useState(false);
   const [leaderboardModels, setLeaderboardModels] = useState<AIModel[]>([]);
   const [leaderboardLoading, setLeaderboardLoading] = useState(true);
   const [arenaModels, setArenaModels] = useState<ArenaModel[]>([]);
@@ -919,13 +917,9 @@ function Home() {
           </div>
         </div>
       </main>
-      <Footer onCategoryClick={handleCategoryClick} onAboutOpen={() => setAboutOpen(true)} />
+      <Footer onCategoryClick={handleCategoryClick} onAboutOpen={() => {}} />
       <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className={`fixed bottom-4 right-4 sm:bottom-6 sm:right-6 w-10 h-10 sm:w-12 sm:h-12 bg-[#0f1b3d] text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-300 z-40 hover:bg-red-600 ${showTop ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`} aria-label="Back to top" style={{ touchAction: 'manipulation' }}><ArrowUp className="w-4 h-4 sm:w-5 sm:h-5" /></button>
       <ArticleDetail article={selectedArticle} open={articleOpen} onClose={closeArticle} onArticleChange={handleArticleChange} allArticles={allArticles} />
-      <AboutScreen open={aboutOpen} onClose={() => setAboutOpen(false)} />
-      <FullLeaderboard open={leaderboardOpen} onClose={() => setLeaderboardOpen(false)} models={leaderboardModels} arenaModels={arenaModels} activeTab={lbTab} onTabChange={setLbTab} />
-    </div>
-  );
 }
 
 export default function Page() {

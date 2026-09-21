@@ -185,10 +185,18 @@ function saveCache(cache: ArenaCache): void {
 /*  Fresh data fetch (disabled — SDK crashes in some environments)     */
 /* ------------------------------------------------------------------ */
 async function tryFetchOnce(): Promise<ArenaCache | null> {
-  // The z-ai SDK page_reader is unstable in serverless/edge environments.
-  // Data is kept fresh via the static fallback file (src/data/arena-fallback.json)
-  // which should be updated periodically from arena.ai.
-  return null;
+  try {
+    const res = await fetch('https://arena.ai/leaderboard/text', {
+      headers: { 'User-Agent': 'NewsShore-Bot/1.0' },
+      signal: AbortSignal.timeout(15000),
+    });
+    if (!res.ok) return null;
+    const html = await res.text();
+    return parseArenaHtml(html);
+  } catch (e) {
+    console.error('[arena-leaderboard] Live fetch failed:', e);
+    return null;
+  }
 }
 
 /**

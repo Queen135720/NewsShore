@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import ZAI from 'z-ai-web-dev-sdk';
 import { readFileSync, existsSync, writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
@@ -186,15 +187,16 @@ function saveCache(cache: ArenaCache): void {
 /* ------------------------------------------------------------------ */
 async function tryFetchOnce(): Promise<ArenaCache | null> {
   try {
-    const res = await fetch('https://arena.ai/leaderboard/text', {
-      headers: { 'User-Agent': 'NewsShore-Bot/1.0' },
-      signal: AbortSignal.timeout(15000),
+    const zai = await ZAI.create();
+    const result = await zai.functions.invoke('page_reader', {
+      url: 'https://arena.ai/leaderboard/text',
     });
-    if (!res.ok) return null;
-    const html = await res.text();
-    return parseArenaHtml(html);
+    if (result?.code !== 200 || !result?.data?.html) return null;
+    const parsed = parseArenaHtml(result.data.html);
+    if (parsed) saveCache(parsed);
+    return parsed;
   } catch (e) {
-    console.error('[arena-leaderboard] Live fetch failed:', e);
+    console.error('[arena-leaderboard] SDK page_reader failed:', e);
     return null;
   }
 }

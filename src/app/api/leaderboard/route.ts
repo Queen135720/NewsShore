@@ -84,7 +84,6 @@ async function fetchFreshData(): Promise<LeaderboardCache | null> {
     return null;
   }
 }
-}
 
 /**
  * Parse the RSC payload embedded in llm-stats.com HTML page.

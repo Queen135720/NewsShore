@@ -71,9 +71,19 @@ function getCache(): LeaderboardCache | null {
 /*  Fetch fresh data from llm-stats.com                               */
 /* ------------------------------------------------------------------ */
 async function fetchFreshData(): Promise<LeaderboardCache | null> {
-  // External fetch disabled for stability.
-  // Data is kept fresh via the static fallback file (src/data/leaderboard-fallback.json).
-  return null;
+  try {
+    const res = await fetch('https://llm-stats.com/leaderboards/llm-leaderboard', {
+      headers: { 'User-Agent': 'NewsShore-Bot/1.0' },
+      signal: AbortSignal.timeout(15000),
+    });
+    if (!res.ok) return null;
+    const html = await res.text();
+    return parseHtmlToCache(html);
+  } catch (e) {
+    console.error('[leaderboard] Live fetch failed:', e);
+    return null;
+  }
+}
 }
 
 /**

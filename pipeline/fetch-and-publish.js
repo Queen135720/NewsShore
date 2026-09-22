@@ -295,6 +295,11 @@ async function fetchImage(headline, category) {
 
 // ---- 5. SAVE TO SUPABASE ----
 async function saveArticle(item, rewritten) {
+  // Guard: skip empty/broken rewrites
+  if (!rewritten?.headline?.trim() || !rewritten?.body?.trim() || !rewritten?.summary?.trim()) {
+    console.log('Skipping empty article:', item.title ?? item.link);
+    return;
+  
   const imageUrl = await fetchImage(rewritten.headline, item.category);
 
   const { error } = await supabase.from('articles').insert({

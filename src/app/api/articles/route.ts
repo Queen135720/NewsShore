@@ -1,13 +1,15 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
-export const dynamic = 'force-dynamic'; // ← CHANGE 1: add this line
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
+    const total = await db.article.count();
+
     const articles = await db.article.findMany({
       orderBy: { createdAt: 'desc' },
-      take: 1000, // ← CHANGE 2: was 200
+      take: total, // fetch everything — self-adjusts as the pipeline adds articles
     });
 
     const mapped = articles.map((a) => ({
@@ -25,12 +27,12 @@ export async function GET() {
       glossary: Array.isArray(a.glossary) ? a.glossary : [],
     }));
 
-    return NextResponse.json({ success: true, articles: mapped });
+    return NextResponse.json({ success: true, total, articles: mapped });
   } catch (err) {
     console.error('[articles] fetch error:', err);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch articles' },
       { status: 500 }
-    ); // ← CHANGE 3: was returning success:true with an empty list
+    );
   }
 }

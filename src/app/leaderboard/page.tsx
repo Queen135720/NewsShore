@@ -3,10 +3,10 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  Search, ArrowLeft, Trophy, BarChart3, Users, ExternalLink, Loader2,
+  Search, ArrowLeft, Trophy, BarChart3, Users, Bot, ExternalLink, Loader2,
 } from 'lucide-react';
 import {
-  type AIModel, type ArenaModel, formatContext, formatCI,
+  type AIModel, type ArenaModel, type ArenaAgentModel, formatContext, formatCI,
 } from '@/lib/model-data';
 import { Button } from '@/components/ui/button';
 
@@ -33,12 +33,14 @@ function TableSkeleton({ rows = 10 }: { rows?: number }) {
 /* ─────────────── Page ─────────────── */
 export default function LeaderboardPage() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'benchmark' | 'arena'>('benchmark');
+  const [activeTab, setActiveTab] = useState<'benchmark' | 'arena' | 'agent'>('benchmark');
   const [search, setSearch] = useState('');
   const [models, setModels] = useState<AIModel[]>([]);
   const [arenaModels, setArenaModels] = useState<ArenaModel[]>([]);
+  const [agentModels, setAgentModels] = useState<ArenaAgentModel[]>([]);
   const [loading, setLoading] = useState(true);
   const [arenaLoading, setArenaLoading] = useState(true);
+  const [agentLoading, setAgentLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
@@ -60,6 +62,16 @@ export default function LeaderboardPage() {
     return () => { cancelled = true; };
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/arena-agent-leaderboard?limit=300')
+      .then(res => res.json())
+      .then(data => { if (!cancelled && data?.success) setAgentModels(data.models ?? []); })
+      .catch(() => { if (!cancelled) setAgentModels([]); })
+      .finally(() => { if (!cancelled) setAgentLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
+
   const filteredModels = useMemo(() => {
     if (search.length < 2) return models;
     return models.filter(m =>
@@ -76,8 +88,15 @@ export default function LeaderboardPage() {
     );
   }, [arenaModels, search]);
 
+  const filteredAgent = useMemo(() => {
+    if (search.length < 2) return agentModels;
+    return agentModels.filter(m =>
+      m.name.toLowerCase().includes(search.toLowerCase()) ||
+      m.organization.toLowerCase().includes(search.toLowerCase())
+    );
+  }, [agentModels, search]);
+
   const maxScore = filteredModels[0]?.score ?? 1;
-  const maxArena = filteredArena[0]?.arena_score ?? 1;
 
   return (
     <div className="min-h-screen flex flex-col bg-white font-[family-name:var(--font-dm-sans)]">
@@ -112,7 +131,7 @@ export default function LeaderboardPage() {
             <h1 className="font-[family-name:var(--font-lora)] text-xl sm:text-2xl font-bold text-gray-900">AI Model Leaderboard</h1>
           </div>
 
-          {/* Tab Switcher */}
+          {/* Tab Switcher — 3 tabs */}
           <div className="flex items-center gap-3 mb-1 ml-7 sm:ml-8 flex-wrap">
             <div className="flex gap-1 p-0.5 bg-gray-100 rounded-lg">
               <button
@@ -124,7 +143,12 @@ export default function LeaderboardPage() {
                 onClick={() => setActiveTab('arena')}
                 className={`flex items-center gap-1 px-3 py-1.5 rounded-md text-xs sm:text-sm font-semibold transition-all ${activeTab === 'arena' ? 'bg-white text-[#0f1b3d] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                 style={{ touchAction: 'manipulation' }}
-              ><Users className="w-3.5 h-3.5" /> Human Votes</button>
+              ><Users className="w-3.5 h-3.5" /> Chat Votes</button>
+              <button
+                onClick={() => setActiveTab('agent')}
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-md text-xs sm:text-sm font-semibold transition-all ${activeTab === 'agent' ? 'bg-white text-[#0f1b3d] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                style={{ touchAction: 'manipulation' }}
+              ><Bot className="w-3.5 h-3.5" /> Agent</button>
             </div>
           </div>
 
@@ -136,11 +160,18 @@ export default function LeaderboardPage() {
               {' '}— standardized tests for coding, math & reasoning from{' '}
               <a href="https://llm-stats.com" target="_blank" rel="noopener noreferrer" className="text-red-600 hover:underline">llm-stats.com</a>
             </p>
-          ) : (
+          ) : activeTab === 'arena' ? (
             <p className="text-xs sm:text-sm text-gray-500 ml-7 sm:ml-8 mb-4">
               Top {filteredArena.length} models ranked by{' '}
               <a href="https://arena.ai/leaderboard/text" target="_blank" rel="noopener noreferrer" className="text-red-600 hover:underline">human preference (Arena Score)</a>
               {' '}— blind head-to-head votes from real users on{' '}
+              <a href="https://arena.ai" target="_blank" rel="noopener noreferrer" className="text-red-600 hover:underline">arena.ai</a>
+            </p>
+          ) : (
+            <p className="text-xs sm:text-sm text-gray-500 ml-7 sm:ml-8 mb-4">
+              Top {filteredAgent.length} models ranked by{' '}
+              <a href="https://arena.ai/leaderboard/agent" target="_blank" rel="noopener noreferrer" className="text-red-600 hover:underline">agent capability (Net Improvement)</a>
+              {' '}— tool use, planning & multi-step reasoning evaluated by real humans on{' '}
               <a href="https://arena.ai" target="_blank" rel="noopener noreferrer" className="text-red-600 hover:underline">arena.ai</a>
             </p>
           )}
@@ -198,7 +229,7 @@ export default function LeaderboardPage() {
             )
           )}
 
-          {/* Arena Table */}
+          {/* Chat Votes (Arena) Table */}
           {activeTab === 'arena' && (
             arenaLoading ? <TableSkeleton /> : (
               <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
@@ -250,11 +281,148 @@ export default function LeaderboardPage() {
             )
           )}
 
+          {/* Agent Table */}
+          {activeTab === 'agent' && (
+            agentLoading ? <TableSkeleton /> : (
+              <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+                {/* Desktop header */}
+                <div className="hidden lg:grid grid-cols-[16] gap-2 px-5 py-3 bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  <div className="col-span-1">Rank</div>
+                  <div className="col-span-3">Model</div>
+                  <div className="col-span-1">Org</div>
+                  <div className="col-span-2">Net Improve</div>
+                  <div className="col-span-2">Success</div>
+                  <div className="col-span-2">Bash Recovery</div>
+                  <div className="col-span-2">Tool Halluc</div>
+                  <div className="col-span-1">Sessions</div>
+                  <div className="col-span-1">Cost/Task</div>
+                  <div className="col-span-1 text-right">Link</div>
+                </div>
+                {/* Tablet header */}
+                <div className="hidden md:grid lg:hidden grid-cols-12 gap-2 px-5 py-3 bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  <div className="col-span-1">Rank</div>
+                  <div className="col-span-3">Model</div>
+                  <div className="col-span-2">Net Improve</div>
+                  <div className="col-span-2">Success</div>
+                  <div className="col-span-2">Bash Recovery</div>
+                  <div className="col-span-1">Sessions</div>
+                  <div className="col-span-1 text-right">Link</div>
+                </div>
+                <div className="divide-y divide-gray-50 max-h-[70vh] overflow-y-auto custom-scrollbar">
+                  {filteredAgent.map((model) => {
+                    const maxNet = filteredAgent[0]?.net_improvement ?? 15;
+                    return (
+                      <a key={model.rank} href={model.url} target="_blank" rel="noopener noreferrer"
+                        className={`w-full hover:bg-gray-50/80 transition-colors text-left ${model.rank <= 3 ? 'bg-violet-50/30' : ''}`}
+                        style={{ touchAction: 'manipulation' }}
+                      >
+                        {/* Desktop row */}
+                        <div className="hidden lg:grid grid-cols-[16] gap-2 px-4 sm:px-5 py-3 sm:py-3.5 items-center">
+                          <div className="col-span-1 flex items-center">
+                            {model.rank <= 3 ? (
+                              <span className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold text-white shadow-sm ${model.rank === 1 ? 'bg-violet-400' : model.rank === 2 ? 'bg-gray-400' : 'bg-violet-600'}`}>{model.rank}</span>
+                            ) : (
+                              <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center text-[10px] sm:text-xs font-bold">{model.rank}</span>
+                            )}
+                          </div>
+                          <div className="col-span-3 min-w-0">
+                            <p className="font-[family-name:var(--font-lora)] text-sm sm:text-base font-bold text-gray-900 truncate">{model.name}</p>
+                          </div>
+                          <div className="col-span-1">
+                            <p className="text-xs sm:text-sm text-gray-600 truncate">{model.organization}</p>
+                          </div>
+                          <div className="col-span-2 flex items-center gap-2">
+                            <div className="flex-1 h-5 bg-gray-100 rounded-full overflow-hidden relative">
+                              <div className="h-full rounded-full bg-violet-600" style={{ width: `${(model.net_improvement / maxNet) * 100}%`, opacity: 0.8 }} />
+                              <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-gray-700">{model.net_improvement}%</span>
+                            </div>
+                          </div>
+                          <div className="col-span-2">
+                            <p className="text-xs text-gray-600">{model.confirmed_success}%</p>
+                            <p className="text-[9px] text-gray-400">±{model.confirmed_success_ci}%</p>
+                          </div>
+                          <div className="col-span-2">
+                            <p className="text-xs text-gray-600">{model.bash_recovery}%</p>
+                            <p className="text-[9px] text-gray-400">±{model.bash_recovery_ci}%</p>
+                          </div>
+                          <div className="col-span-2">
+                            <p className="text-xs text-gray-600">{model.tool_hallucination}%</p>
+                            <p className="text-[9px] text-gray-400">±{model.tool_hallucination_ci}%</p>
+                          </div>
+                          <div className="col-span-1">
+                            <p className="text-xs text-gray-500">{model.sessions.toLocaleString()}</p>
+                          </div>
+                          <div className="col-span-1">
+                            <p className="text-xs text-gray-500">${model.cost_per_task.toFixed(2)}</p>
+                          </div>
+                          <div className="col-span-1 flex justify-end">
+                            <ExternalLink className="w-3.5 h-3.5 text-gray-400" />
+                          </div>
+                        </div>
+                        {/* Tablet row */}
+                        <div className="hidden md:grid lg:hidden grid-cols-12 gap-2 px-4 sm:px-5 py-3 sm:py-3.5 items-center">
+                          <div className="col-span-1 flex items-center">
+                            {model.rank <= 3 ? (
+                              <span className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold text-white shadow-sm ${model.rank === 1 ? 'bg-violet-400' : model.rank === 2 ? 'bg-gray-400' : 'bg-violet-600'}`}>{model.rank}</span>
+                            ) : (
+                              <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center text-[10px] sm:text-xs font-bold">{model.rank}</span>
+                            )}
+                          </div>
+                          <div className="col-span-3 min-w-0">
+                            <p className="font-[family-name:var(--font-lora)] text-sm font-bold text-gray-900 truncate">{model.name}</p>
+                            <p className="text-[10px] text-gray-500">{model.organization}</p>
+                          </div>
+                          <div className="col-span-2 flex items-center gap-2">
+                            <div className="flex-1 h-5 bg-gray-100 rounded-full overflow-hidden relative">
+                              <div className="h-full rounded-full bg-violet-600" style={{ width: `${(model.net_improvement / maxNet) * 100}%`, opacity: 0.8 }} />
+                              <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-gray-700">{model.net_improvement}%</span>
+                            </div>
+                          </div>
+                          <div className="col-span-2">
+                            <p className="text-xs text-gray-600">{model.confirmed_success}%</p>
+                          </div>
+                          <div className="col-span-2">
+                            <p className="text-xs text-gray-600">{model.bash_recovery}%</p>
+                          </div>
+                          <div className="col-span-1">
+                            <p className="text-xs text-gray-500">{model.sessions.toLocaleString()}</p>
+                          </div>
+                          <div className="col-span-1 flex justify-end">
+                            <ExternalLink className="w-3.5 h-3.5 text-gray-400" />
+                          </div>
+                        </div>
+                        {/* Mobile row */}
+                        <div className="grid md:hidden gap-1 px-4 py-3 items-center">
+                          <div className="flex items-center gap-2">
+                            {model.rank <= 3 ? (
+                              <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-sm ${model.rank === 1 ? 'bg-violet-400' : model.rank === 2 ? 'bg-gray-400' : 'bg-violet-600'}`}>{model.rank}</span>
+                            ) : (
+                              <span className="w-6 h-6 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center text-[10px] font-bold">{model.rank}</span>
+                            )}
+                            <p className="font-[family-name:var(--font-lora)] text-sm font-bold text-gray-900 truncate flex-1">{model.name}</p>
+                          </div>
+                          <div className="pl-8 flex flex-wrap gap-x-3 gap-y-0.5 text-[10px] text-gray-500">
+                            <span>{model.organization}</span>
+                            <span className="font-semibold text-violet-600">{model.net_improvement}% ±{model.net_improvement_ci}%</span>
+                            <span>{model.sessions.toLocaleString()} sessions</span>
+                            <span>${model.cost_per_task.toFixed(2)}/task</span>
+                          </div>
+                        </div>
+                      </a>
+                    );
+                  })}
+                </div>
+              </div>
+            )
+          )}
+
           {/* Footnote */}
           <p className="text-[10px] sm:text-xs text-gray-400 mt-2 ml-1">
             {activeTab === 'benchmark'
-              ? <>Ranked by <strong>LLM Stats Score</strong> — a composite metric from public benchmarks and live API metrics. A model can rank differently on human-preference leaderboards — see the Human Votes tab.</>
-              : <>Ranked by <strong>Arena Score</strong> — Bradley-Terry ratings from blind human preference votes. Rankings may differ from benchmark leaderboards — see the Benchmarks tab.</>}
+              ? <>Ranked by <strong>LLM Stats Score</strong> — a composite metric from public benchmarks and live API metrics. A model can rank differently on human-preference leaderboards — see the Chat Votes or Agent tabs.</>
+              : activeTab === 'arena'
+                ? <>Ranked by <strong>Arena Score</strong> — Bradley-Terry ratings from blind human preference votes in chat. Rankings may differ from benchmark or agent leaderboards — see the other tabs.</>
+                : <>Ranked by <strong>Net Improvement %</strong> — the % of agentic tasks where the model improved over a baseline. Lower Tool Hallucination is better. See the Chat Votes tab for conversational preference.</>}
           </p>
         </div>
       </main>

@@ -3,12 +3,10 @@
 // 2) rewrites with AI (Gemini → GLM → Groq → DeepSeek fallback chain)
 // 3) saves to Supabase for the website to display
 //
-// Features:
-//   - 19 verified working feeds (33 dead/blocked removed)
-//   - 4 AI providers with automatic fallback
-//   - Retry on 429 rate limits (10s wait, 1 retry)
-//   - 1 article per run (cron handles scheduling every 5 min)
-//   - Robust parser (timeout, user-agent, XML fix)
+// Image system:
+//   - AI generates visual search queries during the rewrite (no brand names)
+//   - Unsplash searched with quality floor + no repeats (dedup vs last 300 articles)
+//   - never falls back to source-article images (that was the Alamy watermark leak)
 
 import Parser from 'rss-parser';
 import { createClient } from '@supabase/supabase-js';
@@ -19,14 +17,6 @@ const parser = new Parser({
     'User-Agent': 'NewsShore-Bot/1.0 (https://newsshore.com)',
     Accept: 'application/rss+xml, application/xml, text/xml, application/atom+xml, */*',
   },
-  customFields: {
-    item: ['media:content', 'media:thumbnail'],
-  },
-  xml2js: {
-    explicitCharkey: false,
-    normalizeTags: true,
-    normalize: true,
-  },
 });
 
 const supabase = createClient(
@@ -35,14 +25,10 @@ const supabase = createClient(
 );
 
 // ---- 1. SOURCES ----
-// Only feeds verified working (tested Aug 2025).
 const SOURCES = [
-  // AI Companies
   { name: 'OpenAI', url: 'https://openai.com/news/rss.xml', category: 'AI News', region: 'US' },
   { name: 'Google DeepMind', url: 'https://deepmind.google/blog/rss.xml', category: 'AI News', region: 'US' },
   { name: 'Hugging Face', url: 'https://huggingface.co/blog/feed.xml', category: 'AI News', region: 'Global' },
-
-  // Major Tech Publications
   { name: 'TechCrunch AI', url: 'https://techcrunch.com/category/artificial-intelligence/feed/', category: 'AI News', region: 'Global' },
   { name: 'TechCrunch Startups', url: 'https://techcrunch.com/feed/', category: 'Startups & Funding', region: 'Global' },
   { name: 'WIRED', url: 'https://www.wired.com/feed/rss', category: 'Tech News', region: 'Global' },
@@ -51,21 +37,13 @@ const SOURCES = [
   { name: 'Engadget', url: 'https://www.engadget.com/rss.xml', category: 'Tech News', region: 'Global' },
   { name: 'CNET', url: 'https://www.cnet.com/rss/news/', category: 'Tech News', region: 'Global' },
   { name: 'Apple Insider', url: 'https://appleinsider.com/rss/news/', category: 'Tech Giants', region: 'Global' },
-
-  // Research
   { name: 'MIT News AI', url: 'https://news.mit.edu/rss/topic/artificial-intelligence2', category: 'Research', region: 'US' },
   { name: 'MIT Tech Review', url: 'https://www.technologyreview.com/feed/', category: 'AI News', region: 'US' },
   { name: 'Nature Tech', url: 'https://www.nature.com/subjects/technology.rss', category: 'Research', region: 'Global' },
-
-  // Startups & Funding
   { name: 'Rest of World', url: 'https://restofworld.org/feed/latest/', category: 'Global & China', region: 'Global' },
   { name: 'TechCabal', url: 'https://techcabal.com/feed/', category: 'Startups & Funding', region: 'Africa' },
-
-  // China / Asia
   { name: 'TechNode', url: 'https://technode.com/feed/', category: 'Global & China', region: 'China' },
   { name: 'Nocamels', url: 'https://nocamels.com/feed/', category: 'Global & China', region: 'Israel' },
-
-  // Quantum
   { name: 'Quantum Computing Report', url: 'https://quantumcomputingreport.com/news/feed/', category: 'Research', region: 'Global' },
 ];
 
@@ -82,7 +60,6 @@ async function fetchNewItems() {
           .select('id')
           .eq('source_url', item.link)
           .maybeSingle();
-
         if (!existing) {
           allItems.push({ ...item, sourceName: source.name, category: source.category, region: source.region });
         }
@@ -95,7 +72,6 @@ async function fetchNewItems() {
 }
 
 // ---- 3. REWRITE WITH AI ----
-// Fallback chain: Gemini → GLM → Groq → DeepSeek
 async function rewriteArticle(item) {
   const prompt = `You are a neutral tech news writer for a general, non-technical global audience.
 Rewrite the following into:
@@ -104,6 +80,7 @@ Rewrite the following into:
 3. A 500-1000 word article body, fully in your own words but accurate and verifiable. Do not copy phrases from the original.
 4. A "reliability" tag: "verified" if from independent testing/reporting, or "claimed" if it's a company announcement
 5. Three to ten short glossary terms (technical word + one-sentence plain-language explanation)
+6. Three stock-photo search queries (2-4 words each) to illustrate this story. Rules: describe things you can SEE — objects, machines, places, people (e.g. "data center aisle", "robot arm factory", "circuit board macro"). NEVER use company or brand names — describe the product or industry instead (e.g. for a Nvidia chip story use "computer chip closeup"). Never abstract words alone like "future" or "innovation".
 
 IMPORTANT RULES:
 - Do not invent quotes, sources, statistics, or links.
@@ -111,34 +88,20 @@ IMPORTANT RULES:
 - If you don't know something, leave it out rather than guessing.
 
 Respond ONLY in this exact JSON format, nothing else:
-{"headline": "...", "summary": "...", "body": "...", "reliability": "...", "glossary": [{"term":"...","definition":"..."}]}
+{"headline": "...", "summary": "...", "body": "...", "reliability": "...", "glossary": [{"term":"...","definition":"..."}], "imageQueries": ["...", "...", "..."]}
 
 Source title: ${item.title}
 Source content: ${item.contentSnippet || item.content || ''}`;
 
-  // Try Gemini first
-  try {
-    return await callGemini(prompt);
-  } catch (err) {
-    console.warn(`Gemini failed, falling back to GLM: ${err.message}`);
-  }
-  // Then GLM
-  try {
-    return await callGLM(prompt);
-  } catch (err) {
-    console.warn(`GLM failed, falling back to Groq: ${err.message}`);
-  }
-  // Then Groq (genuinely free, no balance needed)
-  try {
-    return await callGroq(prompt);
-  } catch (err) {
-    console.warn(`Groq failed, falling back to DeepSeek: ${err.message}`);
-  }
-  // Finally DeepSeek
+  try { return await callGemini(prompt); }
+  catch (err) { console.warn(`Gemini failed, falling back to GLM: ${err.message}`); }
+  try { return await callGLM(prompt); }
+  catch (err) { console.warn(`GLM failed, falling back to Groq: ${err.message}`); }
+  try { return await callGroq(prompt); }
+  catch (err) { console.warn(`Groq failed, falling back to DeepSeek: ${err.message}`); }
   return await callDeepSeek(prompt);
 }
 
-// Retry helper: retries once after 10s if we get 429
 async function retryFetch(url, options) {
   const res = await fetch(url, options);
   if (res.status === 429) {
@@ -149,22 +112,14 @@ async function retryFetch(url, options) {
   return res;
 }
 
-// Robust JSON parser — handles AI output with unescaped newlines/quotes in strings
 function safeParseJSON(text) {
   let cleaned = text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-
-  // Try direct parse first
   try { return JSON.parse(cleaned); } catch (e) { /* continue */ }
-
-  // Extract JSON object from the response
   const start = cleaned.indexOf('{');
   const end = cleaned.lastIndexOf('}');
   if (start === -1 || end === -1) throw new Error('No JSON object in response');
-
   let jsonStr = cleaned.substring(start, end + 1);
   try { return JSON.parse(jsonStr); } catch (e) { /* continue */ }
-
-  // Fix unescaped control characters inside string values
   let result = '';
   let inString = false;
   let escaped = false;
@@ -201,106 +156,129 @@ async function callGemini(prompt) {
   }
   const data = await res.json();
   const text = data.candidates[0].content.parts[0].text;
-  return JSON.parse(text.replace(/```json|```/g, '').trim());
-  return safeParseJSON(text);
+  return safeParseJSON(text); // ★ was a double-return with dead code — fixed
 }
 
 async function callGLM(prompt) {
   if (!process.env.GLM_API_KEY) throw new Error('GLM_API_KEY not set');
   const res = await retryFetch('https://open.bigmodel.cn/api/paas/v4/chat/completions', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${process.env.GLM_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: 'glm-4.7-flash',
-      messages: [{ role: 'user', content: prompt }],
-    }),
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.GLM_API_KEY}` },
+    body: JSON.stringify({ model: 'glm-4.7-flash', messages: [{ role: 'user', content: prompt }] }),
   });
   if (!res.ok) {
     const errBody = await res.text();
     throw new Error(`GLM error: ${res.status} — ${errBody.substring(0, 200)}`);
   }
   const data = await res.json();
-  const text = data.choices[0].message.content;
-  return safeParseJSON(text);
+  return safeParseJSON(data.choices[0].message.content);
 }
 
 async function callGroq(prompt) {
   if (!process.env.GROQ_API_KEY) throw new Error('GROQ_API_KEY not set');
   const res = await retryFetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: 'openai/gpt-oss-20b',
-      messages: [{ role: 'user', content: prompt }],
-    }),
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.GROQ_API_KEY}` },
+    body: JSON.stringify({ model: 'openai/gpt-oss-20b', messages: [{ role: 'user', content: prompt }] }),
   });
   if (!res.ok) {
     const errBody = await res.text();
     throw new Error(`Groq error: ${res.status} — ${errBody.substring(0, 200)}`);
   }
   const data = await res.json();
-  const text = data.choices[0].message.content;
-  return safeParseJSON(text);
+  return safeParseJSON(data.choices[0].message.content);
 }
 
 async function callDeepSeek(prompt) {
   if (!process.env.DEEPSEEK_API_KEY) throw new Error('DEEPSEEK_API_KEY not set');
   const res = await retryFetch('https://api.deepseek.com/chat/completions', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${process.env.DEEPSEEK_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: 'deepseek-chat',
-      messages: [{ role: 'user', content: prompt }],
-    }),
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.DEEPSEEK_API_KEY}` },
+    body: JSON.stringify({ model: 'deepseek-chat', messages: [{ role: 'user', content: prompt }] }),
   });
   if (!res.ok) {
     const errBody = await res.text();
     throw new Error(`DeepSeek error: ${res.status} — ${errBody.substring(0, 200)}`);
   }
   const data = await res.json();
-  const text = data.choices[0].message.content;
-  return safeParseJSON(text);
+  return safeParseJSON(data.choices[0].message.content);
 }
 
 // ---- 4. FETCH IMAGE FROM UNSPLASH ----
-async function fetchImage(headline, category) {
+// ★ Completely rebuilt. Never uses the headline directly, never repeats an image,
+// never falls back to source-article images (that was the Alamy watermark leak).
+
+const CATEGORY_IMAGE_TERMS = {
+  'AI News': ['neural network visualization', 'artificial intelligence abstract', 'robot technology'],
+  'Tech Giants': ['server room', 'data center', 'modern tech office'],
+  'Tech News': ['circuit board macro', 'computer chip closeup', 'gpu graphics card'],
+  'Startups & Funding': ['startup team meeting', 'modern workspace', 'business handshake'],
+  'Research': ['research laboratory', 'scientist at computer', 'data analysis screen'],
+  'Deals': ['stock market screen', 'finance charts', 'business deal'],
+  'Global & China': ['asia city skyline night', 'global network map', 'shanghai skyline'],
+  'Latest': ['abstract technology blue', 'futuristic screen', 'circuit board'],
+};
+
+function imageKey(url) {
+  const m = (url || '').match(/photo-([\w-]+)/);
+  return m ? m[1] : url;
+}
+
+async function loadUsedImageKeys() {
+  const { data } = await supabase
+    .from('articles')
+    .select('image_url')
+    .order('created_at', { ascending: false })
+    .limit(300);
+  return new Set((data ?? []).map((r) => imageKey(r.image_url)).filter(Boolean));
+}
+
+async function searchUnsplash(query, usedKeys) {
+  const url =
+    'https://api.unsplash.com/search/photos?query=' +
+    encodeURIComponent(query) +
+    '&per_page=30&orientation=landscape&content_filter=high';
+  const res = await fetch(url, {
+    headers: { Authorization: `Client-ID ${process.env.UNSPLASH_ACCESS_KEY}` },
+  });
+  if (!res.ok) return [];
+  const { results = [] } = await res.json();
+  return results
+    .filter((r) => !r.premium)
+    .filter((r) => r.width >= 1600 && r.height >= 900)
+    .filter((r) => !usedKeys.has(imageKey(r.urls.raw)))
+    .map((r) => ({ url: `${r.urls.raw}&w=1600&q=80&fm=jpg`, key: imageKey(r.urls.raw) }));
+}
+
+async function fetchImage(rewritten, category, usedKeys) {
   if (!process.env.UNSPLASH_ACCESS_KEY) return null;
-  const contextWord = { 'AI News': 'technology', 'Research': 'science', 'Startups & Funding': 'business',
-    'Tech Giants': 'technology', 'Tech News': 'technology', 'Global & China': 'technology' }[category] || 'technology';
-  const query = encodeURIComponent(`${headline.split(' ').slice(0, 6).join(' ')} ${contextWord}`);
-  try {
-    const res = await fetch(
-      `https://api.unsplash.com/search/photos?query=${query}&per_page=10&orientation=landscape&content_filter=high`,
-      { headers: { Authorization: `Client-ID ${process.env.UNSPLASH_ACCESS_KEY}` } }
-    );
-    if (!res.ok) return null;
-    const data = await res.json();
-    const freeResults = (data.results || []).filter(r => !r.premium);
-    if (freeResults.length === 0) return null;
-    const pick = freeResults[Math.floor(Math.random() * Math.min(5, freeResults.length))];
-    return pick?.urls?.regular || null;
-  } catch {
-    return null;
+
+  const aiQueries = (rewritten.imageQueries ?? [])
+    .map((q) => String(q).trim().toLowerCase())
+    .filter((q) => q.length > 2 && q.length < 40);
+
+  const fallbacks = CATEGORY_IMAGE_TERMS[category] ?? CATEGORY_IMAGE_TERMS['Latest'];
+
+  for (const query of [...aiQueries, ...fallbacks]) {
+    const candidates = await searchUnsplash(query, usedKeys);
+    if (candidates.length > 0) {
+      const pick = candidates[Math.floor(Math.random() * Math.min(12, candidates.length))];
+      usedKeys.add(pick.key);
+      return pick.url;
+    }
   }
+  return null;
 }
 
 // ---- 5. SAVE TO SUPABASE ----
-async function saveArticle(item, rewritten) {
+async function saveArticle(item, rewritten, usedKeys) {
   // Guard: skip empty/broken rewrites
   if (!rewritten?.headline?.trim() || !rewritten?.body?.trim() || !rewritten?.summary?.trim()) {
     console.log('Skipping empty article:', item.title ?? item.link);
-    return;
-  
-  const imageUrl = await fetchImage(rewritten.headline, item.category);
+    return false;
+  } // ★ THIS closing brace was missing in your version — the script could not run
+
+  const imageUrl = await fetchImage(rewritten, item.category, usedKeys);
 
   const { error } = await supabase.from('articles').insert({
     title: rewritten.headline,
@@ -324,17 +302,13 @@ async function saveArticle(item, rewritten) {
 }
 
 // ---- 6. MAIN ----
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
 async function run() {
   console.log('Checking sources for new articles...');
   const newItems = await fetchNewItems();
   console.log(`Found ${newItems.length} new item(s).`);
 
-  // 1 article per run. Cron runs every 5 min, so ~1 article every 5 min.
-  // Backlog clears gradually without hitting any rate limits.
+  const usedKeys = await loadUsedImageKeys(); // ★ new — dedup memory vs last 300 articles
+
   const MAX_PER_RUN = 1;
   const batch = newItems.slice(0, MAX_PER_RUN);
   if (newItems.length > MAX_PER_RUN) {
@@ -346,7 +320,7 @@ async function run() {
   for (const item of batch) {
     try {
       const rewritten = await rewriteArticle(item);
-      const ok = await saveArticle(item, rewritten);
+      const ok = await saveArticle(item, rewritten, usedKeys);
       if (ok) saved++; else failed++;
     } catch (err) {
       console.error(`Skipping "${item.title}" — all 4 AI providers failed: ${err.message}`);

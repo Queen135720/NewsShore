@@ -29,6 +29,8 @@ model Article {
   reliability String   @default("claimed") @map("reliability")
   glossary    Json     @default("[]") @map("glossary")
   imageUrl    String?  @map("image_url")
+  imageCreditName String? @map("image_credit_name")
+  imageCreditUrl  String? @map("image_credit_url")
   published   Boolean  @default(false) @map("published")
   createdAt   DateTime @default(now()) @map("created_at")
 

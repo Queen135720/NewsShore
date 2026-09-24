@@ -40,40 +40,62 @@ function parseArenaHtml(html) {
     const cells = [];
     let cellMatch;
     while ((cellMatch = cellRegex.exec(rowHtml)) !== null) {
-      cells.push(cellMatch[1].replace(/<[^>]*>/g, '|').replace(/\|+/g, '|').replace(/\s+/g, ' ').trim());
+      // Strip HTML tags and normalize whitespace
+      cells.push(cellMatch[1].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim());
     }
     if (cells.length < 5) continue;
 
-    const rank = parseInt(cells[0].replace(/[|]/g, '').trim());
-    if (isNaN(rank)) continue;
+    const rankMatch = cells[0].match(/^(\d+)/);
+    if (!rankMatch) continue;
+    const rank = parseInt(rankMatch[1]);
 
-    const rangeParts = cells[1].replace(/[|]/g, ' ').trim().split(/\s+/).map(Number);
+    const rangeParts = cells[1].trim().split(/\s+/).map(Number);
     const rank_lower = rangeParts[0] || rank;
     const rank_upper = rangeParts[1] || rank;
 
-    const nameParts = cells[2].split('|').map(s => s.trim()).filter(s => s.length > 0);
-    let name = '', org = '', license = '';
-    if (nameParts.length >= 3) {
-      org = nameParts[0]; name = nameParts[1];
-      const licMatch = nameParts[2].match(/·\s*(.+)/);
-      license = licMatch ? licMatch[1].trim() : '';
-    } else if (nameParts.length === 2) {
-      name = nameParts[0];
-      const orgLic = nameParts[1];
-      const orgMatch = orgLic.match(/^(.+?)\s*·\s*(.+)$/);
-      if (orgMatch) { org = orgMatch[1].trim(); license = orgMatch[2].trim(); }
-    } else { name = nameParts[0] || ''; }
+    // Name cell format: "Anthropic claude-fable-5-high Anthropic · Proprietary"
+    // Extract model name (the hyphenated model key) and organization
+    const nameCell = cells[2];
+    let name = '', org = '', license = 'Proprietary';
+
+    // Split by ' · ' to separate license
+    const licParts = nameCell.split(' · ');
+    if (licParts.length >= 2) {
+      license = licParts[licParts.length - 1].trim();
+    }
+    const namePart = licParts.slice(0, -1).join(' · ').trim();
+
+    // Try to find the model key (hyphenated identifier)
+    const modelKeyMatch = namePart.match(/((?:claude|gpt|gemini|deepseek|llama|qwen|mistral|command|o1|o3|o4|reka|yi|grok|phi|internlm|mixtral|solar|dbrx|starcoder|codestral|jamba|nemotron|falcon|zephyr|openchat|vicuna|wizardlm|chatglm|c4ai|ryzen|smollm|ambrosio|fable|mythos|spark|astra|muse)[\w.(+ )-]+)/i);
+    if (modelKeyMatch) {
+      name = modelKeyMatch[1].trim();
+      // Org is text before the model key
+      const beforeKey = namePart.substring(0, modelKeyMatch.index).trim();
+      if (beforeKey) org = beforeKey;
+    } else {
+      // Fallback: try splitting by known orgs
+      const knownOrgs = ['OpenAI','Anthropic','Google','Meta','Mistral','DeepSeek','Cohere','xAI','Reka','Alibaba','Microsoft','NVIDIA','Amazon','01.AI','Zhipu','Perplexity','Snowflake','Databricks','IBM','Writer','SambaNova','Together','Fireworks'];
+      for (const knownOrg of knownOrgs) {
+        const idx = namePart.lastIndexOf(knownOrg);
+        if (idx > 0) {
+          name = namePart.substring(0, idx).trim();
+          org = knownOrg;
+          break;
+        }
+      }
+      if (!name) name = namePart;
+    }
     if (!name) continue;
 
-    const scoreParts = cells[3].replace(/[|]/g, ' ').trim();
+    const scoreParts = cells[3].trim();
     const scoreMatch = scoreParts.match(/(\d{4})/);
-    const ciMatch = scoreParts.match(/[±+\\-](\d+)/);
+    const ciMatch = scoreParts.match(/±(\d+)/);
     if (!scoreMatch) continue;
     const score = parseInt(scoreMatch[1]);
     const ci = ciMatch ? parseInt(ciMatch[1]) : 5;
-    const votes = parseInt(cells[4].replace(/[|,]/g, '').trim()) || 0;
+    const votes = parseInt(cells[4].replace(/,/g, '').trim()) || 0;
 
-    const priceStr = (cells[5] || '').replace(/[|]/g, ' ').trim();
+    const priceStr = (cells[5] || '').trim();
     const priceMatch = priceStr.match(/\$(\d+)/g);
     let input_price = null, output_price = null;
     if (priceMatch && priceMatch.length >= 2) {
@@ -81,7 +103,7 @@ function parseArenaHtml(html) {
       output_price = parseInt(priceMatch[1].replace('$', '')) * 100;
     }
 
-    const ctxStr = (cells[6] || '').replace(/[|]/g, '').trim();
+    const ctxStr = (cells[6] || '').trim();
     let context = null;
     if (ctxStr.includes('M')) context = parseInt(ctxStr) * 1000000;
     else if (ctxStr.includes('K')) context = parseInt(ctxStr) * 1000;

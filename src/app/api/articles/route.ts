@@ -27,6 +27,8 @@ export async function GET() {
         reliability: a.reliability as 'verified' | 'claimed',
         publishedAt: a.createdAt.toISOString(),
         image: a.imageUrl ?? '/news-images/claude-today-1.jpg',
+        imageCreditName: a.imageCreditName ?? null,
+        imageCreditUrl: a.imageCreditUrl ?? null,
         glossary: Array.isArray(a.glossary) ? a.glossary : [],
       }));
 

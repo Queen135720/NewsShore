@@ -247,7 +247,12 @@ async function searchUnsplash(query, usedKeys) {
     .filter((r) => !r.premium)
     .filter((r) => r.width >= 1600 && r.height >= 900)
     .filter((r) => !usedKeys.has(imageKey(r.urls.raw)))
-    .map((r) => ({ url: `${r.urls.raw}&w=1600&q=80&fm=jpg`, key: imageKey(r.urls.raw) }));
+    .map((r) => ({
+      url: `${r.urls.raw}&w=1600&q=80&fm=jpg`,
+      key: imageKey(r.urls.raw),
+      creditName: r.user?.name ?? 'Unsplash photographer',
+      creditUrl: r.user?.links?.html ?? 'https://unsplash.com',
+    }));
 }
 
 async function fetchImage(rewritten, category, usedKeys) {
@@ -264,21 +269,19 @@ async function fetchImage(rewritten, category, usedKeys) {
     if (candidates.length > 0) {
       const pick = candidates[Math.floor(Math.random() * Math.min(12, candidates.length))];
       usedKeys.add(pick.key);
-      return pick.url;
+      return { url: pick.url, creditName: pick.creditName, creditUrl: pick.creditUrl };
     }
   }
   return null;
 }
 
-// ---- 5. SAVE TO SUPABASE ----
 async function saveArticle(item, rewritten, usedKeys) {
-  // Guard: skip empty/broken rewrites
   if (!rewritten?.headline?.trim() || !rewritten?.body?.trim() || !rewritten?.summary?.trim()) {
     console.log('Skipping empty article:', item.title ?? item.link);
     return false;
-  } // ★ THIS closing brace was missing in your version — the script could not run
+  }
 
-  const imageUrl = await fetchImage(rewritten, item.category, usedKeys);
+  const image = await fetchImage(rewritten, item.category, usedKeys);
 
   const { error } = await supabase.from('articles').insert({
     title: rewritten.headline,
@@ -291,7 +294,9 @@ async function saveArticle(item, rewritten, usedKeys) {
     reliability: rewritten.reliability,
     glossary: rewritten.glossary,
     published: true,
-    image_url: imageUrl,
+    image_url: image?.url ?? null,
+    image_credit_name: image?.creditName ?? null,
+    image_credit_url: image?.creditUrl ?? null,
   });
   if (error) {
     console.error(`Failed to save article: ${error.message}`);

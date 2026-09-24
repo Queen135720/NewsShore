@@ -1,7 +1,7 @@
 'use client';
 
-import React, { Suspense, useEffect, useRef, useState, useCallback, useMemo } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import anime from 'animejs';
 import {
   newsArticles,
@@ -10,6 +10,7 @@ import {
 import {
   type AIModel,
   type ArenaModel,
+  type ArenaAgentModel,
   formatPrice,
   formatContext,
   formatCI,
@@ -36,6 +37,7 @@ import {
  Loader2,
   Users,
   BarChart3,
+  Bot,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -214,7 +216,7 @@ function AboutScreen({ open, onClose }: { open: boolean; onClose: () => void }) 
 }
 
 /* ─────────────── Article Detail Fullscreen ─────────────── */
-function ArticleDetail({ article, open, onClose, onArticleChange, allArticles }: { article: NewsArticle | null; open: boolean; onClose: () => void; onArticleChange: (a: NewsArticle) => void; allArticles: NewsArticle[] }) {
+function ArticleDetail({ article, open, onClose, onArticleChange }: { article: NewsArticle | null; open: boolean; onClose: () => void; onArticleChange: (a: NewsArticle) => void }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
@@ -488,7 +490,7 @@ function Header({ onCategoryClick, onAboutOpen, onArticleSelect, searchableArtic
 
   useEffect(() => { const onScroll = () => setScrolled(window.scrollY > 40); window.addEventListener('scroll', onScroll); return () => window.removeEventListener('scroll', onScroll); }, []);
   useEffect(() => { if (headerRef.current) anime({ targets: headerRef.current, translateY: [-80, 0], opacity: [0, 1], duration: 800, easing: 'easeOutExpo' }); }, []);
-    const handleNavClick = (link: string) => { setMobileOpen(false); if (link === 'About') { window.location.href = '/about'; } else { onCategoryClick(link); document.getElementById('latest-stories')?.scrollIntoView({ behavior: 'smooth' }); } };
+  const handleNavClick = (link: string) => { setMobileOpen(false); if (link === 'About') { onAboutOpen(); } else { onCategoryClick(link); document.getElementById('latest-stories')?.scrollIntoView({ behavior: 'smooth' }); } };
   const openSearch = useCallback(() => { setSearchActive(true); requestAnimationFrame(() => searchInputRef.current?.focus()); }, []);
   const closeSearch = useCallback(() => { setSearchActive(false); setSearchQuery(''); }, []);
   useEffect(() => { if (!searchActive) return; const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') closeSearch(); }; window.addEventListener('keydown', handleKey); return () => window.removeEventListener('keydown', handleKey); }, [searchActive, closeSearch]);
@@ -552,20 +554,24 @@ function HeroTopNews({ heroArticle, onArticleClick }: { heroArticle: NewsArticle
 }
 
 /* ─────────────── Sidebar: Top 5 Models + Subscribe ─────────────── */
-function SidebarLeaderboard({ onSeeMore, models, loading, arenaModels, arenaLoading, activeTab, onTabChange }: {
+function SidebarLeaderboard({ onSeeMore, models, loading, arenaModels, arenaLoading, agentModels, agentLoading, activeTab, onTabChange }: {
   onSeeMore: () => void;
   models: AIModel[];
   loading?: boolean;
   arenaModels: ArenaModel[];
   arenaLoading?: boolean;
-  activeTab: 'benchmark' | 'arena';
-  onTabChange: (tab: 'benchmark' | 'arena') => void;
+  agentModels: ArenaAgentModel[];
+  agentLoading?: boolean;
+  activeTab: 'benchmark' | 'arena' | 'agent';
+  onTabChange: (tab: 'benchmark' | 'arena' | 'agent') => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const maxScore = models[0]?.score ?? 1;
   const top5 = models.slice(0, 5);
   const arenaTop5 = arenaModels.slice(0, 5);
   const maxArena = arenaTop5[0]?.arena_score ?? 1;
+  const agentTop5 = agentModels.slice(0, 5);
+  const maxNet = agentTop5[0]?.net_improvement ?? 15;
 
   useEffect(() => {
     if (!ref.current) return;
@@ -573,8 +579,10 @@ function SidebarLeaderboard({ onSeeMore, models, loading, arenaModels, arenaLoad
       anime({ targets: ref.current.querySelectorAll('.lb-anim'), translateX: [20, 0], opacity: [0, 1], duration: 500, delay: anime.stagger(60, { start: 200 }), easing: 'easeOutCubic' });
     } else if (activeTab === 'arena' && !arenaLoading) {
       anime({ targets: ref.current.querySelectorAll('.lb-anim'), translateX: [20, 0], opacity: [0, 1], duration: 500, delay: anime.stagger(60, { start: 200 }), easing: 'easeOutCubic' });
+    } else if (activeTab === 'agent' && !agentLoading) {
+      anime({ targets: ref.current.querySelectorAll('.lb-anim'), translateX: [20, 0], opacity: [0, 1], duration: 500, delay: anime.stagger(60, { start: 200 }), easing: 'easeOutCubic' });
     }
-  }, [activeTab, loading, arenaLoading]);
+  }, [activeTab, loading, arenaLoading, agentLoading]);
 
   return (
     <aside ref={ref} className="lg:col-span-1 flex flex-col gap-4">
@@ -584,21 +592,26 @@ function SidebarLeaderboard({ onSeeMore, models, loading, arenaModels, arenaLoad
           <h3 className="font-[family-name:var(--font-lora)] text-sm sm:text-base font-bold text-gray-900">Top 5 AI Models</h3>
         </div>
 
-        {/* ── Tab Switcher ── */}
+        {/* ── Tab Switcher (3 tabs) ── */}
         <div className="flex gap-1 mb-1 p-0.5 bg-gray-100 rounded-lg">
-          <button onClick={() => onTabChange('benchmark')} className={`flex-1 flex items-center justify-center gap-1 px-2 py-1.5 rounded-md text-[10px] sm:text-xs font-[family-name:var(--font-dm-sans)] font-semibold transition-all ${activeTab === 'benchmark' ? 'bg-white text-[#0f1b3d] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`} style={{ touchAction: 'manipulation' }}>
-            <BarChart3 className="w-3 h-3" /> Benchmarks
+          <button onClick={() => onTabChange('benchmark')} className={`flex-1 flex items-center justify-center gap-1 px-1 py-1.5 rounded-md text-[9px] sm:text-[10px] font-[family-name:var(--font-dm-sans)] font-semibold transition-all ${activeTab === 'benchmark' ? 'bg-white text-[#0f1b3d] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`} style={{ touchAction: 'manipulation' }}>
+            <BarChart3 className="w-3 h-3" /> Bench
           </button>
-          <button onClick={() => onTabChange('arena')} className={`flex-1 flex items-center justify-center gap-1 px-2 py-1.5 rounded-md text-[10px] sm:text-xs font-[family-name:var(--font-dm-sans)] font-semibold transition-all ${activeTab === 'arena' ? 'bg-white text-[#0f1b3d] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`} style={{ touchAction: 'manipulation' }}>
-            <Users className="w-3 h-3" /> Human Votes
+          <button onClick={() => onTabChange('arena')} className={`flex-1 flex items-center justify-center gap-1 px-1 py-1.5 rounded-md text-[9px] sm:text-[10px] font-[family-name:var(--font-dm-sans)] font-semibold transition-all ${activeTab === 'arena' ? 'bg-white text-[#0f1b3d] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`} style={{ touchAction: 'manipulation' }}>
+            <Users className="w-3 h-3" /> Chat
+          </button>
+          <button onClick={() => onTabChange('agent')} className={`flex-1 flex items-center justify-center gap-1 px-1 py-1.5 rounded-md text-[9px] sm:text-[10px] font-[family-name:var(--font-dm-sans)] font-semibold transition-all ${activeTab === 'agent' ? 'bg-white text-[#0f1b3d] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`} style={{ touchAction: 'manipulation' }}>
+            <Bot className="w-3 h-3" /> Agent
           </button>
         </div>
 
         {/* ── Methodology Label ── */}
         {activeTab === 'benchmark' ? (
           <p className="text-[9px] sm:text-[10px] text-gray-400 font-[family-name:var(--font-dm-sans)] mb-3 leading-tight">Ranked by benchmark performance <a href="https://llm-stats.com/methodology/llm-stats-score" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-red-600 underline decoration-dotted underline-offset-2">(LLM Stats Score)</a> — standardized tests for coding, math & reasoning</p>
-        ) : (
+        ) : activeTab === 'arena' ? (
           <p className="text-[9px] sm:text-[10px] text-gray-400 font-[family-name:var(--font-dm-sans)] mb-3 leading-tight">Ranked by human preference <a href="https://arena.ai/leaderboard/text" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-red-600 underline decoration-dotted underline-offset-2">(Arena Score)</a> — blind head-to-head votes from real users</p>
+        ) : (
+          <p className="text-[9px] sm:text-[10px] text-gray-400 font-[family-name:var(--font-dm-sans)] mb-3 leading-tight">Ranked by agent capability <a href="https://arena.ai/leaderboard/agent" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-red-600 underline decoration-dotted underline-offset-2">(Net Improvement)</a> — tool use, planning & multi-step reasoning</p>
         )}
 
         {/* ── Benchmark Tab ── */}
@@ -634,7 +647,7 @@ function SidebarLeaderboard({ onSeeMore, models, loading, arenaModels, arenaLoad
           )
         )}
 
-        {/* ── Arena (Human Votes) Tab ── */}
+        {/* ── Arena (Chat Votes) Tab ── */}
         {activeTab === 'arena' && (
           arenaLoading ? (
             <div className="space-y-2.5">
@@ -668,9 +681,43 @@ function SidebarLeaderboard({ onSeeMore, models, loading, arenaModels, arenaLoad
           )
         )}
 
-        <a href="/leaderboard" className="w-full mt-3 flex items-center justify-center gap-1.5 text-xs sm:text-sm font-[family-name:var(--font-dm-sans)] font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg py-2 transition-colors">
+        {/* ── Agent Tab ── */}
+        {activeTab === 'agent' && (
+          agentLoading ? (
+            <div className="space-y-2.5">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="p-2.5 rounded-lg"><div className="flex items-center gap-2.5"><div className="w-6 h-6 rounded-full bg-gray-200 animate-pulse" /><div className="flex-1 min-w-0 space-y-2"><div className="h-3.5 bg-gray-200 rounded animate-pulse w-3/4" /><div className="h-2.5 bg-gray-100 rounded-full overflow-hidden"><div className="h-full bg-gray-200 rounded animate-pulse" style={{ width: `${100 - i * 15}%` }} /></div></div></div></div>
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-2.5">
+              {agentTop5.map((model) => (
+                <a key={model.rank} href={model.url} target="_blank" rel="noopener noreferrer" className="lb-anim w-full text-left p-2.5 rounded-lg hover:bg-gray-50 transition-colors group block" style={{ touchAction: 'manipulation' }}>
+                  <div className="flex items-center gap-2.5">
+                    <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0 ${model.rank === 1 ? 'bg-violet-400' : model.rank === 2 ? 'bg-gray-400' : model.rank === 3 ? 'bg-violet-600' : 'bg-gray-200 text-gray-500'}`}>{model.rank}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-1">
+                        <p className="font-[family-name:var(--font-lora)] text-xs sm:text-sm font-bold text-gray-900 truncate group-hover:text-red-600 transition-colors inline-flex items-center gap-1">{model.name}<ExternalLink className="w-3 h-3 text-gray-300 group-hover:text-red-400 shrink-0" /></p>
+                        <span className="text-[10px] text-gray-400 font-[family-name:var(--font-dm-sans)] tabular-nums">{model.net_improvement}%</span>
+                      </div>
+                      <div className="flex items-center justify-between mt-1">
+                        <span className="text-[10px] text-gray-500 font-[family-name:var(--font-dm-sans)]">{model.organization}</span>
+                        <span className="text-[9px] text-gray-400 font-[family-name:var(--font-dm-sans)]">±{model.net_improvement_ci}% &middot; {model.sessions.toLocaleString()} sessions</span>
+                      </div>
+                      <div className="mt-1.5 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="h-full rounded-full bg-violet-600" style={{ width: `${(model.net_improvement / maxNet) * 100}%`, opacity: 0.75 }} />
+                      </div>
+                    </div>
+                  </div>
+                </a>
+              ))}
+            </div>
+          )
+        )}
+
+        <button onClick={onSeeMore} className="w-full mt-3 flex items-center justify-center gap-1.5 text-xs sm:text-sm font-[family-name:var(--font-dm-sans)] font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg py-2 transition-colors" style={{ touchAction: 'manipulation' }}>
           See Full Leaderboard <ChevronRight className="w-4 h-4" />
-        </a>
+        </button>
       </div>
     </aside>
   );
@@ -782,7 +829,7 @@ function Footer({ onCategoryClick, onAboutOpen }: { onCategoryClick: (cat: strin
             </div>
           </div>
           <div><h4 className="font-[family-name:var(--font-lora)] font-bold text-white mb-3 sm:mb-4 text-sm sm:text-base">Sections</h4><ul className="space-y-2 sm:space-y-2.5">{['AI News', 'Tech Giants', 'Startups & Funding', 'Research', 'Global & China'].map((item) => (<li key={item}><button onClick={() => onCategoryClick(item)} className="text-xs sm:text-sm text-gray-400 hover:text-white transition-colors" style={{ touchAction: 'manipulation' }}>{item}</button></li>))}</ul></div>
-          <div><h4 className="font-[family-name:var(--font-lora)] font-bold text-white mb-3 sm:mb-4 text-sm sm:text-base">Company</h4><ul className="space-y-2 sm:space-y-2.5">{['About Us', 'Careers', 'Contact', 'Advertise', 'Press Kit'].map((item) => (<li key={item}><button onClick={() => { if (item === 'About Us') { window.location.href = '/about'; } else { toast.info(`${item} page coming soon!`); } }} className="text-xs sm:text-sm text-gray-400 hover:text-white transition-colors" style={{ touchAction: 'manipulation' }}>{item}</button></li>))}</ul></div>
+          <div><h4 className="font-[family-name:var(--font-lora)] font-bold text-white mb-3 sm:mb-4 text-sm sm:text-base">Company</h4><ul className="space-y-2 sm:space-y-2.5">{['About Us', 'Careers', 'Contact', 'Advertise', 'Press Kit'].map((item) => (<li key={item}><button onClick={() => { if (item === 'About Us') onAboutOpen(); else toast.info(`${item} page coming soon!`); }} className="text-xs sm:text-sm text-gray-400 hover:text-white transition-colors" style={{ touchAction: 'manipulation' }}>{item}</button></li>))}</ul></div>
           <div><h4 className="font-[family-name:var(--font-lora)] font-bold text-white mb-3 sm:mb-4 text-sm sm:text-base">Legal</h4><ul className="space-y-2 sm:space-y-2.5">{['Privacy Policy', 'Terms of Service', 'Cookie Policy', 'Accessibility'].map((item) => (<li key={item}><button onClick={() => toast.info(`${item} page coming soon!`)} className="text-xs sm:text-sm text-gray-400 hover:text-white transition-colors" style={{ touchAction: 'manipulation' }}>{item}</button></li>))}</ul></div>
         </div>
         <Separator className="bg-white/10 my-6 sm:my-8" />
@@ -815,7 +862,8 @@ function Footer({ onCategoryClick, onAboutOpen }: { onCategoryClick: (cat: strin
 }
 
 /* ─────────────── Main Page ─────────────── */
-function Home() {
+export default function Home() {
+  const router = useRouter();
   const [activeCategory, setActiveCategory] = useState('Latest');
   const [showTop, setShowTop] = useState(false);
   const [selectedArticle, setSelectedArticle] = useState<NewsArticle | null>(null);
@@ -824,19 +872,10 @@ function Home() {
   const [leaderboardLoading, setLeaderboardLoading] = useState(true);
   const [arenaModels, setArenaModels] = useState<ArenaModel[]>([]);
   const [arenaLoading, setArenaLoading] = useState(true);
-  const [lbTab, setLbTab] = useState<'benchmark' | 'arena'>('benchmark');
+  const [agentModels, setAgentModels] = useState<ArenaAgentModel[]>([]);
+  const [agentLoading, setAgentLoading] = useState(true);
+  const [lbTab, setLbTab] = useState<'benchmark' | 'arena' | 'agent'>('benchmark');
   const [liveArticles, setLiveArticles] = useState<NewsArticle[]>([]);
-  const router = useRouter();
-  const sp = useSearchParams();
-
-  // Sync category from URL (middleware rewrites /tech-news → /?cat=Tech News)
-  useEffect(() => {
-    const cat = sp.get('cat');
-    if (cat && NAV_CATEGORIES.includes(cat)) {
-      setActiveCategory(cat);
-      setTimeout(() => document.getElementById('latest-stories')?.scrollIntoView({ behavior: 'smooth' }), 50);
-    }
-  }, [sp]);
 
   // Fetch pipeline articles from Supabase
   useEffect(() => {
@@ -858,14 +897,10 @@ function Home() {
   const handleScroll = useCallback(() => setShowTop(window.scrollY > 600), []);
   useEffect(() => { window.addEventListener('scroll', handleScroll); return () => window.removeEventListener('scroll', handleScroll); }, [handleScroll]);
 
-  const openArticle = useCallback((article: NewsArticle) => { router.push(`/article/${article.id}`); }, [router]);
+  const openArticle = useCallback((article: NewsArticle) => { router.push('/article/' + article.id); }, [router]);
   const closeArticle = useCallback(() => { setArticleOpen(false); setTimeout(() => setSelectedArticle(null), 300); }, []);
   const handleArticleChange = useCallback((article: NewsArticle) => { setSelectedArticle(article); }, []);
-  const handleCategoryClick = useCallback((cat: string) => {
-    setActiveCategory(cat);
-    router.push(cat === 'Latest' ? '/' : `/${CATEGORY_SLUG[cat] || cat.toLowerCase().replace(/\s+/g, '-')}`);
-    document.getElementById('latest-stories')?.scrollIntoView({ behavior: 'smooth' });
-  }, [router]);;
+  const handleCategoryClick = useCallback((cat: string) => { setActiveCategory(cat); const slug = CATEGORY_SLUG[cat]; if (slug) { router.push('/' + slug); } else { document.getElementById('latest-stories')?.scrollIntoView({ behavior: 'smooth' }); } }, [router]);
 
   useEffect(() => {
     let cancelled = false;
@@ -887,20 +922,30 @@ function Home() {
     return () => { cancelled = true; };
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/arena-agent-leaderboard?limit=100')
+      .then(res => res.json())
+      .then(data => { if (!cancelled && data?.success) setAgentModels(data.models ?? []); })
+      .catch(() => { if (!cancelled) setAgentModels([]); })
+      .finally(() => { if (!cancelled) setAgentLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
+
   const filtered = activeCategory === 'Latest'
     ? allArticles.slice(3)
     : allArticles.filter((a) => a.category === activeCategory);
 
   return (
     <div className="min-h-screen flex flex-col font-[family-name:var(--font-dm-sans)]">
-      <Header onCategoryClick={handleCategoryClick} onAboutOpen={() => {}} onArticleSelect={openArticle} searchableArticles={allArticles} />
+      <Header onCategoryClick={handleCategoryClick} onAboutOpen={() => router.push('/about')} onArticleSelect={openArticle} searchableArticles={allArticles} />
       <BreakingTicker articles={allArticles.length >= 3 ? allArticles.slice(0, 3) : FALLBACK_BREAKING} />
       <main className="flex-1">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
             <HeroTopNews heroArticle={allArticles[0] || FALLBACK_HERO} onArticleClick={openArticle} />
             <div className="lg:col-span-1 flex flex-col gap-4">
-              <SidebarLeaderboard onSeeMore={() => {}} models={leaderboardModels} loading={leaderboardLoading} arenaModels={arenaModels} arenaLoading={arenaLoading} activeTab={lbTab} onTabChange={setLbTab} />
+              <SidebarLeaderboard onSeeMore={() => router.push('/leaderboard')} models={leaderboardModels} loading={leaderboardLoading} arenaModels={arenaModels} arenaLoading={arenaLoading} agentModels={agentModels} agentLoading={agentLoading} activeTab={lbTab} onTabChange={setLbTab} />
               <SubscribeSection />
             </div>
           </div>
@@ -917,17 +962,9 @@ function Home() {
           </div>
         </div>
       </main>
-      <Footer onCategoryClick={handleCategoryClick} onAboutOpen={() => {}} />
+      <Footer onCategoryClick={handleCategoryClick} onAboutOpen={() => router.push('/about')} />
       <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className={`fixed bottom-4 right-4 sm:bottom-6 sm:right-6 w-10 h-10 sm:w-12 sm:h-12 bg-[#0f1b3d] text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-300 z-40 hover:bg-red-600 ${showTop ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`} aria-label="Back to top" style={{ touchAction: 'manipulation' }}><ArrowUp className="w-4 h-4 sm:w-5 sm:h-5" /></button>
-      <ArticleDetail article={selectedArticle} open={articleOpen} onClose={closeArticle} onArticleChange={handleArticleChange} allArticles={allArticles} />
+      <ArticleDetail article={selectedArticle} open={articleOpen} onClose={closeArticle} onArticleChange={handleArticleChange} />
     </div>
-    );
-  }
-
-export default function Page() {
-  return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin w-8 h-8 border-4 border-gray-200 border-t-red-600 rounded-full" /></div>}>
-      <Home />
-    </Suspense>
   );
 }

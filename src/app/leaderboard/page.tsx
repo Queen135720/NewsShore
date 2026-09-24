@@ -6,7 +6,7 @@ import {
   Search, ArrowLeft, Trophy, BarChart3, Users, Bot, ExternalLink, Loader2,
 } from 'lucide-react';
 import {
-  type AIModel, type ArenaModel, type ArenaAgentModel, formatContext, formatCI,
+  type AIModel, type ArenaModel, type ArenaAgentModel, formatContext, formatCI, formatArenaModelName,
 } from '@/lib/model-data';
 import { Button } from '@/components/ui/button';
 
@@ -138,12 +138,12 @@ export default function LeaderboardPage() {
                 onClick={() => setActiveTab('benchmark')}
                 className={`flex items-center gap-1 px-3 py-1.5 rounded-md text-xs sm:text-sm font-semibold transition-all ${activeTab === 'benchmark' ? 'bg-white text-[#0f1b3d] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                 style={{ touchAction: 'manipulation' }}
-              ><BarChart3 className="w-3.5 h-3.5" /> Benchmarks</button>
+              ><BarChart3 className="w-3.5 h-3.5" /> Power Rank</button>
               <button
                 onClick={() => setActiveTab('arena')}
                 className={`flex items-center gap-1 px-3 py-1.5 rounded-md text-xs sm:text-sm font-semibold transition-all ${activeTab === 'arena' ? 'bg-white text-[#0f1b3d] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                 style={{ touchAction: 'manipulation' }}
-              ><Users className="w-3.5 h-3.5" /> Chat Votes</button>
+              ><Users className="w-3.5 h-3.5" /> Human Votes</button>
               <button
                 onClick={() => setActiveTab('agent')}
                 className={`flex items-center gap-1 px-3 py-1.5 rounded-md text-xs sm:text-sm font-semibold transition-all ${activeTab === 'agent' ? 'bg-white text-[#0f1b3d] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
@@ -255,7 +255,7 @@ export default function LeaderboardPage() {
                         )}
                       </div>
                       <div className="col-span-7 sm:col-span-3 min-w-0">
-                        <p className="font-[family-name:var(--font-lora)] text-sm sm:text-base font-bold text-gray-900 truncate">{model.name.replace(/-text$|-high$|-max$/g, m => m === '-text' ? '' : ` (${m.slice(1)})`)}</p>
+                        <p className="font-[family-name:var(--font-lora)] text-sm sm:text-base font-bold text-gray-900 truncate">{formatArenaModelName(model.name)}</p>
                         <p className="text-[10px] sm:text-xs text-gray-500 sm:hidden">{model.organization} &middot; {model.arena_score} {formatCI(model.ci_lower, model.ci_upper)}</p>
                       </div>
                       <div className="hidden sm:block sm:col-span-2">
@@ -310,7 +310,7 @@ export default function LeaderboardPage() {
                           )}
                         </div>
                         <div className="col-span-7 sm:col-span-3 min-w-0">
-                          <p className="font-[family-name:var(--font-lora)] text-sm sm:text-base font-bold text-gray-900 truncate">{model.name}</p>
+                          <p className="font-[family-name:var(--font-lora)] text-sm sm:text-base font-bold text-gray-900 truncate">{formatArenaModelName(model.name)}</p>
                           <p className="text-[10px] sm:text-xs text-gray-500 sm:hidden">{model.organization} &middot; {model.net_improvement}% &middot; {model.sessions.toLocaleString()} sessions</p>
                         </div>
                         <div className="hidden sm:block sm:col-span-2">
@@ -343,10 +343,10 @@ export default function LeaderboardPage() {
           {/* Footnote */}
           <p className="text-[10px] sm:text-xs text-gray-400 mt-2 ml-1">
             {activeTab === 'benchmark'
-              ? <>Ranked by <strong>LLM Stats Score</strong> — a composite metric from public benchmarks and live API metrics. A model can rank differently on human-preference leaderboards — see the Chat Votes or Agent tabs.</>
+              ? <>Ranked by <strong>LLM Stats Score</strong> — a composite metric from public benchmarks and live API metrics. A model can rank differently on human-preference leaderboards — see the Human Votes or Agent tabs.</>
               : activeTab === 'arena'
                 ? <>Ranked by <strong>Arena Score</strong> — Bradley-Terry ratings from blind human preference votes in chat. Rankings may differ from benchmark or agent leaderboards — see the other tabs.</>
-                : <>Ranked by <strong>Net Improvement %</strong> — the % of agentic tasks where the model improved over a baseline. Lower Tool Hallucination is better. See the Chat Votes tab for conversational preference.</>}
+                : <>Ranked by <strong>Net Improvement %</strong> — the % of agentic tasks where the model improved over a baseline. Lower Tool Hallucination is better. See the Human Votes tab for conversational preference.</>}
           </p>
         </div>
       </main>

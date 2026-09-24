@@ -1,7 +1,10 @@
-// backfill-images.js — run ONCE. Re-images every watermarked, missing, or duplicated image.
+// backfill-images.js
+// Run:  node backfill-images.js 5     ← fix just 5 articles (for the Unsplash screenshot)
+// Run:  node backfill-images.js       ← fix ALL articles (run this after Production approval)
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+const LIMIT = process.argv[2] ? parseInt(process.argv[2], 10) : Infinity;
 
 const BANNED = /(alamy|shutterstock|gettyimages|istockphoto|dreamstime|123rf|depositphotos)/i;
 
@@ -31,14 +34,26 @@ function titleToQuery(title) {
 async function searchUnsplash(query, usedKeys) {
   const url = 'https://api.unsplash.com/search/photos?query=' + encodeURIComponent(query) +
     '&per_page=30&orientation=landscape&content_filter=high';
-  const res = await fetch(url, { headers: { Authorization: `Client-ID ${process.env.UNSPLASH_ACCESS_KEY}` } });
+  let res = await fetch(url, { headers: { Authorization: `Client-ID ${process.env.UNSPLASH_ACCESS_KEY}` } });
+
+  // Demo tier auto-pause: when the 50/hour cap is hit, wait it out and continue
+  if (res.status === 403 || res.status === 429) {
+    console.log('  Unsplash hourly limit hit — pausing 61 min (continues automatically)...');
+    await new Promise((r) => setTimeout(r, 61 * 60 * 1000));
+    res = await fetch(url, { headers: { Authorization: `Client-ID ${process.env.UNSPLASH_ACCESS_KEY}` } });
+  }
   if (!res.ok) { console.log(`  search failed (${res.status}) for "${query}"`); return []; }
   const { results = [] } = await res.json();
   return results
     .filter((r) => !r.premium)
     .filter((r) => r.width >= 1600 && r.height >= 900)
     .filter((r) => !usedKeys.has(imageKey(r.urls.raw)))
-    .map((r) => ({ url: `${r.urls.raw}&w=1600&q=80&fm=jpg`, key: imageKey(r.urls.raw) }));
+    .map((r) => ({
+      url: `${r.urls.raw}&w=1600&q=80&fm=jpg`,
+      key: imageKey(r.urls.raw),
+      creditName: r.user?.name ?? 'Unsplash photographer',
+      creditUrl: r.user?.links?.html ?? 'https://unsplash.com',
+    }));
 }
 
 async function fetchImageFor(title, category, usedKeys) {
@@ -48,7 +63,7 @@ async function fetchImageFor(title, category, usedKeys) {
     if (candidates.length) {
       const pick = candidates[Math.floor(Math.random() * Math.min(12, candidates.length))];
       usedKeys.add(pick.key);
-      return pick.url;
+      return pick;
     }
   }
   return null;
@@ -58,7 +73,7 @@ async function run() {
   const { data: rows } = await supabase
     .from('articles')
     .select('id, title, category, image_url, created_at')
-    .order('created_at', { ascending: false }); // newest first — newest keeps its image
+    .order('created_at', { ascending: false });
 
   const usedKeys = new Set();
   const toFix = [];
@@ -68,20 +83,26 @@ async function run() {
     if (!url || BANNED.test(url) || (key && usedKeys.has(key))) toFix.push(a);
     else usedKeys.add(key);
   }
-  console.log(`Total: ${rows?.length ?? 0} — re-imaging ${toFix.length} articles`);
+  console.log(`Total: ${rows?.length ?? 0} — need re-imaging: ${toFix.length}${LIMIT !== Infinity ? ` (stopping at ${LIMIT})` : ''}`);
 
   let done = 0;
   for (const a of toFix) {
-    const url = await fetchImageFor(a.title, a.category, usedKeys);
-    if (url) {
-      await supabase.from('articles').update({ image_url: url }).eq('id', a.id);
-      usedKeys.add(imageKey(url));
+    if (done >= LIMIT) break;
+    const image = await fetchImageFor(a.title, a.category, usedKeys);
+    if (image) {
+      await supabase.from('articles').update({
+        image_url: image.url,
+        image_credit_name: image.creditName,
+        image_credit_url: image.creditUrl,
+      }).eq('id', a.id);
+      console.log(`✓ https://newsshore.com/article/${a.id} — ${a.title.slice(0, 70)}`);
+    } else {
+      console.log(`✗ kept old image — ${a.title.slice(0, 70)}`);
     }
     done++;
-    if (done % 25 === 0) console.log(`${done}/${toFix.length}...`);
     await new Promise((r) => setTimeout(r, 500));
   }
-  console.log('Backfill complete. Refresh the site — no redeploy needed (force-dynamic).');
+  console.log(`Done. ${done} processed. Open any ✓ link above to see the credit line.`);
 }
 
 run();

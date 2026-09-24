@@ -14,6 +14,7 @@ import {
   formatPrice,
   formatContext,
   formatCI,
+  formatArenaModelName,
 } from '@/lib/model-data';
 import {
   Search,
@@ -376,7 +377,7 @@ function FullLeaderboard({ open, onClose, models, arenaModels, activeTab, onTabC
           {/* Tab Switcher + Methodology */}
           <div className="flex items-center gap-3 mb-1 ml-7 sm:ml-8 flex-wrap">
             <div className="flex gap-1 p-0.5 bg-gray-100 rounded-lg">
-              <button onClick={() => onTabChange('benchmark')} className={`flex items-center gap-1 px-3 py-1.5 rounded-md text-xs sm:text-sm font-[family-name:var(--font-dm-sans)] font-semibold transition-all ${activeTab === 'benchmark' ? 'bg-white text-[#0f1b3d] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`} style={{ touchAction: 'manipulation' }}><BarChart3 className="w-3.5 h-3.5" /> Benchmarks</button>
+              <button onClick={() => onTabChange('benchmark')} className={`flex items-center gap-1 px-3 py-1.5 rounded-md text-xs sm:text-sm font-[family-name:var(--font-dm-sans)] font-semibold transition-all ${activeTab === 'benchmark' ? 'bg-white text-[#0f1b3d] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`} style={{ touchAction: 'manipulation' }}><BarChart3 className="w-3.5 h-3.5" /> Power Rank</button>
               <button onClick={() => onTabChange('arena')} className={`flex items-center gap-1 px-3 py-1.5 rounded-md text-xs sm:text-sm font-[family-name:var(--font-dm-sans)] font-semibold transition-all ${activeTab === 'arena' ? 'bg-white text-[#0f1b3d] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`} style={{ touchAction: 'manipulation' }}><Users className="w-3.5 h-3.5" /> Human Votes</button>
             </div>
           </div>
@@ -426,7 +427,7 @@ function FullLeaderboard({ open, onClose, models, arenaModels, activeTab, onTabC
                 <a key={model.rank} href={model.url} target="_blank" rel="noopener noreferrer" className={`w-full grid grid-cols-12 gap-2 px-4 sm:px-5 py-3 sm:py-3.5 items-center hover:bg-gray-50/80 transition-colors text-left ${model.rank <= 3 ? 'bg-emerald-50/30' : ''}`} style={{ touchAction: 'manipulation' }}>
                   <div className="col-span-1 flex items-center">{model.rank <= 3 ? (<span className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold text-white shadow-sm ${model.rank === 1 ? 'bg-emerald-400' : model.rank === 2 ? 'bg-gray-400' : 'bg-emerald-600'}`}>{model.rank}</span>) : (<span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center text-[10px] sm:text-xs font-bold">{model.rank}</span>)}</div>
                   <div className="col-span-7 sm:col-span-3 min-w-0">
-                    <p className="font-[family-name:var(--font-lora)] text-sm sm:text-base font-bold text-gray-900 truncate">{model.name.replace(/-text$|-high$|-max$/g, m => m === '-text' ? '' : ` (${m.slice(1)})`)}</p>
+                    <p className="font-[family-name:var(--font-lora)] text-sm sm:text-base font-bold text-gray-900 truncate">{formatArenaModelName(model.name)}</p>
                     <p className="text-[10px] sm:text-xs text-gray-500 font-[family-name:var(--font-dm-sans)] sm:hidden">{model.organization} &middot; {model.arena_score} {formatCI(model.ci_lower, model.ci_upper)}</p>
                   </div>
                   <div className="hidden sm:block sm:col-span-2"><p className="text-xs sm:text-sm text-gray-600 font-[family-name:var(--font-dm-sans)] truncate">{model.organization}</p></div>
@@ -451,7 +452,7 @@ function FullLeaderboard({ open, onClose, models, arenaModels, activeTab, onTabC
           <p className="text-[10px] sm:text-xs text-gray-400 mt-2 ml-1 font-[family-name:var(--font-dm-sans)]">
             {activeTab === 'benchmark'
               ? <>Ranked by <strong>LLM Stats Score</strong> — a composite metric from public benchmarks and live API metrics. A model can rank differently on human-preference leaderboards — see the Human Votes tab.</>
-              : <>Ranked by <strong>Arena Score</strong> — Bradley-Terry ratings from blind human preference votes. Rankings may differ from benchmark leaderboards — see the Benchmarks tab.</>}
+              : <>Ranked by <strong>Arena Score</strong> — Bradley-Terry ratings from blind human preference votes. Rankings may differ from benchmark leaderboards — see the Power Rank tab.</>}
           </p>
         </div>
       </div>
@@ -595,10 +596,10 @@ function SidebarLeaderboard({ onSeeMore, models, loading, arenaModels, arenaLoad
         {/* ── Tab Switcher (3 tabs) ── */}
         <div className="flex gap-1 mb-1 p-0.5 bg-gray-100 rounded-lg">
           <button onClick={() => onTabChange('benchmark')} className={`flex-1 flex items-center justify-center gap-1 px-1 py-1.5 rounded-md text-[9px] sm:text-[10px] font-[family-name:var(--font-dm-sans)] font-semibold transition-all ${activeTab === 'benchmark' ? 'bg-white text-[#0f1b3d] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`} style={{ touchAction: 'manipulation' }}>
-            <BarChart3 className="w-3 h-3" /> Bench
+            <BarChart3 className="w-3 h-3" /> Power
           </button>
           <button onClick={() => onTabChange('arena')} className={`flex-1 flex items-center justify-center gap-1 px-1 py-1.5 rounded-md text-[9px] sm:text-[10px] font-[family-name:var(--font-dm-sans)] font-semibold transition-all ${activeTab === 'arena' ? 'bg-white text-[#0f1b3d] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`} style={{ touchAction: 'manipulation' }}>
-            <Users className="w-3 h-3" /> Chat
+            <Users className="w-3 h-3" /> Votes
           </button>
           <button onClick={() => onTabChange('agent')} className={`flex-1 flex items-center justify-center gap-1 px-1 py-1.5 rounded-md text-[9px] sm:text-[10px] font-[family-name:var(--font-dm-sans)] font-semibold transition-all ${activeTab === 'agent' ? 'bg-white text-[#0f1b3d] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`} style={{ touchAction: 'manipulation' }}>
             <Bot className="w-3 h-3" /> Agent
@@ -663,7 +664,7 @@ function SidebarLeaderboard({ onSeeMore, models, loading, arenaModels, arenaLoad
                     <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0 ${model.rank === 1 ? 'bg-emerald-400' : model.rank === 2 ? 'bg-gray-400' : model.rank === 3 ? 'bg-emerald-600' : 'bg-gray-200 text-gray-500'}`}>{model.rank}</span>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-1">
-                        <p className="font-[family-name:var(--font-lora)] text-xs sm:text-sm font-bold text-gray-900 truncate group-hover:text-red-600 transition-colors inline-flex items-center gap-1">{model.name.replace(/-text$|-high$|-max$/g, m => m === '-text' ? '' : ` (${m.slice(1)})`)}<ExternalLink className="w-3 h-3 text-gray-300 group-hover:text-red-400 shrink-0" /></p>
+                        <p className="font-[family-name:var(--font-lora)] text-xs sm:text-sm font-bold text-gray-900 truncate group-hover:text-red-600 transition-colors inline-flex items-center gap-1"{formatArenaModelName(model.name)}<ExternalLink className="w-3 h-3 text-gray-300 group-hover:text-red-400 shrink-0" /></p>
                         <span className="text-[10px] text-gray-400 font-[family-name:var(--font-dm-sans)] tabular-nums">{model.arena_score}</span>
                       </div>
                       <div className="flex items-center justify-between mt-1">
@@ -697,7 +698,7 @@ function SidebarLeaderboard({ onSeeMore, models, loading, arenaModels, arenaLoad
                     <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0 ${model.rank === 1 ? 'bg-violet-400' : model.rank === 2 ? 'bg-gray-400' : model.rank === 3 ? 'bg-violet-600' : 'bg-gray-200 text-gray-500'}`}>{model.rank}</span>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-1">
-                        <p className="font-[family-name:var(--font-lora)] text-xs sm:text-sm font-bold text-gray-900 truncate group-hover:text-red-600 transition-colors inline-flex items-center gap-1">{model.name}<ExternalLink className="w-3 h-3 text-gray-300 group-hover:text-red-400 shrink-0" /></p>
+                        <p className="font-[family-name:var(--font-lora)] text-xs sm:text-sm font-bold text-gray-900 truncate group-hover:text-red-600 transition-colors inline-flex items-center gap-1">{formatArenaModelName(model.name)}<ExternalLink className="w-3 h-3 text-gray-300 group-hover:text-red-400 shrink-0" /></p>
                         <span className="text-[10px] text-gray-400 font-[family-name:var(--font-dm-sans)] tabular-nums">{model.net_improvement}%</span>
                       </div>
                       <div className="flex items-center justify-between mt-1">

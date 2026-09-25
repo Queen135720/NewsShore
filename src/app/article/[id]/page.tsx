@@ -82,6 +82,10 @@ export default function ArticlePage() {
     </div>
   );
 
+  // ★ Read credit info (cast keeps this safe regardless of the NewsArticle type)
+  const creditName = (article as any).imageCreditName as string | null | undefined;
+  const creditUrl = (article as any).imageCreditUrl as string | null | undefined;
+
   return (
     <div className="min-h-screen flex flex-col font-[family-name:var(--font-dm-sans)] bg-white">
       {/* Sticky Header */}
@@ -120,6 +124,16 @@ export default function ArticlePage() {
 
         {/* Article Body */}
         <div className="max-w-4xl mx-auto px-5 sm:px-8 lg:px-10 py-6 sm:py-8">
+          {/* ★ Photo credit — required by Unsplash guidelines */}
+          {creditName && (
+            <p className="text-xs text-gray-400 font-[family-name:var(--font-dm-sans)] mb-4">
+              Photo by{' '}
+              <a href={creditUrl ?? 'https://unsplash.com'} target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-600">{creditName}</a>{' '}
+              on{' '}
+              <a href="https://unsplash.com" target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-600">Unsplash</a>
+            </p>
+          )}
+
           {/* Meta Bar */}
           <div className="flex flex-wrap items-center gap-3 sm:gap-4 pb-5 border-b border-gray-100">
             <div className="flex items-center gap-2 text-xs text-gray-400"><Clock className="w-3 h-3" />{formatDate(article.publishedAt)}</div>

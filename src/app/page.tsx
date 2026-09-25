@@ -664,7 +664,7 @@ function SidebarLeaderboard({ onSeeMore, models, loading, arenaModels, arenaLoad
                     <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0 ${model.rank === 1 ? 'bg-emerald-400' : model.rank === 2 ? 'bg-gray-400' : model.rank === 3 ? 'bg-emerald-600' : 'bg-gray-200 text-gray-500'}`}>{model.rank}</span>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-1">
-                        <p className="font-[family-name:var(--font-lora)] text-xs sm:text-sm font-bold text-gray-900 truncate group-hover:text-red-600 transition-colors inline-flex items-center gap-1"{formatArenaModelName(model.name)}<ExternalLink className="w-3 h-3 text-gray-300 group-hover:text-red-400 shrink-0" /></p>
+                        <p className="font-[family-name:var(--font-lora)] text-xs sm:text-sm font-bold text-gray-900 truncate group-hover:text-red-600 transition-colors inline-flex items-center gap-1"></p>{formatArenaModelName(model.name)}<ExternalLink className="w-3 h-3 text-gray-300 group-hover:text-red-400 shrink-0" /></p>
                         <span className="text-[10px] text-gray-400 font-[family-name:var(--font-dm-sans)] tabular-nums">{model.arena_score}</span>
                       </div>
                       <div className="flex items-center justify-between mt-1">

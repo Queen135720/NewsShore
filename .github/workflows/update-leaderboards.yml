@@ -2,11 +2,8 @@ name: Update Leaderboard Data
 
 on:
   schedule:
-    - cron: '0 */6 * * *'  # every 6 hours
-  workflow_dispatch:  # allow manual trigger
-
-permissions:
-  contents: write # Needed to push updated JSON files
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
 
 jobs:
   update:
@@ -15,17 +12,11 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
-
       - uses: oven-sh/setup-bun@v2
-
       - run: bun install
-
       - run: node scripts/update-leaderboards.js arena
-
       - run: node scripts/update-leaderboards.js agent
-
       - run: node scripts/update-leaderboards.js benchmarks
-
       - name: Commit & push if changed
         run: |
           git config user.name "github-actions[bot]"

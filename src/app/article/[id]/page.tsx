@@ -45,23 +45,13 @@ export default function ArticlePage() {
       setLoading(false);
       return;
     }
-    // Fetch from API (pipeline articles)
-    fetch('/api/articles')
+    // Fetch this single pipeline article (fast — one small request, not the whole list)
+    fetch(`/api/articles?id=${encodeURIComponent(articleId)}`)
       .then(r => r.json())
       .then(data => {
-        if (!data.success) return;
-        const found: NewsArticle | undefined = data.articles?.find((a: NewsArticle) => a.id === articleId);
-        if (found) {
-          setArticle(found);
-          const all = [...(data.articles || []), ...newsArticles];
-          const seen = new Set<string>();
-          const unique = all.filter(a => {
-            const k = a.title.toLowerCase();
-            if (seen.has(k) || a.id === articleId) return false;
-            seen.add(k);
-            return a.category === found.category;
-          });
-          setRelated(unique.slice(0, 4));
+        if (data.success && data.article) {
+          setArticle(data.article);
+          setRelated(data.related ?? []);
         }
       })
       .catch(() => {})
@@ -137,7 +127,7 @@ export default function ArticlePage() {
           {/* Meta Bar */}
           <div className="flex flex-wrap items-center gap-3 sm:gap-4 pb-5 border-b border-gray-100">
             <div className="flex items-center gap-2 text-xs text-gray-400"><Clock className="w-3 h-3" />{formatDate(article.publishedAt)}</div>
-            <Badge variant="outline" className="text-[10px] sm:text-xs border-gray-200 text-gray-500 gap-1"><Globe className="w-3 h-3" />{article.region}</Badge>
+            <Badge variant="outline" className="text-[10px] sm:text-xs border-gray-200 text-gray-500 gap-1"><Globe className="w-3 h-3" /> {article.region}</Badge>
             <span className="text-[10px] sm:text-xs text-gray-400">{getReadTime(article.body || article.summary)} min read</span>
           </div>
 

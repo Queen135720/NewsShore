@@ -1,0 +1,30 @@
+name: Backfill Article Images
+
+on:
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: 'How many articles to re-image (leave blank for ALL)'
+        required: false
+        default: ''
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install @supabase/supabase-js
+
+      - name: Run backfill
+        run: node backfill-images.js ${{ github.event.inputs.limit }}
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}

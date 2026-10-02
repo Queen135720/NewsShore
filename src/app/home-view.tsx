@@ -123,8 +123,8 @@ function ReliabilityBadge({ reliability }: { reliability: string }) {
   );
 }
 
-function ReadTimeBadge({ text, className = '' }: { text: string; className?: string }) {
-  const mins = getReadTime(text);
+function ReadTimeBadge({ text, minutes, className = '' }: { text?: string; minutes?: number; className?: string }) {
+  const mins = minutes ?? getReadTime(text ?? '');
   return (
     <span className={`flex items-center gap-1 text-gray-400 font-[family-name:var(--font-dm-sans)] ${className}`}>
       <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3" />

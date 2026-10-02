@@ -12,8 +12,6 @@ export default async function Page() {
     take: total,
   });
 
-  // Slim list: no full bodies (homepage never displays them) — keeps the page fast.
-  // readMinutes is computed here so cards can show read time without shipping bodies.
   const articles = rows
     .filter((a) => (a.title ?? '').trim().length > 0)
     .map((a) => ({

@@ -876,7 +876,8 @@ export function Home({ initialArticles }: { initialArticles: NewsArticle[] }) {
   const [agentModels, setAgentModels] = useState<ArenaAgentModel[]>([]);
   const [agentLoading, setAgentLoading] = useState(true);
   const [lbTab, setLbTab] = useState<'benchmark' | 'arena' | 'agent'>('benchmark');
-  const [liveArticles, setLiveArticles] = useState<NewsArticle[]>([]);
+  const [liveArticles, setLiveArticles] = useState<NewsArticle[]>(initialArticles);
+  const [visibleCount, setVisibleCount] = useState(60);
 
   // Fetch pipeline articles from Supabase
   useEffect(() => {

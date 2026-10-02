@@ -781,7 +781,7 @@ function SubscribeSection() {
 /* ─────────────── News Card ─────────────── */
 function NewsCard({ article, index, onClick }: { article: NewsArticle; index: number; onClick: (a: NewsArticle) => void }) {
   const cardRef = useRef<HTMLDivElement>(null);
-  useEffect(() => { if (!cardRef.current) return; anime({ targets: cardRef.current, translateY: [40, 0], opacity: [0, 1], duration: 700, delay: index * 80, easing: 'easeOutCubic' }); }, [index]);
+  useEffect(() => { if (!cardRef.current) return; anime({ targets: cardRef.current, translateY: [40, 0], opacity: [0, 1], duration: 700, delay: Math.min(index, 8) * 80, easing: 'easeOutCubic' }); }, [index]);
   return (
     <div ref={cardRef}><article className="group bg-white rounded-xl overflow-hidden border border-gray-100 hover:border-gray-200 hover:shadow-lg transition-all duration-300 cursor-pointer h-full flex flex-col news-card-hover" onClick={() => onClick(article)} style={{ touchAction: 'manipulation' }}>
       <div className="relative h-36 sm:h-48 overflow-hidden"><img src={article.image} alt={article.title} className="w-full h-full object-cover img-zoom" /><div className="absolute top-2.5 left-2.5 sm:top-3 sm:left-3 flex flex-wrap items-center gap-1.5"><Badge className={`${CATEGORY_COLOR[article.category] || 'bg-gray-100 text-gray-700'} text-[10px] sm:text-xs font-[family-name:var(--font-dm-sans)]`}>{article.category}</Badge><ReliabilityBadge reliability={article.reliability} /></div></div>

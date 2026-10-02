@@ -22,6 +22,9 @@ jobs:
       - name: Install dependencies
         run: bun install
 
+      - name: Verify z-ai CLI
+        run: npx z-ai --version || echo "z-ai CLI not found via npx, will use node_modules path"
+
       - name: Update chat arena leaderboard data
         run: node scripts/update-leaderboards.js arena
 

@@ -1,10 +1,9 @@
-name: Update Leaderboards
+name: Update Leaderboard Data
 
 on:
   schedule:
-    # Run every 6 hours
-    - cron: '0 */6 * * *'
-  workflow_dispatch: # Allow manual trigger
+    - cron: '0 */6 * * *'  # every 6 hours
+  workflow_dispatch:  # allow manual trigger
 
 permissions:
   contents: write # Needed to push updated JSON files
@@ -12,42 +11,25 @@ permissions:
 jobs:
   update:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
+      - uses: oven-sh/setup-bun@v2
 
-      - name: Install dependencies
-        run: bun install
+      - run: bun install
 
-      - name: Verify z-ai CLI
-        run: npx z-ai --version || echo "z-ai CLI not found via npx, will use node_modules path"
+      - run: node scripts/update-leaderboards.js arena
 
-      - name: Update chat arena leaderboard data
-        run: node scripts/update-leaderboards.js arena
+      - run: node scripts/update-leaderboards.js agent
 
-      - name: Update agent arena leaderboard data
-        run: node scripts/update-leaderboards.js agent
+      - run: node scripts/update-leaderboards.js benchmarks
 
-      - name: Update benchmark leaderboard data
-        run: node scripts/update-leaderboards.js benchmarks
-
-      - name: Check for changes
-        id: check
-        run: |
-          if git diff --quiet src/data/arena-fallback.json src/data/arena-agent-fallback.json src/data/leaderboard-fallback.json; then
-            echo "changed=false" >> $GITHUB_OUTPUT
-          else
-            echo "changed=true" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Commit and push changes
-        if: steps.check.outputs.changed == 'true'
+      - name: Commit & push if changed
         run: |
           git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add src/data/arena-fallback.json src/data/arena-agent-fallback.json src/data/leaderboard-fallback.json
-          git commit -m "chore: update leaderboard data [skip ci]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet || git commit -m "chore: update leaderboard fallback data"
           git push

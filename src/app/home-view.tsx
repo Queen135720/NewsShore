@@ -284,7 +284,7 @@ function ArticleDetail({ article, open, onClose, onArticleChange }: { article: N
             <div className="article-anim flex flex-wrap items-center gap-3 sm:gap-4 pb-5 border-b border-gray-100">
               <div className="flex items-center gap-2 text-xs text-gray-400 font-[family-name:var(--font-dm-sans)]"><Clock className="w-3 h-3" />{formatDate(article.publishedAt)}</div>
               <Badge variant="outline" className="text-[10px] sm:text-xs border-gray-200 text-gray-500 font-[family-name:var(--font-dm-sans)] gap-1"><Globe className="w-3 h-3" /> {article.region}</Badge>
-              <ReadTimeBadge text={article.body} className="text-[10px] sm:text-xs" />
+              <ReadTimeBadge text={article.body} minutes={(article as any).readMinutes} className="text-[10px] text-gray-400" />
             </div>
             <div className="article-anim mt-5"><p className="font-[family-name:var(--font-dm-sans)] text-base sm:text-lg lg:text-xl text-gray-700 leading-relaxed font-medium">{article.summary}</p></div>
             <div className="article-anim mt-5">{article.body.split('\n\n').map((block, i) => (<div key={i} className="mb-5"><p className="font-[family-name:var(--font-dm-sans)] text-sm sm:text-base lg:text-lg text-gray-600 leading-relaxed">{block}</p></div>))}</div>

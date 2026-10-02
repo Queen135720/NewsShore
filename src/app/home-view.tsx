@@ -863,7 +863,7 @@ function Footer({ onCategoryClick, onAboutOpen }: { onCategoryClick: (cat: strin
 }
 
 /* ─────────────── Main Page ─────────────── */
-export default function Home() {
+export function Home({ initialArticles }: { initialArticles: NewsArticle[] }) {
   const router = useRouter();
   const [activeCategory, setActiveCategory] = useState('Latest');
   const [showTop, setShowTop] = useState(false);

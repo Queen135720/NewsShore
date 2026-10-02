@@ -21,7 +21,13 @@ const DATA_DIR = path.join(__dirname, '..', 'src', 'data');
 const ARENA_OUT = path.join(DATA_DIR, 'arena-fallback.json');
 const ARENA_AGENT_OUT = path.join(DATA_DIR, 'arena-agent-fallback.json');
 const LLMSTATS_OUT = path.join(DATA_DIR, 'leaderboard-fallback.json');
-const CLI = 'z-ai';
+
+// Resolve z-ai CLI: prefer npx (works in CI), fall back to direct binary
+let CLI = 'npx z-ai';
+try {
+  const binPath = path.join(__dirname, '..', 'node_modules', '.bin', 'z-ai');
+  if (fs.existsSync(binPath)) CLI = binPath;
+} catch {}
 
 const which = (process.argv[2] || 'all').toLowerCase();
 const doArena = which === 'arena' || which === 'all';

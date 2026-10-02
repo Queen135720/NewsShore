@@ -3,7 +3,7 @@ import { db } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
-// Slim mapping — same shape the homepage server-renders. No full bodies in lists.
+// Slim shape for lists — no full bodies (lists never display them)
 function mapSlim(a: any) {
   return {
     id: a.id,
@@ -29,7 +29,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
 
-    // ---- Single article + related (used by the article page) — full body included ----
+    // ---- Single article + related (article page) — full body included ----
     if (id) {
       const row = await db.article.findUnique({ where: { id } });
       if (!row) {
@@ -44,7 +44,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ success: true, article, related: relatedRows.map(mapSlim) });
     }
 
-    // ---- Full list (slim) — homepage background refresh + your console checks ----
+    // ---- Full list (slim) — homepage background refresh + console checks ----
     const total = await db.article.count();
     const rows = await db.article.findMany({
       orderBy: { createdAt: 'desc' },

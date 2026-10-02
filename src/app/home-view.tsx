@@ -545,7 +545,7 @@ function HeroTopNews({ heroArticle, onArticleClick }: { heroArticle: NewsArticle
           <h1 className="font-[family-name:var(--font-lora)] text-xl sm:text-3xl lg:text-4xl font-bold text-white leading-tight mt-2">{heroArticle.title}</h1>
           <p className="font-[family-name:var(--font-dm-sans)] text-gray-300 mt-2 sm:mt-3 text-sm sm:text-base lg:text-lg line-clamp-2 max-w-2xl">{heroArticle.summary}</p>
           <div className="flex items-center gap-3 sm:gap-4 mt-3 sm:mt-4">
-            <ReadTimeBadge text={heroArticle.body} className="text-gray-300 text-xs sm:text-sm" />
+            <ReadTimeBadge text={heroArticle.body} minutes={(heroArticle as any).readMinutes} className="text-gray-300 text-xs sm:text-sm" />
             <span className="text-gray-400 text-xs sm:text-sm font-[family-name:var(--font-dm-sans)]">{timeAgo(heroArticle.publishedAt)}</span>
           </div>
         </div>

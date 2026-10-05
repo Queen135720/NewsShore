@@ -9,7 +9,7 @@ const SLUG_TO_CATEGORY: Record<string, string> = {
   'mobile-social': 'Mobile & Social',
   'research': 'Research',
   'deals': 'Deals',
-  'global-china': 'Global & China',
+  'global-tech': 'Global Tech',
 };
 
 export function middleware(request: NextRequest) {
@@ -24,5 +24,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/ai-news', '/tech-giants', '/tech-news', '/startups-funding', '/mobile-social', '/research', '/deals', '/global-china'],
+  matcher: ['/ai-news', '/tech-giants', '/tech-news', '/startups-funding', '/mobile-social', '/research', '/deals', '/global-tech'],
 };

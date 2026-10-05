@@ -401,6 +401,10 @@ async function saveArticle(item, rewritten, usedKeys) {
   }
   console.log(`Saved: ${rewritten.headline}`);
   return true;
+
+  const VALID_CATEGORIES = ['AI News', 'Mobile & Social', 'Tech News', 'Tech Giants', 'Startups & Funding', 'Research', 'Deals', 'Global Tech'];
+  const category = VALID_CATEGORIES.includes(rewritten.category) ? rewritten.category : item.category;
+  const region = (typeof rewritten.region === 'string' && rewritten.region.trim().length > 0) ? rewritten.region.trim() : item.region;
 }
 
 // ---- 6. MAIN ----

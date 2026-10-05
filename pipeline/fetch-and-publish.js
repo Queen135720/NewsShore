@@ -34,10 +34,8 @@ const SOURCES = [
   { name: 'MIT Tech Review', url: 'https://www.technologyreview.com/feed/', category: 'AI News', region: 'US' },
 
   // ---- Tech Giants (tech leaders as people) ----
-  { name: 'Sam Altman', url: 'https://blog.samaltman.com/feed', category: 'Tech Giants', region: 'US' },
   { name: 'Simon Willison', url: 'https://simonwillison.net/atom/everything/', category: 'Tech Giants', region: 'Global' },
   { name: 'Ethan Mollick', url: 'https://www.oneusefulthing.org/feed', category: 'Tech Giants', region: 'US' }, // ⚠ verify
-  { name: 'Benedict Evans', url: 'https://www.ben-evans.com/benedictevans/feed', category: 'Tech Giants', region: 'Global' }, // ⚠ verify
   { name: 'Andrej Karpathy', url: 'https://karpathy.github.io/feed.xml', category: 'Tech Giants', region: 'US' }, // ⚠ verify — posts rarely
   
   // ---- Tech News (general + robotics) ----
@@ -92,7 +90,6 @@ const SOURCES = [
   { name: 'TechCabal', url: 'https://techcabal.com/feed/', category: 'Global Tech', region: 'Nigeria' },
   { name: 'Nairametrics Tech', url: 'https://nairametrics.com/feed/', category: 'Global Tech', region: 'Nigeria' },
   { name: 'TechCentral ZA', url: 'https://techcentral.co.za/feed/', category: 'Global Tech', region: 'South Africa' },
-  { name: 'Daily Maverick Tech', url: 'https://dailymaverick.co.za/feed/rss/technology/', category: 'Global Tech', region: 'South Africa' },
   { name: 'e27', url: 'https://e27.co/feed/', category: 'Global Tech', region: 'Singapore' },
   { name: 'TechNode', url: 'https://technode.com/feed/', category: 'Global Tech', region: 'China' },
   { name: 'Japan Times Tech', url: 'https://www.japantimes.co.jp/rss/technology.xml', category: 'Global Tech', region: 'Japan' },

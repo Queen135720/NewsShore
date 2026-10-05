@@ -31,7 +31,7 @@ export const newsArticles: NewsArticle[] = [
 Alibaba's own announcement described Qwen3.8-Max as "one of the most powerful models available today, comparable to leading frontier AI models, second only to Fable 5" — a notable claim, though independent verification of that specific comparison had not yet caught up to the launch. The model is available now through Alibaba Cloud's API at published pricing undercutting rival Chinese lab Moonshot AI's recently released Kimi K3, with open-weight versions of the model promised within the following week.
 
 The launch landed just two days after Moonshot AI released its own open-weight Kimi K3 model, underscoring how tightly the pace of releases among Chinese AI labs has compressed in 2026 — each major lab now appears to be responding to competitors' launches within days rather than the months such responses might once have taken.`,
-    category: 'Global & China',
+    category: 'Global Tech',
     region: 'China',
     sourceUrl: 'https://www.alizila.com',
     sourceName: 'Alizila',
@@ -251,7 +251,7 @@ Nvidia CEO Jensen Huang has previously spoken publicly about wanting AI chip acc
 The reported consideration follows earlier reports that Chinese authorities had discouraged major domestic tech companies from purchasing and relying on Nvidia's chips, instead pushing them toward homegrown alternatives from companies like Huawei, even where those alternatives may currently lag behind Nvidia's most advanced offerings in raw performance. The strategy reflects a calculated trade-off: accepting some near-term performance disadvantage in exchange for reduced long-term dependence on U.S. suppliers who could face further export restrictions at any time.
 
 The push reflects a wider pattern that has defined much of China's AI industry throughout 2026, as the country works to reduce dependence on U.S. technology across the board, even while continuing to compete aggressively on model quality and global adoption through companies like DeepSeek, whose open-source models have found users well beyond China's own borders despite the broader restrictions shaping the industry around them.`,
-    category: 'Global & China',
+    category: 'Global Tech',
     region: 'China',
     sourceUrl: 'https://dailycaller.com',
     sourceName: 'The Daily Caller',
@@ -419,7 +419,7 @@ The move also extends Google's pattern of bundling AI access tightly with its ex
 As part of the deal, the company is said to have asked prospective investors to agree not to poach its researchers and engineers as a condition of their investment — an unusual clause that reflects just how fierce competition for top AI talent has become across the industry, particularly for a lab that has built its entire reputation on a relatively small, tightly-knit research team rather than the vast headcounts common at larger U.S. labs.
 
 The funding, if finalized at the reported valuation, would place DeepSeek among the most highly valued AI startups globally, alongside companies like Anthropic and OpenAI, despite operating under significantly tighter constraints around access to the most advanced training chips due to ongoing U.S. export restrictions. Investors appear willing to bet that DeepSeek's demonstrated efficiency — extracting strong performance from more limited hardware — represents a durable advantage rather than a one-time trick tied to its earlier R1 release.`,
-    category: 'Global & China',
+    category: 'Global Tech',
     region: 'China',
     sourceUrl: 'https://www.cnbc.com',
     sourceName: 'CNBC',
@@ -540,7 +540,7 @@ Google has said it is targeting fully error-corrected quantum computers by 2029,
 Like its predecessors, V4 remains fully open source, continuing DeepSeek's strategy of competing with far better-funded U.S. labs by making its models freely available for anyone to download, modify, and deploy. That openness has helped the model spread quickly into real-world applications across sectors like e-commerce, customer service, and increasingly robotics, where Chinese manufacturers have been integrating AI models directly into physical automation systems.
 
 The open-source approach also reflects real constraints Chinese AI developers face in accessing the most advanced chips under U.S. export restrictions. Rather than compete purely on raw computing power, DeepSeek and similar Chinese labs have leaned into efficiency and rapid, wide adoption as their main competitive edge — a strategy that appears to be paying off, given how much attention V4's release drew from international media and rival labs alike, more than a year after DeepSeek was still a relatively unknown name outside China.`,
-    category: 'Global & China',
+    category: 'Global Tech',
     region: 'China',
     sourceUrl: 'https://edition.cnn.com',
     sourceName: 'CNN Business',
@@ -711,7 +711,7 @@ Unitree is separately pursuing a Shanghai IPO, having received regulatory approv
 Neither comes anywhere close to ChatGPT, which held steady at billions of visits across the same period after peaking around 6.2 billion in October before easing slightly. Gemini told a different story entirely: usage nearly tripled over the prior six months, climbing from under 700 million visits to roughly 2.1 billion, making it the fastest-growing major chatbot in January with month-over-month growth above 19%.
 
 Musk's broader platform, X, also saw modest growth over the same period, rising nearly 3% to 4.54 billion visits. The traffic shifts highlight just how quickly user attention can move between AI chatbots as companies race to release new models and features — a single strong launch, or a single high-profile stumble, can visibly move the rankings within weeks rather than months.`,
-    category: 'Global & China',
+    category: 'Global Tech',
     region: 'Global',
     sourceUrl: 'https://www.forbes.com',
     sourceName: 'Forbes',

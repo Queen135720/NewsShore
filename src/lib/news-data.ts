@@ -18,7 +18,7 @@ export interface NewsArticle {
   glossary: GlossaryTerm[];
 }
 
-export const categories = ['Latest', 'AI News', 'Tech Giants', 'Tech News', 'Startups & Funding', 'Research', 'Deals', 'Global & China'];
+export const categories = ['Latest', 'AI News', 'Tech Giants', 'Tech News', 'Startups & Funding', 'Mobile & Social', 'Research', 'Deals', 'Global Tech'];
 
 export const newsArticles: NewsArticle[] = [
   // 1. 2026-08-03

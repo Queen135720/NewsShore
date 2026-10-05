@@ -101,17 +101,16 @@ const SOURCES = [
 
 // ---- 2. FETCH NEW ITEMS ----
 async function fetchNewItems() {
-  // Load ALL existing article URLs in ONE query (was: one query per item — slow)
+  // Load ALL existing article URLs in ONE query
   const { data: existingRows } = await supabase
     .from('articles')
     .select('source_url');
   const existingUrls = new Set((existingRows ?? []).map((r) => r.source_url));
 
   const allItems = [];
-  const seenThisRun = new Set(); // same article can appear in multiple feeds
+  const seenThisRun = new Set();
 
   for (const source of SOURCES) {
-    // Page 1 always; page 2 if page 1 was full (widens window to ~20 recent items)
     for (const page of [1, 2]) {
       try {
         const url =
@@ -124,14 +123,12 @@ async function fetchNewItems() {
         for (const item of items) {
           if (!item.link || seenThisRun.has(item.link)) continue;
           if (existingUrls.has(item.link)) continue; // already saved
+          // Skip old items — only ingest news from the last 10 days
+          const itemDate = item.isoDate ? new Date(item.isoDate).getTime() : 0;
+          if (itemDate && Date.now() - itemDate > 10 * 24 * 60 * 60 * 1000) continue;
           seenThisRun.add(item.link);
           allItems.push({ ...item, sourceName: source.name, category: source.category, region: source.region });
         }
-
-        if (existingUrls.has(item.link)) continue; // already saved
-        // ★ Skip old items — only ingest news from the last 7 days
-        const itemDate = item.isoDate ? new Date(item.isoDate).getTime() : 0;
-        if (itemDate && Date.now() - itemDate > 10 * 24 * 60 * 60 * 1000) continue;
 
         if (items.length < 10) break; // short feed — no page 2 exists
       } catch (err) {
@@ -141,8 +138,7 @@ async function fetchNewItems() {
     }
   }
 
-  // Newest first ACROSS all sources — otherwise early sources in the list
-  // starve later ones whenever there's a backlog
+  // Newest first across all sources
   allItems.sort((a, b) => new Date(b.isoDate ?? 0).getTime() - new Date(a.isoDate ?? 0).getTime());
 
   return allItems;

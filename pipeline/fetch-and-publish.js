@@ -334,7 +334,7 @@ async function run() {
 
   const usedKeys = await loadUsedImageKeys(); // ★ new — dedup memory vs last 300 articles
 
-  const MAX_PER_RUN = 1;
+  const MAX_PER_RUN = 3;
   const batch = newItems.slice(0, MAX_PER_RUN);
   if (newItems.length > MAX_PER_RUN) {
     console.log(`Processing ${MAX_PER_RUN} of ${newItems.length} — the rest will be picked up on the next run.`);

@@ -48,12 +48,13 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 
 /* ─────────────── constants ─────────────── */
-const NAV_CATEGORIES = ['Latest', 'AI News', 'Tech Giants', 'Tech News', 'Startups & Funding', 'Research', 'Deals', 'Global & China'];
+const NAV_CATEGORIES = ['Latest', 'AI News', 'Tech Giants', 'Tech News', 'Startups & Funding', 'Mobile & Social', 'Research', 'Deals', 'Global & China'];
 
 const RELATED_TABS = [
   { label: 'More AI News', category: 'AI News' },
   { label: 'Tech Giants', category: 'Tech Giants' },
   { label: 'Startups & Funding', category: 'Startups & Funding' },
+  { label: 'Mobile & Social', category: 'Mobile & Social' },
   { label: 'Research', category: 'Research' },
   { label: 'Global & China', category: 'Global & China' },
 ];
@@ -63,6 +64,7 @@ const CATEGORY_SLUG: Record<string, string> = {
   'Tech Giants': 'tech-giants',
   'Tech News': 'tech-news',
   'Startups & Funding': 'startups-funding',
+  'Mobile & Social': 'mobile-social',
   'Research': 'research',
   'Deals': 'deals',
   'Global & China': 'global-china',
@@ -72,6 +74,7 @@ const CATEGORY_COLOR: Record<string, string> = {
   'AI News': 'bg-violet-100 text-violet-700',
   'Tech Giants': 'bg-cyan-100 text-cyan-700',
   'Startups & Funding': 'bg-amber-100 text-amber-700',
+  'Mobile & Social': 'bg-peach-100 text-peach-700',
   'Research': 'bg-orange-100 text-orange-700',
   'Deals': 'bg-pink-100 text-pink-700',
   'Global & China': 'bg-emerald-100 text-emerald-700',

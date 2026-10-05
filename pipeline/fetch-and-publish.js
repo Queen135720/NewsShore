@@ -28,21 +28,18 @@ const supabase = createClient(
 const SOURCES = [
   // ---- AI News ----
   { name: 'OpenAI', url: 'https://openai.com/news/rss.xml', category: 'AI News', region: 'US' },
-  { name: 'Google DeepMind', url: 'https://deepmind.google/blog/rss.xml', category: 'AI News', region: 'US' },
+  { name: 'Google DeepMind', url: 'https://research.google/blog/rss/', category: 'AI News', region: 'US' },
   { name: 'Hugging Face', url: 'https://huggingface.co/blog/feed.xml', category: 'AI News', region: 'Global' },
-  { name: 'Anthropic', url: 'https://www.anthropic.com/rss', category: 'AI News', region: 'US' }, // ⚠ verify
   { name: 'TechCrunch AI', url: 'https://techcrunch.com/category/artificial-intelligence/feed/', category: 'AI News', region: 'Global' },
   { name: 'MIT Tech Review', url: 'https://www.technologyreview.com/feed/', category: 'AI News', region: 'US' },
 
   // ---- Tech Giants (tech leaders as people) ----
-  { name: 'Sam Altman', url: 'https://blog.samaltman.com/feed/', category: 'Tech Giants', region: 'US' },
-  { name: 'Bill Gates', url: 'https://www.gatesnotes.com/rss', category: 'Tech Giants', region: 'US' }, // ⚠ verify
+  { name: 'Sam Altman', url: 'https://blog.samaltman.com/feed', category: 'Tech Giants', region: 'US' },
   { name: 'Simon Willison', url: 'https://simonwillison.net/atom/everything/', category: 'Tech Giants', region: 'Global' },
   { name: 'Ethan Mollick', url: 'https://www.oneusefulthing.org/feed', category: 'Tech Giants', region: 'US' }, // ⚠ verify
-  { name: 'Benedict Evans', url: 'https://www.ben-evans.com/benedictevans/benedictevans/feed', category: 'Tech Giants', region: 'Global' }, // ⚠ verify
+  { name: 'Benedict Evans', url: 'https://www.ben-evans.com/benedictevans/feed', category: 'Tech Giants', region: 'Global' }, // ⚠ verify
   { name: 'Andrej Karpathy', url: 'https://karpathy.github.io/feed.xml', category: 'Tech Giants', region: 'US' }, // ⚠ verify — posts rarely
-  { name: 'Andrew Ng', url: 'https://www.deeplearning.ai/feed/', category: 'Tech Giants', region: 'US' }, // ⚠ verify
-
+  
   // ---- Tech News (general + robotics) ----
   { name: 'WIRED', url: 'https://www.wired.com/feed/rss', category: 'Tech News', region: 'Global' },
   { name: 'The Verge', url: 'https://www.theverge.com/rss/index.xml', category: 'Tech News', region: 'Global' },
@@ -67,12 +64,10 @@ const SOURCES = [
   { name: '9to5Google', url: 'https://9to5google.com/feed/', category: 'Mobile & Social', region: 'US' },
   { name: 'Android Authority', url: 'https://www.androidauthority.com/feed/', category: 'Mobile & Social', region: 'US' },
   { name: 'Android Police', url: 'https://www.androidpolice.com/feed/', category: 'Mobile & Social', region: 'US' },
-  { name: 'The Verge Tech', url: 'https://www.theverge.com/rss/tech/index.xml', category: 'Mobile & Social', region: 'US' },
   { name: 'TechCrunch Apps', url: 'https://techcrunch.com/category/apps/feed/', category: 'Mobile & Social', region: 'Global' },
   { name: 'TechCrunch Social', url: 'https://techcrunch.com/category/social/feed/', category: 'Mobile & Social', region: 'Global' },
   { name: 'TechCrunch Mobile', url: 'https://techcrunch.com/tag/mobile/feed/', category: 'Mobile & Social', region: 'Global' },
   { name: 'TechCrunch Media & Entertainment', url: 'https://techcrunch.com/category/media-entertainment/feed/', category: 'Mobile & Social', region: 'Global' },
-  { name: 'Social Media Today', url: 'https://www.socialmediatoday.com/rss', category: 'Mobile & Social', region: 'Global' }, // ⚠ verify
   { name: 'Social Media Examiner', url: 'https://www.socialmediaexaminer.com/feed/', category: 'Mobile & Social', region: 'Global' },
 
   // ---- Startups & Funding ----
@@ -83,7 +78,7 @@ const SOURCES = [
   { name: 'TechCrunch Fintech', url: 'https://techcrunch.com/category/fintech/feed/', category: 'Startups & Funding', region: 'Global' },
 
   // ---- Deals ----
-  { name: 'TechCrunch Deals', url: 'https://techcrunch.com/category/deals/feed/', category: 'Deals', region: 'Global' }, // ⚠ verify — your Deals nav category had zero sources without this
+  { name: 'TechCrunch Deals', url: 'https://techcrunch.com/tag/deals/feed/', category: 'Deals', region: 'Global' }, // ⚠ verify — your Deals nav category had zero sources without this
 
   // ---- Research (AI + quantum + science) ----
   { name: 'MIT News AI', url: 'https://news.mit.edu/rss/topic/artificial-intelligence2', category: 'Research', region: 'US' },
@@ -95,16 +90,12 @@ const SOURCES = [
   // ---- Global Tech (country-specific) ----
   { name: 'Rest of World', url: 'https://restofworld.org/feed/latest/', category: 'Global Tech', region: 'Global' },
   { name: 'TechCabal', url: 'https://techcabal.com/feed/', category: 'Global Tech', region: 'Nigeria' },
-  { name: 'Techpoint Africa', url: 'https://techpoint.africa/feed/', category: 'Global Tech', region: 'Nigeria' },
-  { name: 'Nairametrics Tech', url: 'https://nairametrics.com/category/technology/feed/', category: 'Global Tech', region: 'Nigeria' }, // ⚠ verify
+  { name: 'Nairametrics Tech', url: 'https://nairametrics.com/feed/', category: 'Global Tech', region: 'Nigeria' },
   { name: 'TechCentral ZA', url: 'https://techcentral.co.za/feed/', category: 'Global Tech', region: 'South Africa' },
-  { name: 'Daily Maverick Tech', url: 'https://dailymaverick.co.za/dmrss/technology/', category: 'Global Tech', region: 'South Africa' }, // ⚠ verify
-  { name: 'Tech in Asia', url: 'https://www.techinasia.com/feed', category: 'Global Tech', region: 'Singapore' }, // ⚠ verify
-  { name: 'Tech in Asia PH', url: 'https://ph.techinasia.com/feed', category: 'Global Tech', region: 'Philippines' }, // ⚠ verify — this subdomain looks dead to me; low confidence
+  { name: 'Daily Maverick Tech', url: 'https://dailymaverick.co.za/feed/rss/technology/', category: 'Global Tech', region: 'South Africa' },
   { name: 'e27', url: 'https://e27.co/feed/', category: 'Global Tech', region: 'Singapore' },
   { name: 'TechNode', url: 'https://technode.com/feed/', category: 'Global Tech', region: 'China' },
-  { name: 'Japan Times Tech', url: 'https://www.japantimes.co.jp/feed/technology', category: 'Global Tech', region: 'Japan' }, // ⚠ verify
-  { name: 'Times of Israel Tech', url: 'https://www.timesofisrael.com/israel-tech/feed/', category: 'Global Tech', region: 'Israel' }, // ⚠ verify — your version had /feed/technology/; I believe /israel-tech/feed/ is right, keep whichever works
+  { name: 'Japan Times Tech', url: 'https://www.japantimes.co.jp/rss/technology.xml', category: 'Global Tech', region: 'Japan' },
   { name: 'Nocamels', url: 'https://nocamels.com/feed/', category: 'Global Tech', region: 'Israel' },
 ];
 

@@ -13,9 +13,10 @@ const CATEGORY_COLOR: Record<string, string> = {
   'AI News': 'bg-violet-100 text-violet-700',
   'Tech Giants': 'bg-cyan-100 text-cyan-700',
   'Startups & Funding': 'bg-amber-100 text-amber-700',
+  'Mobile & Social': 'bg-sky-100 text-sky-700',
   'Research': 'bg-orange-100 text-orange-700',
   'Deals': 'bg-pink-100 text-pink-700',
-  'Global & China': 'bg-emerald-100 text-emerald-700',
+  'Global Tech': 'bg-emerald-100 text-emerald-700',
   'Latest': 'bg-gray-100 text-gray-700',
 };
 

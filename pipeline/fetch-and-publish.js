@@ -35,6 +35,8 @@ const SOURCES = [
   { name: 'TechCrunch Security', url: 'https://techcrunch.com/category/security/feed/', category: 'Tech News', region: 'Global' },
   { name: 'TechCrunch Hardware', url: 'https://techcrunch.com/category/hardware/feed/', category: 'Tech News', region: 'Global' },
   { name: 'TechCrunch Gadgets', url: 'https://techcrunch.com/category/gadgets/feed/', category: 'Tech News', region: 'Global' },
+  { name: 'TechCrunch Europe', url: 'https://techcrunch.com/tag/europe/feed/', category: 'Tech News', region: 'Europe' },
+  { name: 'TechCrunch Asia', url: 'https://techcrunch.com/tag/asia/feed/', category: 'Tech News', region: 'Asia' },
   { name: 'TechCrunch Startups', url: 'https://techcrunch.com/category/startups/feed/', category: 'Startups & Funding', region: 'Global' },
   { name: 'TechCrunch Funding', url: 'https://techcrunch.com/tag/funding/feed/', category: 'Startups & Funding', region: 'Global' },
   { name: 'TechCrunch Venture', url: 'https://techcrunch.com/category/venture/feed/', category: 'Startups & Funding', region: 'Global' },

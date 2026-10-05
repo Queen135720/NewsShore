@@ -29,6 +29,7 @@ const SOURCES = [
   { name: 'OpenAI', url: 'https://openai.com/news/rss.xml', category: 'AI News', region: 'US' },
   { name: 'Google DeepMind', url: 'https://deepmind.google/blog/rss.xml', category: 'AI News', region: 'US' },
   { name: 'Hugging Face', url: 'https://huggingface.co/blog/feed.xml', category: 'AI News', region: 'Global' },
+  { name: 'Anthropic', url: 'https://www.anthropic.com/rss', category: 'AI News', region: 'US' }
   { name: 'TechCrunch AI', url: 'https://techcrunch.com/category/artificial-intelligence/feed/', category: 'AI News', region: 'Global' },
   { name: 'TechCrunch Robotics', url: 'https://techcrunch.com/category/robotics/feed/', category: 'Tech News', region: 'Global' },
   { name: 'TechCrunch Space', url: 'https://techcrunch.com/category/space/feed/', category: 'Tech News', region: 'Global' },
@@ -96,6 +97,22 @@ const SOURCES = [
 { name: 'Quantum Zeitgeist', url: 'https://quantumzeitgeist.com/feed/', category: 'Research', region: 'Global' },
 { name: 'Inside Quantum Technology', url: 'https://insidequantumtechnology.com/feed/', category: 'Research', region: 'Global' },
 ];
+
+// ---- Research (incl. quantum) ----
+{ name: 'MIT News AI', url: 'https://news.mit.edu/rss/topic/artificial-intelligence2', category: 'Research', region: 'US' },
+{ name: 'Nature Tech', url: 'https://www.nature.com/subjects/technology.rss', category: 'Research', region: 'Global' },
+{ name: 'Quantum Computing Report', url: 'https://quantumcomputingreport.com/news/feed/', category: 'Research', region: 'Global' },
+{ name: 'Quantum Zeitgeist', url: 'https://quantumzeitgeist.com/feed/', category: 'Research', region: 'Global' },
+{ name: 'Inside Quantum Technology', url: 'https://insidequantumtechnology.com/feed/', category: 'Research', region: 'Global' },
+
+// ---- Tech Giants (tech leaders as people) ----
+{ name: 'Sam Altman', url: 'https://blog.samaltman.com/feed/', category: 'Tech Giants', region: 'US' },
+{ name: 'Bill Gates', url: 'https://www.gatesnotes.com/rss', category: 'Tech Giants', region: 'US' }, // ⚠ verify
+{ name: 'Simon Willison', url: 'https://simonwillison.net/atom/everything/', category: 'Tech Giants', region: 'Global' }, // high volume, short posts
+{ name: 'Ethan Mollick', url: 'https://www.oneusefulthing.org/feed', category: 'Tech Giants', region: 'US' }, // ⚠ verify — if dead try https://ethanmollick.substack.com/feed
+{ name: 'Benedict Evans', url: 'https://www.ben-evans.com/benedictevans/benedictevans/feed', category: 'Tech Giants', region: 'Global' }, // ⚠ verify
+{ name: 'Andrej Karpathy', url: 'https://karpathy.github.io/feed.xml', category: 'Tech Giants', region: 'US' }, // ⚠ verify — posts rarely
+{ name: 'Andrew Ng', url: 'https://www.deeplearning.ai/feed/', category: 'Tech Giants', region: 'US' }, // ⚠ verify
 
 // ---- 2. FETCH NEW ITEMS ----
 async function fetchNewItems() {

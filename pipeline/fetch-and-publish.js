@@ -26,11 +26,30 @@ const supabase = createClient(
 
 // ---- 1. SOURCES ----
 const SOURCES = [
+  // ---- AI News ----
   { name: 'OpenAI', url: 'https://openai.com/news/rss.xml', category: 'AI News', region: 'US' },
   { name: 'Google DeepMind', url: 'https://deepmind.google/blog/rss.xml', category: 'AI News', region: 'US' },
   { name: 'Hugging Face', url: 'https://huggingface.co/blog/feed.xml', category: 'AI News', region: 'Global' },
-  { name: 'Anthropic', url: 'https://www.anthropic.com/rss', category: 'AI News', region: 'US' }
+  { name: 'Anthropic', url: 'https://www.anthropic.com/rss', category: 'AI News', region: 'US' }, // ⚠ verify
   { name: 'TechCrunch AI', url: 'https://techcrunch.com/category/artificial-intelligence/feed/', category: 'AI News', region: 'Global' },
+  { name: 'MIT Tech Review', url: 'https://www.technologyreview.com/feed/', category: 'AI News', region: 'US' },
+
+  // ---- Tech Giants (tech leaders as people) ----
+  { name: 'Sam Altman', url: 'https://blog.samaltman.com/feed/', category: 'Tech Giants', region: 'US' },
+  { name: 'Bill Gates', url: 'https://www.gatesnotes.com/rss', category: 'Tech Giants', region: 'US' }, // ⚠ verify
+  { name: 'Simon Willison', url: 'https://simonwillison.net/atom/everything/', category: 'Tech Giants', region: 'Global' },
+  { name: 'Ethan Mollick', url: 'https://www.oneusefulthing.org/feed', category: 'Tech Giants', region: 'US' }, // ⚠ verify
+  { name: 'Benedict Evans', url: 'https://www.ben-evans.com/benedictevans/benedictevans/feed', category: 'Tech Giants', region: 'Global' }, // ⚠ verify
+  { name: 'Andrej Karpathy', url: 'https://karpathy.github.io/feed.xml', category: 'Tech Giants', region: 'US' }, // ⚠ verify — posts rarely
+  { name: 'Andrew Ng', url: 'https://www.deeplearning.ai/feed/', category: 'Tech Giants', region: 'US' }, // ⚠ verify
+
+  // ---- Tech News (general + robotics) ----
+  { name: 'WIRED', url: 'https://www.wired.com/feed/rss', category: 'Tech News', region: 'Global' },
+  { name: 'The Verge', url: 'https://www.theverge.com/rss/index.xml', category: 'Tech News', region: 'Global' },
+  { name: 'Ars Technica', url: 'https://feeds.arstechnica.com/arstechnica/index', category: 'Tech News', region: 'Global' },
+  { name: 'Ars Technica AI', url: 'https://arstechnica.com/ai/feed/', category: 'Tech News', region: 'US' }, // ⚠ verify — kept (was mislabeled "Robotics"; it's their AI feed — the LLM will file these as AI News)
+  { name: 'Engadget', url: 'https://www.engadget.com/rss.xml', category: 'Tech News', region: 'Global' },
+  { name: 'CNET', url: 'https://www.cnet.com/rss/news/', category: 'Tech News', region: 'Global' },
   { name: 'TechCrunch Robotics', url: 'https://techcrunch.com/category/robotics/feed/', category: 'Tech News', region: 'Global' },
   { name: 'TechCrunch Space', url: 'https://techcrunch.com/category/space/feed/', category: 'Tech News', region: 'Global' },
   { name: 'TechCrunch Security', url: 'https://techcrunch.com/category/security/feed/', category: 'Tech News', region: 'Global' },
@@ -38,81 +57,56 @@ const SOURCES = [
   { name: 'TechCrunch Gadgets', url: 'https://techcrunch.com/category/gadgets/feed/', category: 'Tech News', region: 'Global' },
   { name: 'TechCrunch Europe', url: 'https://techcrunch.com/tag/europe/feed/', category: 'Tech News', region: 'Europe' },
   { name: 'TechCrunch Asia', url: 'https://techcrunch.com/tag/asia/feed/', category: 'Tech News', region: 'Asia' },
+  { name: 'The Robot Report', url: 'https://www.therobotreport.com/feed/', category: 'Tech News', region: 'Global' },
+  { name: 'IEEE Spectrum Robotics', url: 'https://spectrum.ieee.org/feeds/topic/robotics.rss', category: 'Tech News', region: 'Global' }, // ⚠ verify
+  { name: 'Robotics Business Review', url: 'https://www.roboticsbusinessreview.com/feed/', category: 'Tech News', region: 'Global' }, // ⚠ verify
+
+  // ---- Mobile & Social ----
+  { name: 'Apple Insider', url: 'https://appleinsider.com/rss/news/', category: 'Mobile & Social', region: 'Global' },
+  { name: '9to5Mac', url: 'https://9to5mac.com/feed/', category: 'Mobile & Social', region: 'US' },
+  { name: '9to5Google', url: 'https://9to5google.com/feed/', category: 'Mobile & Social', region: 'US' },
+  { name: 'Android Authority', url: 'https://www.androidauthority.com/feed/', category: 'Mobile & Social', region: 'US' },
+  { name: 'Android Police', url: 'https://www.androidpolice.com/feed/', category: 'Mobile & Social', region: 'US' },
+  { name: 'The Verge Tech', url: 'https://www.theverge.com/rss/tech/index.xml', category: 'Mobile & Social', region: 'US' },
+  { name: 'TechCrunch Apps', url: 'https://techcrunch.com/category/apps/feed/', category: 'Mobile & Social', region: 'Global' },
+  { name: 'TechCrunch Social', url: 'https://techcrunch.com/category/social/feed/', category: 'Mobile & Social', region: 'Global' },
+  { name: 'TechCrunch Mobile', url: 'https://techcrunch.com/tag/mobile/feed/', category: 'Mobile & Social', region: 'Global' },
+  { name: 'TechCrunch Media & Entertainment', url: 'https://techcrunch.com/category/media-entertainment/feed/', category: 'Mobile & Social', region: 'Global' },
+  { name: 'Social Media Today', url: 'https://www.socialmediatoday.com/rss', category: 'Mobile & Social', region: 'Global' }, // ⚠ verify
+  { name: 'Social Media Examiner', url: 'https://www.socialmediaexaminer.com/feed/', category: 'Mobile & Social', region: 'Global' },
+
+  // ---- Startups & Funding ----
   { name: 'TechCrunch Startups', url: 'https://techcrunch.com/category/startups/feed/', category: 'Startups & Funding', region: 'Global' },
   { name: 'TechCrunch Funding', url: 'https://techcrunch.com/tag/funding/feed/', category: 'Startups & Funding', region: 'Global' },
   { name: 'TechCrunch Venture', url: 'https://techcrunch.com/category/venture/feed/', category: 'Startups & Funding', region: 'Global' },
   { name: 'TechCrunch Enterprise', url: 'https://techcrunch.com/category/enterprise/feed/', category: 'Startups & Funding', region: 'Global' },
   { name: 'TechCrunch Fintech', url: 'https://techcrunch.com/category/fintech/feed/', category: 'Startups & Funding', region: 'Global' },
-  { name: 'WIRED', url: 'https://www.wired.com/feed/rss', category: 'Tech News', region: 'Global' },
-  { name: 'The Verge', url: 'https://www.theverge.com/rss/index.xml', category: 'Tech News', region: 'Global' },
-  { name: 'Ars Technica', url: 'https://feeds.arstechnica.com/arstechnica/index', category: 'Tech News', region: 'Global' },
-  { name: 'Engadget', url: 'https://www.engadget.com/rss.xml', category: 'Tech News', region: 'Global' },
-  { name: 'CNET', url: 'https://www.cnet.com/rss/news/', category: 'Tech News', region: 'Global' },
-  { name: 'Apple Insider', url: 'https://appleinsider.com/rss/news/', category: 'Tech Giants', region: 'Global' },
+
+  // ---- Deals ----
+  { name: 'TechCrunch Deals', url: 'https://techcrunch.com/category/deals/feed/', category: 'Deals', region: 'Global' }, // ⚠ verify — your Deals nav category had zero sources without this
+
+  // ---- Research (AI + quantum + science) ----
   { name: 'MIT News AI', url: 'https://news.mit.edu/rss/topic/artificial-intelligence2', category: 'Research', region: 'US' },
-  { name: 'MIT Tech Review', url: 'https://www.technologyreview.com/feed/', category: 'AI News', region: 'US' },
   { name: 'Nature Tech', url: 'https://www.nature.com/subjects/technology.rss', category: 'Research', region: 'Global' },
-  { name: 'Rest of World', url: 'https://restofworld.org/feed/latest/', category: 'Global & China', region: 'Global' },
-  { name: 'TechCabal', url: 'https://techcabal.com/feed/', category: 'Startups & Funding', region: 'Africa' },
-  { name: 'TechNode', url: 'https://technode.com/feed/', category: 'Global & China', region: 'China' },
-  { name: 'Nocamels', url: 'https://nocamels.com/feed/', category: 'Global & China', region: 'Israel' },
   { name: 'Quantum Computing Report', url: 'https://quantumcomputingreport.com/news/feed/', category: 'Research', region: 'Global' },
-  // ---- Mobile & Social ----
-{ name: '9to5Mac', url: 'https://9to5mac.com/feed/', category: 'Mobile & Social', region: 'US' },
-{ name: '9to5Google', url: 'https://9to5google.com/feed/', category: 'Mobile & Social', region: 'US' },
-{ name: 'Android Authority', url: 'https://www.androidauthority.com/feed/', category: 'Mobile & Social', region: 'US' },
-{ name: 'Android Police', url: 'https://www.androidpolice.com/feed/', category: 'Mobile & Social', region: 'US' },
-{ name: 'The Verge Mobile', url: 'https://www.theverge.com/rss/tech/index.xml', category: 'Mobile & Social', region: 'US' },
-{ name: 'TechCrunch Apps', url: 'https://techcrunch.com/category/apps/feed/', category: 'Mobile & Social', region: 'Global' },
-{ name: 'Social Media Today', url: 'https://www.socialmediatoday.com/rss', category: 'Mobile & Social', region: 'Global' },
-{ name: 'Social Media Examiner', url: 'https://www.socialmediaexaminer.com/feed/', category: 'Mobile & Social', region: 'Global' },
-{ name: 'Techcrunch Social', url: 'https://techcrunch.com/category/social/feed/', category: 'Mobile & Social', region: 'Global' },
-{ name: 'Techcrunch Apps', url: 'https://techcrunch.com/category/apps/feed/', category: 'Mobile & Social', region: 'Global' },
-{ name: 'Techcrunch Mobile', url: 'https://techcrunch.com/tag/mobile/feed/', category: 'Mobile & Social', region: 'Global' },
-{ name: 'Techcrunch Media & Entertainment', url: 'https://techcrunch.com/category/media-entertainment/feed/', category: 'Mobile & Social', region: 'Global' },
+  { name: 'Quantum Zeitgeist', url: 'https://quantumzeitgeist.com/feed/', category: 'Research', region: 'Global' },
+  { name: 'Inside Quantum Technology', url: 'https://insidequantumtechnology.com/feed/', category: 'Research', region: 'Global' }, // ⚠ verify
 
-// ---- Country-specific tech ----
-{ name: 'Techpoint Africa', url: 'https://techpoint.africa/feed/', category: 'Global & China', region: 'Nigeria' },
-{ name: 'Nairametrics Tech', url: 'https://nairametrics.com/category/technology/feed/', category: 'Global & China', region: 'Nigeria' },
-{ name: 'TechCabal', url: 'https://techcabal.com/feed/', category: 'Global & China', region: 'Nigeria' },   // ← you already have this one — remove one copy
-{CABAL: keep your existing, delete my duplicate}
-{ name: 'TechCentral ZA', url: 'https://techcentral.co.za/feed/', category: 'Global & China', region: 'South Africa' },
-{ name: 'Daily Maverick Tech', url: 'https://dailymaverick.co.za/dmrss/technology/', category: 'Global & China', region: 'South Africa' },
-{ name: 'Tech in Asia', url: 'https://www.techinasia.com/feed', category: 'Global & China', region: 'Singapore' },
-{ name: 'e27', url: 'https://e27.co/feed/', category: 'Global & China', region: 'Singapore' },
-{ name: 'Tech in Asia PH', url: 'https://ph.techinasia.com/feed', category: 'Global & China', region: 'Philippines' },
-{ name: 'Japan Times Tech', url: 'https://www.japantimes.co.jp/feed/technology', category: 'Global & China', region: 'Japan' },
-{ name: 'TechNode', url: 'https://technode.com/feed/', category: 'Global & China', region: 'China' },        // ← you already have this one
-{CABAL: keep your existing, delete my duplicate}
-{ name: 'The Times of Israel Tech', url: 'https://www.timesofisrael.com/feed/technology/', category: 'Global & China', region: 'Israel' },  // replace with your Nocamels — same region, more tech volume
-
-// ---- Robotics ----
-{ name: 'The Robot Report', url: 'https://www.therobotreport.com/feed/', category: 'Research', region: 'Global' },
-{ name: 'IEEE Spectrum Robotics', url: 'https://spectrum.ieee.org/feeds/topic/robotics.rss', category: 'Research', region: 'Global' },
-{ name: 'Robotics Business Review', url: 'https://www.roboticsbusinessreview.com/feed/', category: 'Research', region: 'Global' },
-{ name: 'Ars Technica Robotics', url: 'https://arstechnica.com/ai/feed/', category: 'Research', region: 'US' },  // hmm — this is AI-tagged, not robotics-specific; see note below
-
-// ---- Quantum ----
-{ name: 'Quantum Computing Report', url: 'https://quantumcomputingreport.com/news/feed/', category: 'Research', region: 'Global' },  // ← you already have this one
-{ name: 'Quantum Zeitgeist', url: 'https://quantumzeitgeist.com/feed/', category: 'Research', region: 'Global' },
-{ name: 'Inside Quantum Technology', url: 'https://insidequantumtechnology.com/feed/', category: 'Research', region: 'Global' },
+  // ---- Global Tech (country-specific) ----
+  { name: 'Rest of World', url: 'https://restofworld.org/feed/latest/', category: 'Global Tech', region: 'Global' },
+  { name: 'TechCabal', url: 'https://techcabal.com/feed/', category: 'Global Tech', region: 'Nigeria' },
+  { name: 'Techpoint Africa', url: 'https://techpoint.africa/feed/', category: 'Global Tech', region: 'Nigeria' },
+  { name: 'Nairametrics Tech', url: 'https://nairametrics.com/category/technology/feed/', category: 'Global Tech', region: 'Nigeria' }, // ⚠ verify
+  { name: 'TechCentral ZA', url: 'https://techcentral.co.za/feed/', category: 'Global Tech', region: 'South Africa' },
+  { name: 'Daily Maverick Tech', url: 'https://dailymaverick.co.za/dmrss/technology/', category: 'Global Tech', region: 'South Africa' }, // ⚠ verify
+  { name: 'Tech in Asia', url: 'https://www.techinasia.com/feed', category: 'Global Tech', region: 'Singapore' }, // ⚠ verify
+  { name: 'Tech in Asia PH', url: 'https://ph.techinasia.com/feed', category: 'Global Tech', region: 'Philippines' }, // ⚠ verify — this subdomain looks dead to me; low confidence
+  { name: 'e27', url: 'https://e27.co/feed/', category: 'Global Tech', region: 'Singapore' },
+  { name: 'TechNode', url: 'https://technode.com/feed/', category: 'Global Tech', region: 'China' },
+  { name: 'Japan Times Tech', url: 'https://www.japantimes.co.jp/feed/technology', category: 'Global Tech', region: 'Japan' }, // ⚠ verify
+  { name: 'Times of Israel Tech', url: 'https://www.timesofisrael.com/israel-tech/feed/', category: 'Global Tech', region: 'Israel' }, // ⚠ verify — your version had /feed/technology/; I believe /israel-tech/feed/ is right, keep whichever works
+  { name: 'Nocamels', url: 'https://nocamels.com/feed/', category: 'Global Tech', region: 'Israel' },
 ];
-
-// ---- Research (incl. quantum) ----
-{ name: 'MIT News AI', url: 'https://news.mit.edu/rss/topic/artificial-intelligence2', category: 'Research', region: 'US' },
-{ name: 'Nature Tech', url: 'https://www.nature.com/subjects/technology.rss', category: 'Research', region: 'Global' },
-{ name: 'Quantum Computing Report', url: 'https://quantumcomputingreport.com/news/feed/', category: 'Research', region: 'Global' },
-{ name: 'Quantum Zeitgeist', url: 'https://quantumzeitgeist.com/feed/', category: 'Research', region: 'Global' },
-{ name: 'Inside Quantum Technology', url: 'https://insidequantumtechnology.com/feed/', category: 'Research', region: 'Global' },
-
-// ---- Tech Giants (tech leaders as people) ----
-{ name: 'Sam Altman', url: 'https://blog.samaltman.com/feed/', category: 'Tech Giants', region: 'US' },
-{ name: 'Bill Gates', url: 'https://www.gatesnotes.com/rss', category: 'Tech Giants', region: 'US' }, // ⚠ verify
-{ name: 'Simon Willison', url: 'https://simonwillison.net/atom/everything/', category: 'Tech Giants', region: 'Global' }, // high volume, short posts
-{ name: 'Ethan Mollick', url: 'https://www.oneusefulthing.org/feed', category: 'Tech Giants', region: 'US' }, // ⚠ verify — if dead try https://ethanmollick.substack.com/feed
-{ name: 'Benedict Evans', url: 'https://www.ben-evans.com/benedictevans/benedictevans/feed', category: 'Tech Giants', region: 'Global' }, // ⚠ verify
-{ name: 'Andrej Karpathy', url: 'https://karpathy.github.io/feed.xml', category: 'Tech Giants', region: 'US' }, // ⚠ verify — posts rarely
-{ name: 'Andrew Ng', url: 'https://www.deeplearning.ai/feed/', category: 'Tech Giants', region: 'US' }, // ⚠ verify
 
 // ---- 2. FETCH NEW ITEMS ----
 async function fetchNewItems() {

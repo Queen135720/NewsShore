@@ -167,7 +167,16 @@ Rewrite the following into:
 3. A 500-1000 word article body, fully in your own words but accurate and verifiable. Do not copy phrases from the original.
 4. A "reliability" tag: "verified" if from independent testing/reporting, or "claimed" if it's a company announcement
 5. Three to ten short glossary terms (technical word + one-sentence plain-language explanation)
-6. Three stock-photo search queries (2-4 words each) to illustrate this story. Rules: describe things you can SEE — objects, machines, places, people (e.g. "data center aisle", "robot arm factory", "circuit board macro"). NEVER use company or brand names — describe the product or industry instead (e.g. for a Nvidia chip story use "computer chip closeup"). Never abstract words alone like "future" or "innovation".
+6. A "category" — exactly one of: "AI News", "Mobile & Social", "Tech News", "Tech Giants", "Startups & Funding", "Research", "Deals", "Global Tech"
+7. A "region" — where the story is about, in one or two words (examples: "Nigeria", "South Africa", "Singapore", "Japan", "Israel", "China", "US", "Europe", "Global"). Judge from the story content, not the source.
+8. Three stock-photo search queries (2-4 words each) to illustrate this story. Rules: describe things you can SEE — objects, machines, places, people (e.g. "data center aisle", "robot arm factory", "circuit board macro"). NEVER use company or brand names — describe the product or industry instead (e.g. for a Nvidia chip story use "computer chip closeup"). Never abstract words alone like "future" or "innovation".
+
+CATEGORY RULES:
+- "Tech Giants" is about tech industry LEADERS as people — founders, CEOs, researchers: their essays, statements, interviews, predictions, career moves. NOT company product launches.
+- Company/product news goes to "Tech News" — unless it's phones, apps, or social platforms, which go to "Mobile & Social".
+- "Global Tech" is for stories primarily about one country's or region's tech scene, ecosystem, or policy. A story about AI that merely comes from Nigeria is "AI News" with region "Nigeria".
+- Robotics goes to "Tech News". Quantum computing breakthroughs and research papers go to "Research".
+- Funding rounds and startup launches go to "Startups & Funding". Acquisitions, mergers, and major partnerships go to "Deals".
 
 IMPORTANT RULES:
 - Do not invent quotes, sources, statistics, or links.
@@ -175,9 +184,10 @@ IMPORTANT RULES:
 - If you don't know something, leave it out rather than guessing.
 
 Respond ONLY in this exact JSON format, nothing else:
-{"headline": "...", "summary": "...", "body": "...", "reliability": "...", "glossary": [{"term":"...","definition":"..."}], "imageQueries": ["...", "...", "..."]}
+{"headline": "...", "summary": "...", "body": "...", "reliability": "...", "category": "...", "region": "...", "glossary": [{"term":"...","definition":"..."}], "imageQueries": ["...", "...", "..."]}
 
 Source title: ${item.title}
+Source site: ${item.sourceName} (suggested category: "${item.category}", suggested region: "${item.region}" — override these if the story content says otherwise)
 Source content: ${item.contentSnippet || item.content || ''}`;
 
   try { return await callGemini(prompt); }

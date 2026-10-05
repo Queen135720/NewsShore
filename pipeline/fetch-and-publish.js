@@ -49,25 +49,45 @@ const SOURCES = [
 
 // ---- 2. FETCH NEW ITEMS ----
 async function fetchNewItems() {
+  // Load ALL existing article URLs in ONE query (was: one query per item — slow)
+  const { data: existingRows } = await supabase
+    .from('articles')
+    .select('source_url');
+  const existingUrls = new Set((existingRows ?? []).map((r) => r.source_url));
+
   const allItems = [];
+  const seenThisRun = new Set(); // same article can appear in multiple feeds
+
   for (const source of SOURCES) {
-    try {
-      const feed = await parser.parseURL(source.url);
-      const latest = feed.items.slice(0, 3);
-      for (const item of latest) {
-        const { data: existing } = await supabase
-          .from('articles')
-          .select('id')
-          .eq('source_url', item.link)
-          .maybeSingle();
-        if (!existing) {
+    // Page 1 always; page 2 if page 1 was full (widens window to ~20 recent items)
+    for (const page of [1, 2]) {
+      try {
+        const url =
+          page === 1
+            ? source.url
+            : `${source.url}${source.url.includes('?') ? '&' : '?'}paged=${page}`;
+        const feed = await parser.parseURL(url);
+        const items = feed.items ?? [];
+
+        for (const item of items) {
+          if (!item.link || seenThisRun.has(item.link)) continue;
+          if (existingUrls.has(item.link)) continue; // already saved
+          seenThisRun.add(item.link);
           allItems.push({ ...item, sourceName: source.name, category: source.category, region: source.region });
         }
+
+        if (items.length < 10) break; // short feed — no page 2 exists
+      } catch (err) {
+        console.error(`Failed to fetch ${source.name} (page ${page}): ${err.message?.substring(0, 100)}`);
+        break; // if page 1 fails, skip page 2
       }
-    } catch (err) {
-      console.error(`Failed to fetch ${source.name}: ${err.message?.substring(0, 100)}`);
     }
   }
+
+  // Newest first ACROSS all sources — otherwise early sources in the list
+  // starve later ones whenever there's a backlog
+  allItems.sort((a, b) => new Date(b.isoDate ?? 0).getTime() - new Date(a.isoDate ?? 0).getTime());
+
   return allItems;
 }
 

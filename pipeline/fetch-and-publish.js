@@ -65,6 +65,10 @@ const SOURCES = [
 { name: 'TechCrunch Apps', url: 'https://techcrunch.com/category/apps/feed/', category: 'Mobile & Social', region: 'Global' },
 { name: 'Social Media Today', url: 'https://www.socialmediatoday.com/rss', category: 'Mobile & Social', region: 'Global' },
 { name: 'Social Media Examiner', url: 'https://www.socialmediaexaminer.com/feed/', category: 'Mobile & Social', region: 'Global' },
+{ name: 'Techcrunch Social', url: 'https://techcrunch.com/category/social/feed/', category: 'Mobile & Social', region: 'Global' },
+{ name: 'Techcrunch Apps', url: 'https://techcrunch.com/category/apps/feed/', category: 'Mobile & Social', region: 'Global' },
+{ name: 'Techcrunch Mobile', url: 'https://techcrunch.com/tag/mobile/feed/', category: 'Mobile & Social', region: 'Global' },
+{ name: 'Techcrunch Media & Entertainment', url: 'https://techcrunch.com/category/media-entertainment/feed/', category: 'Mobile & Social', region: 'Global' },
 
 // ---- Country-specific tech ----
 { name: 'Techpoint Africa', url: 'https://techpoint.africa/feed/', category: 'Global & China', region: 'Nigeria' },

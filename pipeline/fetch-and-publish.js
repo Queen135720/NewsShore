@@ -131,7 +131,7 @@ async function fetchNewItems() {
         if (existingUrls.has(item.link)) continue; // already saved
         // ★ Skip old items — only ingest news from the last 7 days
         const itemDate = item.isoDate ? new Date(item.isoDate).getTime() : 0;
-        if (itemDate && Date.now() - itemDate > 7 * 24 * 60 * 60 * 1000) continue;
+        if (itemDate && Date.now() - itemDate > 10 * 24 * 60 * 60 * 1000) continue;
 
         if (items.length < 10) break; // short feed — no page 2 exists
       } catch (err) {

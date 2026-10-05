@@ -935,7 +935,7 @@ export function Home({ initialArticles }: { initialArticles: NewsArticle[] }) {
   }, []);
 
   const filtered = activeCategory === 'Latest'
-    ? allArticles.slice(3)
+    ? allArticles.slice(1)
     : allArticles.filter((a) => a.category === activeCategory);
 
   return (

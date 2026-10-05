@@ -92,7 +92,6 @@ const SOURCES = [
   { name: 'TechCentral ZA', url: 'https://techcentral.co.za/feed/', category: 'Global Tech', region: 'South Africa' },
   { name: 'e27', url: 'https://e27.co/feed/', category: 'Global Tech', region: 'Singapore' },
   { name: 'TechNode', url: 'https://technode.com/feed/', category: 'Global Tech', region: 'China' },
-  { name: 'Japan Times Tech', url: 'https://www.japantimes.co.jp/rss/technology.xml', category: 'Global Tech', region: 'Japan' },
   { name: 'Nocamels', url: 'https://nocamels.com/feed/', category: 'Global Tech', region: 'Israel' },
 ];
 
@@ -399,7 +398,7 @@ async function run() {
 
   const usedKeys = await loadUsedImageKeys(); // ★ new — dedup memory vs last 300 articles
 
-  const MAX_PER_RUN = 5;
+  const MAX_PER_RUN = 9;
   const batch = newItems.slice(0, MAX_PER_RUN);
   if (newItems.length > MAX_PER_RUN) {
     console.log(`Processing ${MAX_PER_RUN} of ${newItems.length} — the rest will be picked up on the next run.`);

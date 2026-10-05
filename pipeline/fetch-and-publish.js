@@ -56,6 +56,41 @@ const SOURCES = [
   { name: 'TechNode', url: 'https://technode.com/feed/', category: 'Global & China', region: 'China' },
   { name: 'Nocamels', url: 'https://nocamels.com/feed/', category: 'Global & China', region: 'Israel' },
   { name: 'Quantum Computing Report', url: 'https://quantumcomputingreport.com/news/feed/', category: 'Research', region: 'Global' },
+  // ---- Mobile & Social ----
+{ name: '9to5Mac', url: 'https://9to5mac.com/feed/', category: 'Mobile & Social', region: 'US' },
+{ name: '9to5Google', url: 'https://9to5google.com/feed/', category: 'Mobile & Social', region: 'US' },
+{ name: 'Android Authority', url: 'https://www.androidauthority.com/feed/', category: 'Mobile & Social', region: 'US' },
+{ name: 'Android Police', url: 'https://www.androidpolice.com/feed/', category: 'Mobile & Social', region: 'US' },
+{ name: 'The Verge Mobile', url: 'https://www.theverge.com/rss/tech/index.xml', category: 'Mobile & Social', region: 'US' },
+{ name: 'TechCrunch Apps', url: 'https://techcrunch.com/category/apps/feed/', category: 'Mobile & Social', region: 'Global' },
+{ name: 'Social Media Today', url: 'https://www.socialmediatoday.com/rss', category: 'Mobile & Social', region: 'Global' },
+{ name: 'Social Media Examiner', url: 'https://www.socialmediaexaminer.com/feed/', category: 'Mobile & Social', region: 'Global' },
+
+// ---- Country-specific tech ----
+{ name: 'Techpoint Africa', url: 'https://techpoint.africa/feed/', category: 'Global & China', region: 'Nigeria' },
+{ name: 'Nairametrics Tech', url: 'https://nairametrics.com/category/technology/feed/', category: 'Global & China', region: 'Nigeria' },
+{ name: 'TechCabal', url: 'https://techcabal.com/feed/', category: 'Global & China', region: 'Nigeria' },   // ← you already have this one — remove one copy
+{CABAL: keep your existing, delete my duplicate}
+{ name: 'TechCentral ZA', url: 'https://techcentral.co.za/feed/', category: 'Global & China', region: 'South Africa' },
+{ name: 'Daily Maverick Tech', url: 'https://dailymaverick.co.za/dmrss/technology/', category: 'Global & China', region: 'South Africa' },
+{ name: 'Tech in Asia', url: 'https://www.techinasia.com/feed', category: 'Global & China', region: 'Singapore' },
+{ name: 'e27', url: 'https://e27.co/feed/', category: 'Global & China', region: 'Singapore' },
+{ name: 'Tech in Asia PH', url: 'https://ph.techinasia.com/feed', category: 'Global & China', region: 'Philippines' },
+{ name: 'Japan Times Tech', url: 'https://www.japantimes.co.jp/feed/technology', category: 'Global & China', region: 'Japan' },
+{ name: 'TechNode', url: 'https://technode.com/feed/', category: 'Global & China', region: 'China' },        // ← you already have this one
+{CABAL: keep your existing, delete my duplicate}
+{ name: 'The Times of Israel Tech', url: 'https://www.timesofisrael.com/feed/technology/', category: 'Global & China', region: 'Israel' },  // replace with your Nocamels — same region, more tech volume
+
+// ---- Robotics ----
+{ name: 'The Robot Report', url: 'https://www.therobotreport.com/feed/', category: 'Research', region: 'Global' },
+{ name: 'IEEE Spectrum Robotics', url: 'https://spectrum.ieee.org/feeds/topic/robotics.rss', category: 'Research', region: 'Global' },
+{ name: 'Robotics Business Review', url: 'https://www.roboticsbusinessreview.com/feed/', category: 'Research', region: 'Global' },
+{ name: 'Ars Technica Robotics', url: 'https://arstechnica.com/ai/feed/', category: 'Research', region: 'US' },  // hmm — this is AI-tagged, not robotics-specific; see note below
+
+// ---- Quantum ----
+{ name: 'Quantum Computing Report', url: 'https://quantumcomputingreport.com/news/feed/', category: 'Research', region: 'Global' },  // ← you already have this one
+{ name: 'Quantum Zeitgeist', url: 'https://quantumzeitgeist.com/feed/', category: 'Research', region: 'Global' },
+{ name: 'Inside Quantum Technology', url: 'https://insidequantumtechnology.com/feed/', category: 'Research', region: 'Global' },
 ];
 
 // ---- 2. FETCH NEW ITEMS ----

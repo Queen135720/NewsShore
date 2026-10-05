@@ -15,9 +15,10 @@ const CATEGORY_IMAGE_TERMS = {
   'Tech Giants': ['server room', 'data center', 'modern tech office'],
   'Tech News': ['circuit board macro', 'computer chip closeup', 'gpu graphics card'],
   'Startups & Funding': ['startup team meeting', 'modern workspace', 'business handshake'],
+  'Mobile & Social': ['mobile launch', 'mobile apps', 'Social media'],
   'Research': ['research laboratory', 'scientist at computer', 'data analysis screen'],
   'Deals': ['stock market screen', 'finance charts', 'business deal'],
-  'Global & China': ['asia city skyline night', 'global network map', 'shanghai skyline'],
+  'Global Tech': ['asia city skyline night', 'global network map', 'shanghai skyline'],
   'Latest': ['abstract technology blue', 'futuristic screen', 'circuit board'],
 };
 

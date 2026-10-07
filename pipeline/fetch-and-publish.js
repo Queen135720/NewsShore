@@ -157,9 +157,16 @@ async function fetchNewItems() {
 async function rewriteArticle(item) {
   const prompt = `You are a neutral tech news writer for a general, non-technical global audience.
 RELEVANCE CHECK — do this first:
-If the story is NOT about technology, AI, software, hardware, internet, robotics, science, mobile device, space, quantum computing, cyber security, startups, or the tech industry, respond ONLY with:
+Decide if the story is GENUINELY tech news. It must be primarily about technology, AI, software, hardware, gadgets, internet, robotics, science, space, quantum computing, cyber security, startups, or the tech industry itself.
+Reject ALL of these even if a tech company or tech person is mentioned:
+- Business, finance, pension funds, stock markets, IPOs, oil, banking (unless it is fintech or crypto technology)
+- Politics, government policy, legal disputes, court cases (unless the case is specifically about tech regulation or tech companies)
+- Labor disputes, strikes, HR matters, executive suspension or leave
+- Sports, entertainment, celebrity news, lifestyle
+- Deals/discounts/sales on products (price drops, coupon codes, shopping events like Prime Day, "all-time low price")
+- Events, conferences, ticket sales, promotional content
+If the tech angle is not the CENTRAL subject of the story, respond ONLY with:
 {"reject": true, "reason": "one short sentence"}
-Reject pure business, finance, real estate, legal, politics, sports, or entertainment stories even if they involve large companies. The tech angle must be central to the story, not incidental.
 
 Rewrite the following into:
 1. A clear headline (under 12 words)
@@ -172,11 +179,15 @@ Rewrite the following into:
 8. Three stock-photo search queries (2-4 words each) to illustrate this story. Rules: describe things you can SEE — objects, machines, places, people (e.g. "data center aisle", "robot arm factory", "circuit board macro"). NEVER use company or brand names — describe the product or industry instead (e.g. for a Nvidia chip story use "computer chip closeup"). Never abstract words alone like "future" or "innovation".
 
 CATEGORY RULES:
-- "Tech Giants" is about tech industry LEADERS as people — founders, CEOs, researchers: their essays, statements, interviews, predictions, career moves. NOT company product launches.
-- Company/product news goes to "Tech News" — unless it's phones, apps, or social platforms, which go to "Mobile & Social".
-- "Global Tech" is for stories primarily about one country's or region's tech scene, ecosystem, or policy. A story about AI that merely comes from Nigeria is "AI News" with region "Nigeria".
-- Robotics goes to "Tech News". Quantum computing breakthroughs and research papers go to "Research".
-- Funding rounds and startup launches go to "Startups & Funding". Acquisitions, mergers, and major partnerships go to "Deals".
+- "AI News" — artificial intelligence: models, AI companies, AI research, AI applications, AI policy
+- "Mobile & Social" — smartphones, phone hardware, phone reviews, apps, app stores, social media platforms and their features
+- "Tech Giants" — tech industry LEADERS as people: their statements, essays, predictions, career moves, controversies. ONLY when the story is ABOUT the person. If a CEO simply commented on policy (e.g., praising a government framework), that is NOT Tech Giants — it is not tech news at all, reject it unless their statement is about technology itself
+- "Tech News" — general technology: laptops, gadgets, robotics, hardware, cyber security, space tech, tech company product launches
+- "Startups & Funding" — startup launches, funding rounds, venture capital, accelerators, startup ecosystem
+- "Research" — scientific research, AI research papers, quantum computing research, biotech, lab breakthroughs
+- "Deals" — mergers, acquisitions, major corporate partnerships between tech companies
+- "Global Tech" — stories primarily about one country's or region's tech scene, ecosystem, or tech policy. The country's tech scene must be the subject — not general news that merely happened in that country
+When unsure between two categories, choose the one a reader would most expect the story to appear under on a tech news site.
 
 IMPORTANT RULES:
 - Do not invent quotes, sources, statistics, or links.

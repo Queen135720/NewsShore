@@ -171,6 +171,7 @@ IMPORTANT RULES:
 - Do not invent quotes, sources, statistics, or links.
 - Do not fabricate any information not present in the source text.
 - If you don't know something, leave it out rather than guessing.
+- Format the body in simple markdown only: use "## Subheading" for section headings, "- item" for bullet lists, and **bold** for emphasis. Never use tables, code blocks, or # symbols for anything else.
 
 Respond ONLY in this exact JSON format, nothing else:
 {"headline": "...", "summary": "...", "body": "...", "reliability": "...", "category": "...", "region": "...", "glossary": [{"term":"...","definition":"..."}], "imageQueries": ["...", "...", "..."]}

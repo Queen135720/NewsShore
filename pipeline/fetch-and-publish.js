@@ -104,6 +104,11 @@ async function fetchNewItems() {
     .select('source_url');
   const existingUrls = new Set((existingRows ?? []).map((r) => r.source_url));
 
+    const { data: processedRows } = await supabase
+    .from('processed_urls')
+    .select('source_url');
+  const processedUrls = new Set((processedRows ?? []).map((r) => r.source_url));
+
   const allItems = [];
   const seenThisRun = new Set();
 
@@ -120,6 +125,7 @@ async function fetchNewItems() {
         for (const item of items) {
           if (!item.link || seenThisRun.has(item.link)) continue;
           if (existingUrls.has(item.link)) continue; // already saved
+          if (processedUrls.has(item.link)) continue; // previously rejected or failed
 
           // Skip old items — only ingest news from the last 10 days
           const itemDate = item.isoDate ? new Date(item.isoDate).getTime() : 0;
@@ -437,7 +443,7 @@ async function run() {
   const newItems = await fetchNewItems();
   console.log(`Found ${newItems.length} new item(s).`);
 
-  const usedKeys = await loadUsedImageKeys(); // ★ new — dedup memory vs last 300 articles
+  const usedKeys = await loadUsedImageKeys();
 
   const MAX_PER_RUN = 15;
   const batch = newItems.slice(0, MAX_PER_RUN);
@@ -445,19 +451,30 @@ async function run() {
     console.log(`Processing ${MAX_PER_RUN} of ${newItems.length} — the rest will be picked up on the next run.`);
   }
 
-  let saved = 0;
-  let failed = 0;
+  let saved = 0, rejected = 0, failed = 0;
   for (const item of batch) {
     try {
       const rewritten = await rewriteArticle(item);
+
+      if (rewritten?.reject) {
+        console.log(`Rejected (not tech): ${item.title} — ${rewritten.reason ?? ''}`);
+        await supabase.from('processed_urls').insert({ source_url: item.link, status: 'rejected' });
+        rejected++;
+        continue;
+      }
+
       const ok = await saveArticle(item, rewritten, usedKeys);
       if (ok) saved++; else failed++;
     } catch (err) {
-      console.error(`Skipping "${item.title}" — all 4 AI providers failed: ${err.message}`);
+      console.error(`Skipping "${item.title}" — all AI providers failed: ${err.message}`);
+      await supabase.from('processed_urls').insert({ source_url: item.link, status: 'failed' });
       failed++;
     }
+    await new Promise(r => setTimeout(r, 2000)); // 2s gap — kinder to free-tier rate limits
   }
 
+  console.log(`Run complete. Saved: ${saved}, Rejected: ${rejected}, Failed: ${failed}`);
+}
   console.log(`Run complete. Saved: ${saved}, Failed: ${failed}`);
 }
 

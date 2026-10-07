@@ -30,14 +30,6 @@ function ReliabilityBadge({ r }: { r: string }) {
     : <Badge className="bg-yellow-100 text-yellow-700 text-xs"><span className="inline-block w-1.5 h-1.5 rounded-full bg-yellow-500 mr-1" />Claimed</Badge>;
 
   // Convert AI markdown (## subheads, - bullets, **bold**) into clean HTML
-function inlineFormat(text: string): React.ReactNode {
-  const parts = text.split(/(\*\*[^*]+\*\*)/g);
-  return parts.map((p, i) =>
-    p.startsWith('**') && p.endsWith('**')
-      ? <strong key={i} className="font-semibold text-gray-900">{p.slice(2, -2)}</strong>
-      : p
-  );
-}
 
     const lines = trimmed.split('\n').map((l) => l.trim()).filter(Boolean);
 

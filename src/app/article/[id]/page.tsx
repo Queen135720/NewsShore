@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 const CATEGORY_COLOR: Record<string, string> = {
   'AI News': 'bg-violet-100 text-violet-700',
   'Tech Giants': 'bg-cyan-100 text-cyan-700',
+  'Tech News': 'bg-blue-100 text-blue-700',
   'Startups & Funding': 'bg-amber-100 text-amber-700',
   'Mobile & Social': 'bg-sky-100 text-sky-700',
   'Research': 'bg-orange-100 text-orange-700',
@@ -28,34 +29,6 @@ function ReliabilityBadge({ r }: { r: string }) {
   return r === 'verified'
     ? <Badge className="bg-green-100 text-green-700 text-xs"><span className="inline-block w-1.5 h-1.5 rounded-full bg-green-500 mr-1" />Verified</Badge>
     : <Badge className="bg-yellow-100 text-yellow-700 text-xs"><span className="inline-block w-1.5 h-1.5 rounded-full bg-yellow-500 mr-1" />Claimed</Badge>;
-
-    const lines = trimmed.split('\n').map((l) => l.trim()).filter(Boolean);
-
-    // Bulleted list: every line starts with -, *, or •
-    if (lines.length > 0 && lines.every((l) => /^[-*•]\s+/.test(l))) {
-      return (
-        <ul key={i} className="list-disc pl-6 mb-6 space-y-2 text-sm sm:text-base lg:text-lg text-gray-600 leading-relaxed">
-          {lines.map((l, j) => <li key={j}>{inlineFormat(l.replace(/^[-*•]\s+/, ''))}</li>)}
-        </ul>
-      );
-    }
-
-    // Numbered list: every line starts with 1. or 1)
-    if (lines.length > 0 && lines.every((l) => /^\d+[.)]\s+/.test(l))) {
-      return (
-        <ol key={i} className="list-decimal pl-6 mb-6 space-y-2 text-sm sm:text-base lg:text-lg text-gray-600 leading-relaxed">
-          {lines.map((l, j) => <li key={j}>{inlineFormat(l.replace(/^\d+[.)]\s+/, ''))}</li>)}
-        </ol>
-      );
-    }
-
-    return (
-      <p key={i} className="mb-5 text-sm sm:text-base lg:text-lg text-gray-600 leading-relaxed">
-        {inlineFormat(trimmed)}
-      </p>
-    );
-  });
-}
 }
 
 // Convert AI markdown (## subheads, - bullets, **bold**) into clean HTML
@@ -126,7 +99,7 @@ export default function ArticlePage() {
       setLoading(false);
       return;
     }
-    // Fetch this single pipeline article (fast — one small request, not the whole list)
+    // Fetch this single pipeline article (fast — one small request)
     fetch(`/api/articles?id=${encodeURIComponent(articleId)}`)
       .then(r => r.json())
       .then(data => {
@@ -153,7 +126,7 @@ export default function ArticlePage() {
     </div>
   );
 
-  // ★ Read credit info (cast keeps this safe regardless of the NewsArticle type)
+  // Read credit info (cast keeps this safe regardless of the NewsArticle type)
   const creditName = (article as any).imageCreditName as string | null | undefined;
   const creditUrl = (article as any).imageCreditUrl as string | null | undefined;
 
@@ -162,8 +135,8 @@ export default function ArticlePage() {
       {/* Sticky Header */}
       <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-3">
-          <Link 
-            href="/" 
+          <Link
+            href="/"
             className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-[#0f1b3d] active:text-[#0f1b3d] transition-colors py-2 px-2 -ml-2 rounded-lg"
             style={{ touchAction: 'manipulation' }}
           >
@@ -188,7 +161,7 @@ export default function ArticlePage() {
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
           <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-8 lg:p-10">
             <div className="flex flex-wrap items-center gap-2 mb-3">
-              <Link href={`/${article.category === 'AI News' ? 'ai-news' : article.category === 'Tech Giants' ? 'tech-giants' : article.category === 'Tech News' ? 'tech-news' : article.category === 'Startups & Funding' ? 'startups-funding' : article.category === 'Research' ? 'research' : article.category === 'Global & China' ? 'global-china' : ''}`}>
+              <Link href={`/${article.category === 'AI News' ? 'ai-news' : article.category === 'Tech Giants' ? 'tech-giants' : article.category === 'Tech News' ? 'tech-news' : article.category === 'Mobile & Social' ? 'mobile-social' : article.category === 'Startups & Funding' ? 'startups-funding' : article.category === 'Research' ? 'research' : article.category === 'Global Tech' ? 'global-tech' : ''}`}>
                 <Badge className={`${CATEGORY_COLOR[article.category] || 'bg-gray-100 text-gray-700'} text-xs hover:opacity-80 cursor-pointer`}>{article.category}</Badge>
               </Link>
               <ReliabilityBadge r={article.reliability} />
@@ -199,7 +172,7 @@ export default function ArticlePage() {
 
         {/* Article Body */}
         <div className="max-w-4xl mx-auto px-5 sm:px-8 lg:px-10 py-6 sm:py-8">
-          {/* ★ Photo credit — required by Unsplash guidelines */}
+          {/* Photo credit — required by Unsplash guidelines */}
           {creditName && (
             <p className="text-xs text-gray-400 font-[family-name:var(--font-dm-sans)] mb-4">
               Photo by{' '}
@@ -219,7 +192,7 @@ export default function ArticlePage() {
           {/* Summary */}
           <p className="mt-5 text-base sm:text-lg lg:text-xl text-gray-700 leading-relaxed font-medium">{article.summary}</p>
 
-          {/* Body */}
+          {/* Body — markdown-aware renderer */}
           <div className="mt-5">
             {renderBody(article.body || '')}
           </div>

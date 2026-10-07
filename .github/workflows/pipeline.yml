@@ -1,3 +1,6 @@
+concurrency:
+  group: fetch-publish
+  cancel-in-progress: true
 # This file goes at: .github/workflows/pipeline.yml (typing that full path
 # when creating a new file on GitHub will auto-create both folders).
 #

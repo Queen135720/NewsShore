@@ -475,7 +475,5 @@ async function run() {
 
   console.log(`Run complete. Saved: ${saved}, Rejected: ${rejected}, Failed: ${failed}`);
 }
-  console.log(`Run complete. Saved: ${saved}, Failed: ${failed}`);
-}
 
 run();

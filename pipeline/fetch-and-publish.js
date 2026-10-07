@@ -122,6 +122,9 @@ async function fetchNewItems() {
           if (existingUrls.has(item.link)) continue; // already saved
           // Skip old items — only ingest news from the last 10 days
           const itemDate = item.isoDate ? new Date(item.isoDate).getTime() : 0;
+          // Skip promos, roundups, and non-news filler
+          const t = (item.title || '').toLowerCase();
+          if (/wallpaper|giveaway|contest|save on your pass|discount code|cyber monday|black friday|newsletter|podcast episode/.test(t)) continue;
           if (itemDate && Date.now() - itemDate > 10 * 24 * 60 * 60 * 1000) continue;
           seenThisRun.add(item.link);
           allItems.push({ ...item, sourceName: source.name, category: source.category, region: source.region });
@@ -278,7 +281,7 @@ async function callGLM(prompt) {
 
 async function callGroq(prompt) {
   if (!process.env.GROQ_API_KEY) throw new Error('GROQ_API_KEY not set');
-  const res = await retryFetch('https://api.groq.com/openai/v1/chat/completions', {
+  const res = await retryFetch('https://api.groq.com/openai/v1/models', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.GROQ_API_KEY}` },
     body: JSON.stringify({ model: 'openai/gpt-oss-120b', messages: [{ role: 'user', content: prompt }] }),
@@ -421,7 +424,7 @@ async function run() {
 
   const usedKeys = await loadUsedImageKeys(); // ★ new — dedup memory vs last 300 articles
 
-  const MAX_PER_RUN = 9;
+  const MAX_PER_RUN = 15;
   const batch = newItems.slice(0, MAX_PER_RUN);
   if (newItems.length > MAX_PER_RUN) {
     console.log(`Processing ${MAX_PER_RUN} of ${newItems.length} — the rest will be picked up on the next run.`);

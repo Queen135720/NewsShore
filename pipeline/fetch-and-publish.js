@@ -173,20 +173,42 @@ Source title: ${item.title}
 Source site: ${item.sourceName} (suggested category: "${item.category}", suggested region: "${item.region}" — override these if the story content says otherwise)
 Source content: ${item.contentSnippet || item.content || ''}`;
 
-  try { return await callGemini(prompt); }
-  catch (err) { console.warn(`Gemini failed, falling back to GLM: ${err.message}`); }
-  try { return await callGLM(prompt); }
-  catch (err) { console.warn(`GLM failed, falling back to Groq: ${err.message}`); }
-  try { return await callGroq(prompt); }
-  catch (err) { console.warn(`Groq failed, falling back to DeepSeek: ${err.message}`); }
-  return await callDeepSeek(prompt);
+    if (!providerDown.gemini) {
+    try { return await callGemini(prompt); }
+    catch (err) {
+      if (/429|quota/i.test(err.message)) { providerDown.gemini = true; console.warn('Gemini quota dead — skipping rest of this run'); }
+      else console.warn(`Gemini failed, falling back: ${err.message}`);
+    }
+  }
+  if (!providerDown.glm) {
+    try { return await callGLM(prompt); }
+    catch (err) {
+      if (/429/i.test(err.message)) { providerDown.glm = true; console.warn('GLM throttled — skipping rest of this run'); }
+      else console.warn(`GLM failed, falling back: ${err.message}`);
+    }
+  }
+  if (!providerDown.groq) {
+    try { return await callGroq(prompt); }
+    catch (err) {
+      if (/429/i.test(err.message)) { providerDown.groq = true; console.warn('Groq throttled — skipping rest of this run'); }
+      else console.warn(`Groq failed, falling back: ${err.message}`);
+    }
+  }
+  if (!providerDown.deepseek) {
+    try { return await callDeepSeek(prompt); }
+    catch (err) {
+      if (/402|insufficient/i.test(err.message)) { providerDown.deepSeek = true; console.warn('DeepSeek balance empty — skipping rest of this run'); }
+      else console.warn(`DeepSeek failed: ${err.message}`);
+    }
+  }
+  throw new Error('All 4 AI providers failed');
 }
 
 async function retryFetch(url, options) {
   const res = await fetch(url, options);
   if (res.status === 429) {
     console.log('  Got 429, waiting 10s and retrying...');
-    await new Promise(r => setTimeout(r, 10000));
+    await new Promise(r => setTimeout(r, 3000));
     return fetch(url, options);
   }
   return res;
@@ -259,7 +281,7 @@ async function callGroq(prompt) {
   const res = await retryFetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.GROQ_API_KEY}` },
-    body: JSON.stringify({ model: 'openai/gpt-oss-20b', messages: [{ role: 'user', content: prompt }] }),
+    body: JSON.stringify({ model: 'llama-3.3-70b-versatile', messages: [{ role: 'user', content: prompt }] }),
   });
   if (!res.ok) {
     const errBody = await res.text();

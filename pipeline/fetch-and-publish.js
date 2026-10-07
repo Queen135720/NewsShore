@@ -11,6 +11,8 @@
 import Parser from 'rss-parser';
 import { createClient } from '@supabase/supabase-js';
 
+const providerDown = { gemini: false, glm: false, groq: false, deepseek: false };
+
 const parser = new Parser({
   timeout: 10000,
   headers: {

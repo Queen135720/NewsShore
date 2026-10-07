@@ -150,6 +150,11 @@ async function fetchNewItems() {
 // ---- 3. REWRITE WITH AI ----
 async function rewriteArticle(item) {
   const prompt = `You are a neutral tech news writer for a general, non-technical global audience.
+RELEVANCE CHECK — do this first:
+If the story is NOT about technology, AI, software, hardware, internet, robotics, science, mobile device, space, quantum computing, cyber security, startups, or the tech industry, respond ONLY with:
+{"reject": true, "reason": "one short sentence"}
+Reject pure business, finance, real estate, legal, politics, sports, or entertainment stories even if they involve large companies. The tech angle must be central to the story, not incidental.
+
 Rewrite the following into:
 1. A clear headline (under 12 words)
 2. A 2-3 sentence summary that captures the key points

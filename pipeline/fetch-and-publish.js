@@ -127,7 +127,7 @@ async function fetchNewItems() {
 
           // Skip promos, roundups, and non-news filler
           const t = (item.title || '').toLowerCase();
-          if (/wallpaper|giveaway|contest|save on your pass|discount code|cyber monday|black friday|newsletter|podcast episode/.test(t)) continue;
+          if (/wallpaper|giveaway|contest|save on your pass|discount code|cyber monday|black friday|newsletter|podcast episode|techcrunch disrupt/.test(t)) continue;
 
           seenThisRun.add(item.link);
           allItems.push({ ...item, sourceName: source.name, category: source.category, region: source.region });
@@ -285,10 +285,16 @@ async function callGLM(prompt) {
 
 async function callGroq(prompt) {
   if (!process.env.GROQ_API_KEY) throw new Error('GROQ_API_KEY not set');
-  const res = await retryFetch('https://api.groq.com/openai/v1/models', {
+  const res = await retryFetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.GROQ_API_KEY}` },
-    body: JSON.stringify({ model: 'openai/gpt-oss-120b', messages: [{ role: 'user', content: prompt }] }),
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model: 'openai/gpt-oss-120b',
+      messages: [{ role: 'user', content: prompt }],
+    }),
   });
   if (!res.ok) {
     const errBody = await res.text();

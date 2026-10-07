@@ -28,6 +28,58 @@ function ReliabilityBadge({ r }: { r: string }) {
   return r === 'verified'
     ? <Badge className="bg-green-100 text-green-700 text-xs"><span className="inline-block w-1.5 h-1.5 rounded-full bg-green-500 mr-1" />Verified</Badge>
     : <Badge className="bg-yellow-100 text-yellow-700 text-xs"><span className="inline-block w-1.5 h-1.5 rounded-full bg-yellow-500 mr-1" />Claimed</Badge>;
+
+  // Convert AI markdown (## subheads, - bullets, **bold**) into clean HTML
+function inlineFormat(text: string): React.ReactNode {
+  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  return parts.map((p, i) =>
+    p.startsWith('**') && p.endsWith('**')
+      ? <strong key={i} className="font-semibold text-gray-900">{p.slice(2, -2)}</strong>
+      : p
+  );
+}
+
+function renderBody(body: string) {
+  return body.split('\n\n').map((block, i) => {
+    const trimmed = block.trim();
+    if (!trimmed) return null;
+
+    // Subheading: lines starting with # through ######
+    if (/^#{1,6}\s+/.test(trimmed)) {
+      return (
+        <h2 key={i} className="font-[family-name:var(--font-lora)] text-lg sm:text-xl font-bold text-gray-900 mt-8 mb-4">
+          {inlineFormat(trimmed.replace(/^#{1,6}\s+/, ''))}
+        </h2>
+      );
+    }
+
+    const lines = trimmed.split('\n').map((l) => l.trim()).filter(Boolean);
+
+    // Bulleted list: every line starts with -, *, or •
+    if (lines.length > 0 && lines.every((l) => /^[-*•]\s+/.test(l))) {
+      return (
+        <ul key={i} className="list-disc pl-6 mb-6 space-y-2 text-sm sm:text-base lg:text-lg text-gray-600 leading-relaxed">
+          {lines.map((l, j) => <li key={j}>{inlineFormat(l.replace(/^[-*•]\s+/, ''))}</li>)}
+        </ul>
+      );
+    }
+
+    // Numbered list: every line starts with 1. or 1)
+    if (lines.length > 0 && lines.every((l) => /^\d+[.)]\s+/.test(l))) {
+      return (
+        <ol key={i} className="list-decimal pl-6 mb-6 space-y-2 text-sm sm:text-base lg:text-lg text-gray-600 leading-relaxed">
+          {lines.map((l, j) => <li key={j}>{inlineFormat(l.replace(/^\d+[.)]\s+/, ''))}</li>)}
+        </ol>
+      );
+    }
+
+    return (
+      <p key={i} className="mb-5 text-sm sm:text-base lg:text-lg text-gray-600 leading-relaxed">
+        {inlineFormat(trimmed)}
+      </p>
+    );
+  });
+}
 }
 
 export default function ArticlePage() {
@@ -82,7 +134,11 @@ export default function ArticlePage() {
       {/* Sticky Header */}
       <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-3">
-          <Link href="/" className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-[#0f1b3d] transition-colors">
+          <Link 
+            href="/" 
+            className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-[#0f1b3d] active:text-[#0f1b3d] transition-colors py-2 px-2 -ml-2 rounded-lg"
+            style={{ touchAction: 'manipulation' }}
+          >
             <ArrowLeft className="w-4 h-4" />
             <span className="hidden sm:inline">Back to News</span>
             <span className="sm:hidden">Back</span>
@@ -137,9 +193,7 @@ export default function ArticlePage() {
 
           {/* Body */}
           <div className="mt-5">
-            {(article.body || '').split('\n\n').map((block, i) => (
-              <p key={i} className="mb-5 text-sm sm:text-base lg:text-lg text-gray-600 leading-relaxed">{block}</p>
-            ))}
+            {renderBody(article.body || '')}
           </div>
 
           {/* Source */}

@@ -29,8 +29,6 @@ function ReliabilityBadge({ r }: { r: string }) {
     ? <Badge className="bg-green-100 text-green-700 text-xs"><span className="inline-block w-1.5 h-1.5 rounded-full bg-green-500 mr-1" />Verified</Badge>
     : <Badge className="bg-yellow-100 text-yellow-700 text-xs"><span className="inline-block w-1.5 h-1.5 rounded-full bg-yellow-500 mr-1" />Claimed</Badge>;
 
-  // Convert AI markdown (## subheads, - bullets, **bold**) into clean HTML
-
     const lines = trimmed.split('\n').map((l) => l.trim()).filter(Boolean);
 
     // Bulleted list: every line starts with -, *, or •

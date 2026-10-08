@@ -1,10 +1,10 @@
 {
-  "fetchedAt": "2026-10-08T03:08:00.428Z",
+  "fetchedAt": "2026-10-08T12:18:38.494Z",
   "source": "llm-stats.com",
   "sourceUrl": "https://llm-stats.com/leaderboards/llm-leaderboard",
   "methodology": "https://llm-stats.com/methodology/llm-stats-score",
-  "totalModelsExtracted": 407,
-  "modelsRanked": 407,
+  "totalModelsExtracted": 408,
+  "modelsRanked": 408,
   "models": [
     {
       "rank": 1,
@@ -13,7 +13,7 @@
       "organization": "Anthropic",
       "organization_id": "anthropic",
       "country": "US",
-      "score": 60.5,
+      "score": 60.4,
       "input_price": 4,
       "output_price": 20,
       "context": 1000000,
@@ -27,7 +27,7 @@
       "organization": "Anthropic",
       "organization_id": "anthropic",
       "country": "US",
-      "score": 58.47,
+      "score": 58.3,
       "input_price": 2,
       "output_price": 10,
       "context": 1000000,
@@ -41,7 +41,7 @@
       "organization": "OpenAI",
       "organization_id": "openai",
       "country": "US",
-      "score": 58.37,
+      "score": 58.26,
       "input_price": 10,
       "output_price": 50,
       "context": 1050000,
@@ -50,31 +50,31 @@
     },
     {
       "rank": 4,
+      "model_id": "gemini-4-argon",
+      "name": "Gemini 4 Argon",
+      "organization": "Google",
+      "organization_id": "google",
+      "country": "US",
+      "score": 55.09,
+      "input_price": null,
+      "output_price": null,
+      "context": null,
+      "multimodal": true,
+      "url": "https://llm-stats.com/models/gemini-4-argon"
+    },
+    {
+      "rank": 5,
       "model_id": "claude-mythos-preview",
       "name": "Claude Mythos Preview",
       "organization": "Anthropic",
       "organization_id": "anthropic",
       "country": "US",
-      "score": 54.45,
+      "score": 54.35,
       "input_price": null,
       "output_price": null,
       "context": null,
       "multimodal": true,
       "url": "https://llm-stats.com/models/claude-mythos-preview"
-    },
-    {
-      "rank": 5,
-      "model_id": "gpt-6.1-sol",
-      "name": "GPT-6.1 Sol",
-      "organization": "OpenAI",
-      "organization_id": "openai",
-      "country": "US",
-      "score": 54.26,
-      "input_price": 2,
-      "output_price": 10,
-      "context": 1050000,
-      "multimodal": true,
-      "url": "https://llm-stats.com/models/gpt-6.1-sol"
     },
     {
       "rank": 6,
@@ -83,7 +83,7 @@
       "organization": "Anthropic",
       "organization_id": "anthropic",
       "country": "US",
-      "score": 54.22,
+      "score": 54.04,
       "input_price": 5,
       "output_price": 25,
       "context": 1000000,
@@ -92,17 +92,17 @@
     },
     {
       "rank": 7,
-      "model_id": "claude-fable-5-1",
-      "name": "Claude Fable 5.1",
-      "organization": "Anthropic",
-      "organization_id": "anthropic",
+      "model_id": "gpt-6.1-sol",
+      "name": "GPT-6.1 Sol",
+      "organization": "OpenAI",
+      "organization_id": "openai",
       "country": "US",
-      "score": 53.73,
-      "input_price": 10,
-      "output_price": 50,
-      "context": 1000000,
+      "score": 53.91,
+      "input_price": 2,
+      "output_price": 10,
+      "context": 1050000,
       "multimodal": true,
-      "url": "https://llm-stats.com/models/claude-fable-5-1"
+      "url": "https://llm-stats.com/models/gpt-6.1-sol"
     },
     {
       "rank": 8,
@@ -111,7 +111,7 @@
       "organization": "OpenAI",
       "organization_id": "openai",
       "country": "US",
-      "score": 53.55,
+      "score": 53.46,
       "input_price": 5,
       "output_price": 30,
       "context": 1050000,
@@ -120,12 +120,26 @@
     },
     {
       "rank": 9,
+      "model_id": "claude-fable-5-1",
+      "name": "Claude Fable 5.1",
+      "organization": "Anthropic",
+      "organization_id": "anthropic",
+      "country": "US",
+      "score": 53.45,
+      "input_price": 10,
+      "output_price": 50,
+      "context": 1000000,
+      "multimodal": true,
+      "url": "https://llm-stats.com/models/claude-fable-5-1"
+    },
+    {
+      "rank": 10,
       "model_id": "claude-fable-5",
       "name": "Claude Fable 5",
       "organization": "Anthropic",
       "organization_id": "anthropic",
       "country": "US",
-      "score": 53.51,
+      "score": 53.35,
       "input_price": 10,
       "output_price": 50,
       "context": 1000000,
@@ -133,13 +147,13 @@
       "url": "https://llm-stats.com/models/claude-fable-5"
     },
     {
-      "rank": 10,
+      "rank": 11,
       "model_id": "muse-spark-1.3",
       "name": "Muse Spark 1.3",
       "organization": "Meta",
       "organization_id": "meta",
       "country": "US",
-      "score": 53.2,
+      "score": 52.81,
       "input_price": 1.25,
       "output_price": 4.25,
       "context": 1048576,
@@ -147,13 +161,13 @@
       "url": "https://llm-stats.com/models/muse-spark-1.3"
     },
     {
-      "rank": 11,
+      "rank": 12,
       "model_id": "kimi-k3",
       "name": "Kimi K3",
       "organization": "Moonshot AI",
       "organization_id": "moonshotai",
       "country": "CN",
-      "score": 52.2,
+      "score": 52.11,
       "input_price": 2.85,
       "output_price": 14.25,
       "context": 1048576,
@@ -161,13 +175,13 @@
       "url": "https://llm-stats.com/models/kimi-k3"
     },
     {
-      "rank": 12,
+      "rank": 13,
       "model_id": "glm-5.3",
       "name": "GLM-5.3",
       "organization": "Zhipu AI",
       "organization_id": "zai-org",
       "country": "CN",
-      "score": 51.68,
+      "score": 51.45,
       "input_price": 1.2,
       "output_price": 4,
       "context": 1048576,
@@ -175,13 +189,13 @@
       "url": "https://llm-stats.com/models/glm-5.3"
     },
     {
-      "rank": 13,
+      "rank": 14,
       "model_id": "qwen3.8-max",
       "name": "Qwen3.8 Max",
       "organization": "Alibaba Cloud / Qwen Team",
       "organization_id": "qwen",
       "country": "CN",
-      "score": 51.18,
+      "score": 51.12,
       "input_price": 1.65,
       "output_price": 4.951,
       "context": 1048576,
@@ -189,32 +203,18 @@
       "url": "https://llm-stats.com/models/qwen3.8-max"
     },
     {
-      "rank": 14,
+      "rank": 15,
       "model_id": "ling-3.1-flash",
       "name": "Ling 3.1 Flash",
       "organization": "InclusionAI",
       "organization_id": "inclusionai",
       "country": null,
-      "score": 51.12,
+      "score": 50.99,
       "input_price": null,
       "output_price": null,
       "context": null,
       "multimodal": false,
       "url": "https://llm-stats.com/models/ling-3.1-flash"
-    },
-    {
-      "rank": 15,
-      "model_id": "deepseek-v4.1-flash",
-      "name": "DeepSeek-V4.1-Flash",
-      "organization": "DeepSeek",
-      "organization_id": "deepseek",
-      "country": "CN",
-      "score": 50.86,
-      "input_price": 0.22,
-      "output_price": 0.66,
-      "context": 1048576,
-      "multimodal": true,
-      "url": "https://llm-stats.com/models/deepseek-v4.1-flash"
     },
     {
       "rank": 16,
@@ -223,7 +223,7 @@
       "organization": "Shanghai AI Laboratory",
       "organization_id": "shanghai-ai-lab",
       "country": "CN",
-      "score": 50.84,
+      "score": 50.8,
       "input_price": null,
       "output_price": null,
       "context": null,
@@ -232,12 +232,26 @@
     },
     {
       "rank": 17,
+      "model_id": "deepseek-v4.1-flash",
+      "name": "DeepSeek-V4.1-Flash",
+      "organization": "DeepSeek",
+      "organization_id": "deepseek",
+      "country": "CN",
+      "score": 50.74,
+      "input_price": 0.22,
+      "output_price": 0.66,
+      "context": 1048576,
+      "multimodal": true,
+      "url": "https://llm-stats.com/models/deepseek-v4.1-flash"
+    },
+    {
+      "rank": 18,
       "model_id": "deepseek-v4-pro-0813",
       "name": "DeepSeek-V4-Pro-0813",
       "organization": "DeepSeek",
       "organization_id": "deepseek",
       "country": "CN",
-      "score": 50.62,
+      "score": 50.57,
       "input_price": 1.3,
       "output_price": 2.6,
       "context": 1048576,
@@ -245,13 +259,13 @@
       "url": "https://llm-stats.com/models/deepseek-v4-pro-0813"
     },
     {
-      "rank": 18,
+      "rank": 19,
       "model_id": "claude-haiku-5-5",
       "name": "Claude Haiku 5.5",
       "organization": "Anthropic",
       "organization_id": "anthropic",
       "country": "US",
-      "score": 50.31,
+      "score": 50.01,
       "input_price": 0.1,
       "output_price": 0.5,
       "context": 1000000,
@@ -259,13 +273,13 @@
       "url": "https://llm-stats.com/models/claude-haiku-5-5"
     },
     {
-      "rank": 19,
+      "rank": 20,
       "model_id": "mimo-v2.6-pro",
       "name": "MiMo-V2.6-Pro",
       "organization": "Xiaomi",
       "organization_id": "xiaomi",
       "country": "CN",
-      "score": 49.94,
+      "score": 49.8,
       "input_price": 0.435,
       "output_price": 0.87,
       "context": 1048576,
@@ -273,13 +287,13 @@
       "url": "https://llm-stats.com/models/mimo-v2.6-pro"
     },
     {
-      "rank": 20,
+      "rank": 21,
       "model_id": "hy4-preview",
       "name": "Hy4 preview",
       "organization": "Tencent",
       "organization_id": "tencent",
       "country": "CN",
-      "score": 49.88,
+      "score": 49.79,
       "input_price": null,
       "output_price": null,
       "context": null,
@@ -287,13 +301,13 @@
       "url": "https://llm-stats.com/models/hy4-preview"
     },
     {
-      "rank": 21,
+      "rank": 22,
       "model_id": "claude-opus-4-8",
       "name": "Claude Opus 4.8",
       "organization": "Anthropic",
       "organization_id": "anthropic",
       "country": "US",
-      "score": 49.87,
+      "score": 49.76,
       "input_price": 5,
       "output_price": 25,
       "context": 1000000,
@@ -301,13 +315,13 @@
       "url": "https://llm-stats.com/models/claude-opus-4-8"
     },
     {
-      "rank": 22,
+      "rank": 23,
       "model_id": "gpt-5.6-terra",
       "name": "GPT-5.6 Terra",
       "organization": "OpenAI",
       "organization_id": "openai",
       "country": "US",
-      "score": 49.54,
+      "score": 49.42,
       "input_price": 2,
       "output_price": 12,
       "context": 1050000,
@@ -315,32 +329,18 @@
       "url": "https://llm-stats.com/models/gpt-5.6-terra"
     },
     {
-      "rank": 23,
+      "rank": 24,
       "model_id": "glm-5.3-flash",
       "name": "GLM-5.3-Flash",
       "organization": "Zhipu AI",
       "organization_id": "zai-org",
       "country": "CN",
-      "score": 49.05,
+      "score": 48.92,
       "input_price": 0.15,
       "output_price": 0.5,
       "context": 1048576,
       "multimodal": true,
       "url": "https://llm-stats.com/models/glm-5.3-flash"
-    },
-    {
-      "rank": 24,
-      "model_id": "muse-spark-1.1",
-      "name": "Muse Spark 1.1",
-      "organization": "Meta",
-      "organization_id": "meta",
-      "country": "US",
-      "score": 48.74,
-      "input_price": 1.25,
-      "output_price": 4.25,
-      "context": 1048576,
-      "multimodal": true,
-      "url": "https://llm-stats.com/models/muse-spark-1.1"
     },
     {
       "rank": 25,
@@ -349,7 +349,7 @@
       "organization": "Google",
       "organization_id": "google",
       "country": "US",
-      "score": 48.73,
+      "score": 48.71,
       "input_price": 0.75,
       "output_price": 3.75,
       "context": 1048576,
@@ -358,17 +358,17 @@
     },
     {
       "rank": 26,
-      "model_id": "gpt-6-sol",
-      "name": "GPT-6 Sol",
-      "organization": "OpenAI",
-      "organization_id": "openai",
+      "model_id": "muse-spark-1.1",
+      "name": "Muse Spark 1.1",
+      "organization": "Meta",
+      "organization_id": "meta",
       "country": "US",
-      "score": 48.71,
-      "input_price": 2,
-      "output_price": 10,
-      "context": 1050000,
+      "score": 48.69,
+      "input_price": 1.25,
+      "output_price": 4.25,
+      "context": 1048576,
       "multimodal": true,
-      "url": "https://llm-stats.com/models/gpt-6-sol"
+      "url": "https://llm-stats.com/models/muse-spark-1.1"
     },
     {
       "rank": 27,
@@ -377,7 +377,7 @@
       "organization": "Alibaba Cloud / Qwen Team",
       "organization_id": "qwen",
       "country": "CN",
-      "score": 48.4,
+      "score": 48.34,
       "input_price": null,
       "output_price": null,
       "context": null,
@@ -386,12 +386,26 @@
     },
     {
       "rank": 28,
+      "model_id": "gpt-6-sol",
+      "name": "GPT-6 Sol",
+      "organization": "OpenAI",
+      "organization_id": "openai",
+      "country": "US",
+      "score": 48.34,
+      "input_price": 2,
+      "output_price": 10,
+      "context": 1050000,
+      "multimodal": true,
+      "url": "https://llm-stats.com/models/gpt-6-sol"
+    },
+    {
+      "rank": 29,
       "model_id": "qwen3.8-flash",
       "name": "Qwen3.8 Flash",
       "organization": "Alibaba Cloud / Qwen Team",
       "organization_id": "qwen",
       "country": "CN",
-      "score": 48.35,
+      "score": 48.29,
       "input_price": 0.15,
       "output_price": 0.47,
       "context": 1000000,
@@ -399,32 +413,18 @@
       "url": "https://llm-stats.com/models/qwen3.8-flash"
     },
     {
-      "rank": 29,
+      "rank": 30,
       "model_id": "grok-4.7",
       "name": "Grok 4.7",
       "organization": "xAI",
       "organization_id": "xai",
       "country": "US",
-      "score": 47.99,
+      "score": 47.81,
       "input_price": 2,
       "output_price": 6,
       "context": 500000,
       "multimodal": true,
       "url": "https://llm-stats.com/models/grok-4.7"
-    },
-    {
-      "rank": 30,
-      "model_id": "claude-sonnet-5",
-      "name": "Claude Sonnet 5",
-      "organization": "Anthropic",
-      "organization_id": "anthropic",
-      "country": "US",
-      "score": 47.3,
-      "input_price": 2,
-      "output_price": 10,
-      "context": 1000000,
-      "multimodal": true,
-      "url": "https://llm-stats.com/models/claude-sonnet-5"
     },
     {
       "rank": 31,
@@ -433,7 +433,7 @@
       "organization": "OpenAI",
       "organization_id": "openai",
       "country": "US",
-      "score": 47.29,
+      "score": 47.19,
       "input_price": 5,
       "output_price": 30,
       "context": 1050000,
@@ -442,12 +442,26 @@
     },
     {
       "rank": 32,
+      "model_id": "claude-sonnet-5",
+      "name": "Claude Sonnet 5",
+      "organization": "Anthropic",
+      "organization_id": "anthropic",
+      "country": "US",
+      "score": 47.19,
+      "input_price": 2,
+      "output_price": 10,
+      "context": 1000000,
+      "multimodal": true,
+      "url": "https://llm-stats.com/models/claude-sonnet-5"
+    },
+    {
+      "rank": 33,
       "model_id": "gemini-3.7-flash",
       "name": "Gemini 3.7 Flash",
       "organization": "Google",
       "organization_id": "google",
       "country": "US",
-      "score": 47.2,
+      "score": 46.86,
       "input_price": 0.75,
       "output_price": 3.75,
       "context": 1048576,
@@ -455,13 +469,13 @@
       "url": "https://llm-stats.com/models/gemini-3.7-flash"
     },
     {
-      "rank": 33,
+      "rank": 34,
       "model_id": "mistral-large-4",
       "name": "Mistral Large 4",
       "organization": "Mistral AI",
       "organization_id": "mistral",
       "country": "FR",
-      "score": 46.35,
+      "score": 46.24,
       "input_price": 0.68,
       "output_price": 2.09,
       "context": 1000000,
@@ -469,32 +483,18 @@
       "url": "https://llm-stats.com/models/mistral-large-4"
     },
     {
-      "rank": 34,
+      "rank": 35,
       "model_id": "seed-2.1-pro",
       "name": "Seed 2.1 Pro",
       "organization": "ByteDance",
       "organization_id": "bytedance",
       "country": "CN",
-      "score": 45.82,
+      "score": 45.79,
       "input_price": null,
       "output_price": null,
       "context": null,
       "multimodal": true,
       "url": "https://llm-stats.com/models/seed-2.1-pro"
-    },
-    {
-      "rank": 35,
-      "model_id": "mimo-v2.6-flash",
-      "name": "MiMo-V2.6-Flash",
-      "organization": "Xiaomi",
-      "organization_id": "xiaomi",
-      "country": "CN",
-      "score": 45.56,
-      "input_price": 0.14,
-      "output_price": 0.28,
-      "context": 1048576,
-      "multimodal": true,
-      "url": "https://llm-stats.com/models/mimo-v2.6-flash"
     },
     {
       "rank": 36,
@@ -503,7 +503,7 @@
       "organization": "OpenAI",
       "organization_id": "openai",
       "country": "US",
-      "score": 45.53,
+      "score": 45.5,
       "input_price": null,
       "output_price": null,
       "context": null,
@@ -512,17 +512,17 @@
     },
     {
       "rank": 37,
-      "model_id": "grok-4.6",
-      "name": "Grok 4.6",
-      "organization": "xAI",
-      "organization_id": "xai",
-      "country": "US",
-      "score": 45.27,
-      "input_price": 2,
-      "output_price": 6,
-      "context": 500000,
+      "model_id": "mimo-v2.6-flash",
+      "name": "MiMo-V2.6-Flash",
+      "organization": "Xiaomi",
+      "organization_id": "xiaomi",
+      "country": "CN",
+      "score": 45.4,
+      "input_price": 0.14,
+      "output_price": 0.28,
+      "context": 1048576,
       "multimodal": true,
-      "url": "https://llm-stats.com/models/grok-4.6"
+      "url": "https://llm-stats.com/models/mimo-v2.6-flash"
     },
     {
       "rank": 38,
@@ -531,7 +531,7 @@
       "organization": "Alibaba Cloud / Qwen Team",
       "organization_id": "qwen",
       "country": "CN",
-      "score": 45.17,
+      "score": 45.16,
       "input_price": 1.25,
       "output_price": 3.75,
       "context": 1000000,
@@ -540,12 +540,26 @@
     },
     {
       "rank": 39,
+      "model_id": "grok-4.6",
+      "name": "Grok 4.6",
+      "organization": "xAI",
+      "organization_id": "xai",
+      "country": "US",
+      "score": 45.02,
+      "input_price": 2,
+      "output_price": 6,
+      "context": 500000,
+      "multimodal": true,
+      "url": "https://llm-stats.com/models/grok-4.6"
+    },
+    {
+      "rank": 40,
       "model_id": "glm-5.2",
       "name": "GLM-5.2",
       "organization": "Zhipu AI",
       "organization_id": "zai-org",
       "country": "CN",
-      "score": 44.9,
+      "score": 44.85,
       "input_price": 0.75,
       "output_price": 2.4,
       "context": 1048576,
@@ -553,13 +567,13 @@
       "url": "https://llm-stats.com/models/glm-5.2"
     },
     {
-      "rank": 40,
+      "rank": 41,
       "model_id": "deepseek-v4-flash-vision-exp",
       "name": "DeepSeek-V4-Flash-Vision-Exp",
       "organization": "DeepSeek",
       "organization_id": "deepseek",
       "country": "CN",
-      "score": 44.73,
+      "score": 44.68,
       "input_price": 0.44,
       "output_price": 1.32,
       "context": 1048576,
@@ -567,13 +581,13 @@
       "url": "https://llm-stats.com/models/deepseek-v4-flash-vision-exp"
     },
     {
-      "rank": 41,
+      "rank": 42,
       "model_id": "qwen3.8-27b",
       "name": "Qwen3.8-27B",
       "organization": "Alibaba Cloud / Qwen Team",
       "organization_id": "qwen",
       "country": "CN",
-      "score": 44.62,
+      "score": 44.61,
       "input_price": 0.4,
       "output_price": 3,
       "context": 262144,
@@ -581,13 +595,13 @@
       "url": "https://llm-stats.com/models/qwen3.8-27b"
     },
     {
-      "rank": 42,
+      "rank": 43,
       "model_id": "claude-opus-4-6",
       "name": "Claude Opus 4.6",
       "organization": "Anthropic",
       "organization_id": "anthropic",
       "country": "US",
-      "score": 44.5,
+      "score": 44.45,
       "input_price": 5,
       "output_price": 25,
       "context": 1000000,
@@ -595,13 +609,13 @@
       "url": "https://llm-stats.com/models/claude-opus-4-6"
     },
     {
-      "rank": 43,
+      "rank": 44,
       "model_id": "gpt-5.6-luna",
       "name": "GPT-5.6 Luna",
       "organization": "OpenAI",
       "organization_id": "openai",
       "country": "US",
-      "score": 44.36,
+      "score": 44.25,
       "input_price": 0.2,
       "output_price": 1.2,
       "context": 1050000,
@@ -609,13 +623,27 @@
       "url": "https://llm-stats.com/models/gpt-5.6-luna"
     },
     {
-      "rank": 44,
+      "rank": 45,
+      "model_id": "claude-mythos-5-1",
+      "name": "Claude Mythos 5.1",
+      "organization": "Anthropic",
+      "organization_id": "anthropic",
+      "country": "US",
+      "score": 43.92,
+      "input_price": null,
+      "output_price": null,
+      "context": null,
+      "multimodal": true,
+      "url": "https://llm-stats.com/models/claude-mythos-5-1"
+    },
+    {
+      "rank": 46,
       "model_id": "grok-4.5",
       "name": "Grok 4.5",
       "organization": "xAI",
       "organization_id": "xai",
       "country": "US",
-      "score": 43.94,
+      "score": 43.86,
       "input_price": 2,
       "output_price": 6,
       "context": 500000,
@@ -623,13 +651,13 @@
       "url": "https://llm-stats.com/models/grok-4.5"
     },
     {
-      "rank": 45,
+      "rank": 47,
       "model_id": "gpt-6-luna",
       "name": "GPT-6 Luna",
       "organization": "OpenAI",
       "organization_id": "openai",
       "country": "US",
-      "score": 43.89,
+      "score": 43.65,
       "input_price": 0.1,
       "output_price": 0.5,
       "context": 1050000,
@@ -637,46 +665,18 @@
       "url": "https://llm-stats.com/models/gpt-6-luna"
     },
     {
-      "rank": 46,
-      "model_id": "ember-1",
-      "name": "Ember-1",
-      "organization": "Fireworks AI",
-      "organization_id": "fireworks",
-      "country": "US",
-      "score": 43.6,
-      "input_price": 3,
-      "output_price": 15,
-      "context": 1040000,
-      "multimodal": false,
-      "url": "https://llm-stats.com/models/ember-1"
-    },
-    {
-      "rank": 47,
+      "rank": 48,
       "model_id": "claude-opus-4-7",
       "name": "Claude Opus 4.7",
       "organization": "Anthropic",
       "organization_id": "anthropic",
       "country": "US",
-      "score": 43.55,
+      "score": 43.52,
       "input_price": 5,
       "output_price": 25,
       "context": 1000000,
       "multimodal": true,
       "url": "https://llm-stats.com/models/claude-opus-4-7"
-    },
-    {
-      "rank": 48,
-      "model_id": "claude-mythos-5-1",
-      "name": "Claude Mythos 5.1",
-      "organization": "Anthropic",
-      "organization_id": "anthropic",
-      "country": "US",
-      "score": 43.51,
-      "input_price": null,
-      "output_price": null,
-      "context": null,
-      "multimodal": true,
-      "url": "https://llm-stats.com/models/claude-mythos-5-1"
     },
     {
       "rank": 49,
@@ -685,7 +685,7 @@
       "organization": "DeepSeek",
       "organization_id": "deepseek",
       "country": "CN",
-      "score": 43.41,
+      "score": 43.34,
       "input_price": 0.06,
       "output_price": 0.18,
       "context": 1048576,
@@ -699,7 +699,7 @@
       "organization": "Moonshot AI",
       "organization_id": "moonshotai",
       "country": "CN",
-      "score": 43.35,
+      "score": 43.33,
       "input_price": 0.75,
       "output_price": 3.5,
       "context": 262144,
@@ -708,12 +708,26 @@
     },
     {
       "rank": 51,
+      "model_id": "ember-1",
+      "name": "Ember-1",
+      "organization": "Fireworks AI",
+      "organization_id": "fireworks",
+      "country": "US",
+      "score": 43.14,
+      "input_price": 3,
+      "output_price": 15,
+      "context": 1040000,
+      "multimodal": false,
+      "url": "https://llm-stats.com/models/ember-1"
+    },
+    {
+      "rank": 52,
       "model_id": "gemini-3.1-pro-preview",
       "name": "Gemini 3.1 Pro",
       "organization": "Google",
       "organization_id": "google",
       "country": "US",
-      "score": 42.97,
+      "score": 42.94,
       "input_price": 2,
       "output_price": 12,
       "context": 1048576,
@@ -721,13 +735,13 @@
       "url": "https://llm-stats.com/models/gemini-3.1-pro-preview"
     },
     {
-      "rank": 52,
+      "rank": 53,
       "model_id": "gpt-5.2-pro-2025-12-11",
       "name": "GPT-5.2 Pro",
       "organization": "OpenAI",
       "organization_id": "openai",
       "country": "US",
-      "score": 42.83,
+      "score": 42.82,
       "input_price": null,
       "output_price": null,
       "context": null,
@@ -735,13 +749,13 @@
       "url": "https://llm-stats.com/models/gpt-5.2-pro-2025-12-11"
     },
     {
-      "rank": 53,
+      "rank": 54,
       "model_id": "deepseek-v4-pro-max",
       "name": "DeepSeek-V4-Pro-Max",
       "organization": "DeepSeek",
       "organization_id": "deepseek",
       "country": "CN",
-      "score": 42.78,
+      "score": 42.77,
       "input_price": 1.3,
       "output_price": 2.6,
       "context": 1048576,
@@ -749,13 +763,13 @@
       "url": "https://llm-stats.com/models/deepseek-v4-pro-max"
     },
     {
-      "rank": 54,
+      "rank": 55,
       "model_id": "seed-2.1-turbo",
       "name": "Seed 2.1 Turbo",
       "organization": "ByteDance",
       "organization_id": "bytedance",
       "country": "CN",
-      "score": 42.72,
+      "score": 42.69,
       "input_price": null,
       "output_price": null,
       "context": null,
@@ -763,13 +777,13 @@
       "url": "https://llm-stats.com/models/seed-2.1-turbo"
     },
     {
-      "rank": 55,
+      "rank": 56,
       "model_id": "hy3",
       "name": "Hy3",
       "organization": "Tencent",
       "organization_id": "tencent",
       "country": "CN",
-      "score": 42.56,
+      "score": 42.53,
       "input_price": 0.14,
       "output_price": 0.58,
       "context": 262144,
@@ -777,13 +791,13 @@
       "url": "https://llm-stats.com/models/hy3"
     },
     {
-      "rank": 56,
+      "rank": 57,
       "model_id": "gemini-3.6-flash",
       "name": "Gemini 3.6 Flash",
       "organization": "Google",
       "organization_id": "google",
       "country": "US",
-      "score": 42.53,
+      "score": 42.47,
       "input_price": 1.5,
       "output_price": 7.5,
       "context": 1048576,
@@ -791,13 +805,13 @@
       "url": "https://llm-stats.com/models/gemini-3.6-flash"
     },
     {
-      "rank": 57,
+      "rank": 58,
       "model_id": "ling-3.0-flash-fin",
       "name": "Ling 3.0 Flash Fin",
       "organization": "InclusionAI",
       "organization_id": "inclusionai",
       "country": null,
-      "score": 42.5,
+      "score": 42.46,
       "input_price": 0.06,
       "output_price": 0.18,
       "context": 262144,
@@ -805,32 +819,18 @@
       "url": "https://llm-stats.com/models/ling-3.0-flash-fin"
     },
     {
-      "rank": 58,
+      "rank": 59,
       "model_id": "qwen3.7-plus",
       "name": "Qwen3.7-Plus",
       "organization": "Alibaba Cloud / Qwen Team",
       "organization_id": "qwen",
       "country": "CN",
-      "score": 42.33,
+      "score": 42.31,
       "input_price": null,
       "output_price": null,
       "context": null,
       "multimodal": true,
       "url": "https://llm-stats.com/models/qwen3.7-plus"
-    },
-    {
-      "rank": 59,
-      "model_id": "gemini-3.5-flash",
-      "name": "Gemini 3.5 Flash",
-      "organization": "Google",
-      "organization_id": "google",
-      "country": "US",
-      "score": 42.05,
-      "input_price": 1.5,
-      "output_price": 9,
-      "context": 1048576,
-      "multimodal": true,
-      "url": "https://llm-stats.com/models/gemini-3.5-flash"
     },
     {
       "rank": 60,
@@ -848,12 +848,26 @@
     },
     {
       "rank": 61,
+      "model_id": "gemini-3.5-flash",
+      "name": "Gemini 3.5 Flash",
+      "organization": "Google",
+      "organization_id": "google",
+      "country": "US",
+      "score": 42.01,
+      "input_price": 1.5,
+      "output_price": 9,
+      "context": 1048576,
+      "multimodal": true,
+      "url": "https://llm-stats.com/models/gemini-3.5-flash"
+    },
+    {
+      "rank": 62,
       "model_id": "gpt-5.4",
       "name": "GPT-5.4",
       "organization": "OpenAI",
       "organization_id": "openai",
       "country": "US",
-      "score": 41.7,
+      "score": 41.66,
       "input_price": 2.5,
       "output_price": 15,
       "context": 1000000,
@@ -861,13 +875,13 @@
       "url": "https://llm-stats.com/models/gpt-5.4"
     },
     {
-      "rank": 62,
+      "rank": 63,
       "model_id": "muse-spark",
       "name": "Muse Spark",
       "organization": "Meta",
       "organization_id": "meta",
       "country": "US",
-      "score": 41.57,
+      "score": 41.54,
       "input_price": null,
       "output_price": null,
       "context": null,
@@ -875,13 +889,13 @@
       "url": "https://llm-stats.com/models/muse-spark"
     },
     {
-      "rank": 63,
+      "rank": 64,
       "model_id": "gpt-5.2-2025-12-11",
       "name": "GPT-5.2",
       "organization": "OpenAI",
       "organization_id": "openai",
       "country": "US",
-      "score": 41.15,
+      "score": 41.13,
       "input_price": 1.75,
       "output_price": 14,
       "context": 400000,
@@ -889,13 +903,13 @@
       "url": "https://llm-stats.com/models/gpt-5.2-2025-12-11"
     },
     {
-      "rank": 64,
+      "rank": 65,
       "model_id": "minimax-m3",
       "name": "MiniMax M3",
       "organization": "MiniMax",
       "organization_id": "minimax",
       "country": "CN",
-      "score": 40.85,
+      "score": 40.81,
       "input_price": 0.28,
       "output_price": 1.1,
       "context": 1000000,
@@ -903,7 +917,7 @@
       "url": "https://llm-stats.com/models/minimax-m3"
     },
     {
-      "rank": 65,
+      "rank": 66,
       "model_id": "grok-4-heavy",
       "name": "Grok-4 Heavy",
       "organization": "xAI",
@@ -917,13 +931,13 @@
       "url": "https://llm-stats.com/models/grok-4-heavy"
     },
     {
-      "rank": 66,
+      "rank": 67,
       "model_id": "laguna-s-2.1",
       "name": "Laguna S 2.1",
       "organization": "Poolside",
       "organization_id": "poolside",
       "country": "US",
-      "score": 39.82,
+      "score": 39.76,
       "input_price": 0.1,
       "output_price": 0.2,
       "context": 1048576,
@@ -931,7 +945,7 @@
       "url": "https://llm-stats.com/models/laguna-s-2.1"
     },
     {
-      "rank": 67,
+      "rank": 68,
       "model_id": "seed-2.0-pro",
       "name": "Seed 2.0 Pro",
       "organization": "ByteDance",
@@ -945,7 +959,7 @@
       "url": "https://llm-stats.com/models/seed-2.0-pro"
     },
     {
-      "rank": 68,
+      "rank": 69,
       "model_id": "qwen3.6-plus",
       "name": "Qwen3.6 Plus",
       "organization": "Alibaba Cloud / Qwen Team",
@@ -959,7 +973,7 @@
       "url": "https://llm-stats.com/models/qwen3.6-plus"
     },
     {
-      "rank": 69,
+      "rank": 70,
       "model_id": "deepseek-v4-flash-max",
       "name": "DeepSeek-V4-Flash-Max",
       "organization": "DeepSeek",
@@ -973,27 +987,13 @@
       "url": "https://llm-stats.com/models/deepseek-v4-flash-max"
     },
     {
-      "rank": 70,
-      "model_id": "kimi-k2.7-code",
-      "name": "Kimi K2.7 Code",
-      "organization": "Moonshot AI",
-      "organization_id": "moonshotai",
-      "country": "CN",
-      "score": 38.88,
-      "input_price": 0.68,
-      "output_price": 3.4,
-      "context": 262144,
-      "multimodal": true,
-      "url": "https://llm-stats.com/models/kimi-k2.7-code"
-    },
-    {
       "rank": 71,
       "model_id": "glm-5.1",
       "name": "GLM-5.1",
       "organization": "Zhipu AI",
       "organization_id": "zai-org",
       "country": "CN",
-      "score": 38.87,
+      "score": 38.85,
       "input_price": 1.05,
       "output_price": 3.5,
       "context": 202752,
@@ -1002,17 +1002,17 @@
     },
     {
       "rank": 72,
-      "model_id": "gemini-3.8-flash-cyber",
-      "name": "Gemini 3.8 Flash Cyber",
-      "organization": "Google",
-      "organization_id": "google",
-      "country": "US",
-      "score": 38.82,
-      "input_price": null,
-      "output_price": null,
-      "context": null,
-      "multimodal": false,
-      "url": "https://llm-stats.com/models/gemini-3.8-flash-cyber"
+      "model_id": "kimi-k2.7-code",
+      "name": "Kimi K2.7 Code",
+      "organization": "Moonshot AI",
+      "organization_id": "moonshotai",
+      "country": "CN",
+      "score": 38.79,
+      "input_price": 0.68,
+      "output_price": 3.4,
+      "context": 262144,
+      "multimodal": true,
+      "url": "https://llm-stats.com/models/kimi-k2.7-code"
     },
     {
       "rank": 73,
@@ -1021,7 +1021,7 @@
       "organization": "Moonshot AI",
       "organization_id": "moonshotai",
       "country": "CN",
-      "score": 38.61,
+      "score": 38.59,
       "input_price": null,
       "output_price": null,
       "context": null,
@@ -1035,7 +1035,7 @@
       "organization": "Alibaba Cloud / Qwen Team",
       "organization_id": "qwen",
       "country": "CN",
-      "score": 38.53,
+      "score": 38.52,
       "input_price": 0.45,
       "output_price": 3,
       "context": 262144,
@@ -1044,6 +1044,20 @@
     },
     {
       "rank": 75,
+      "model_id": "gemini-3.8-flash-cyber",
+      "name": "Gemini 3.8 Flash Cyber",
+      "organization": "Google",
+      "organization_id": "google",
+      "country": "US",
+      "score": 38.43,
+      "input_price": null,
+      "output_price": null,
+      "context": null,
+      "multimodal": false,
+      "url": "https://llm-stats.com/models/gemini-3.8-flash-cyber"
+    },
+    {
+      "rank": 76,
       "model_id": "gemini-3-pro-preview",
       "name": "Gemini 3 Pro",
       "organization": "Google",
@@ -1057,13 +1071,13 @@
       "url": "https://llm-stats.com/models/gemini-3-pro-preview"
     },
     {
-      "rank": 76,
+      "rank": 77,
       "model_id": "inkling-small",
       "name": "Inkling-Small",
       "organization": "Thinking Machines Lab",
       "organization_id": "thinking-machines",
       "country": "US",
-      "score": 38.09,
+      "score": 38.08,
       "input_price": 0.3,
       "output_price": 1.2,
       "context": 524288,
@@ -1071,32 +1085,18 @@
       "url": "https://llm-stats.com/models/inkling-small"
     },
     {
-      "rank": 77,
+      "rank": 78,
       "model_id": "claude-opus-4-5-20251101",
       "name": "Claude Opus 4.5",
       "organization": "Anthropic",
       "organization_id": "anthropic",
       "country": "US",
-      "score": 38.05,
+      "score": 38.04,
       "input_price": null,
       "output_price": null,
       "context": null,
       "multimodal": true,
       "url": "https://llm-stats.com/models/claude-opus-4-5-20251101"
-    },
-    {
-      "rank": 78,
-      "model_id": "muse-spark-1.2",
-      "name": "Muse Spark 1.2",
-      "organization": "Meta",
-      "organization_id": "meta",
-      "country": "US",
-      "score": 37.91,
-      "input_price": 1.25,
-      "output_price": 4.25,
-      "context": 1048576,
-      "multimodal": true,
-      "url": "https://llm-stats.com/models/muse-spark-1.2"
     },
     {
       "rank": 79,
@@ -1105,7 +1105,7 @@
       "organization": "Alibaba Cloud / Qwen Team",
       "organization_id": "qwen",
       "country": "CN",
-      "score": 37.84,
+      "score": 37.83,
       "input_price": null,
       "output_price": null,
       "context": null,
@@ -1114,6 +1114,20 @@
     },
     {
       "rank": 80,
+      "model_id": "muse-spark-1.2",
+      "name": "Muse Spark 1.2",
+      "organization": "Meta",
+      "organization_id": "meta",
+      "country": "US",
+      "score": 37.71,
+      "input_price": 1.25,
+      "output_price": 4.25,
+      "context": 1048576,
+      "multimodal": true,
+      "url": "https://llm-stats.com/models/muse-spark-1.2"
+    },
+    {
+      "rank": 81,
       "model_id": "inkling",
       "name": "Inkling",
       "organization": "Thinking Machines Lab",
@@ -1127,7 +1141,7 @@
       "url": "https://llm-stats.com/models/inkling"
     },
     {
-      "rank": 81,
+      "rank": 82,
       "model_id": "step-3.5-flash",
       "name": "Step-3.5-Flash",
       "organization": "StepFun",
@@ -1141,13 +1155,13 @@
       "url": "https://llm-stats.com/models/step-3.5-flash"
     },
     {
-      "rank": 82,
+      "rank": 83,
       "model_id": "glm-5",
       "name": "GLM-5",
       "organization": "Zhipu AI",
       "organization_id": "zai-org",
       "country": "CN",
-      "score": 36.95,
+      "score": 36.94,
       "input_price": 1,
       "output_price": 3.2,
       "context": 200000,
@@ -1155,13 +1169,13 @@
       "url": "https://llm-stats.com/models/glm-5"
     },
     {
-      "rank": 83,
+      "rank": 84,
       "model_id": "gpt-5.1-thinking-2025-11-12",
       "name": "GPT-5.1 Thinking",
       "organization": "OpenAI",
       "organization_id": "openai",
       "country": "US",
-      "score": 36.77,
+      "score": 36.76,
       "input_price": null,
       "output_price": null,
       "context": null,
@@ -1169,32 +1183,18 @@
       "url": "https://llm-stats.com/models/gpt-5.1-thinking-2025-11-12"
     },
     {
-      "rank": 84,
+      "rank": 85,
       "model_id": "claude-sonnet-4-6",
       "name": "Claude Sonnet 4.6",
       "organization": "Anthropic",
       "organization_id": "anthropic",
       "country": "US",
-      "score": 36.74,
+      "score": 36.71,
       "input_price": 3,
       "output_price": 15,
       "context": 1000000,
       "multimodal": true,
       "url": "https://llm-stats.com/models/claude-sonnet-4-6"
-    },
-    {
-      "rank": 85,
-      "model_id": "gemini-3.5-flash-cyber",
-      "name": "Gemini 3.5 Flash Cyber",
-      "organization": "Google",
-      "organization_id": "google",
-      "country": "US",
-      "score": 36.72,
-      "input_price": null,
-      "output_price": null,
-      "context": null,
-      "multimodal": false,
-      "url": "https://llm-stats.com/models/gemini-3.5-flash-cyber"
     },
     {
       "rank": 86,
@@ -1217,7 +1217,7 @@
       "organization": "OpenAI",
       "organization_id": "openai",
       "country": "US",
-      "score": 36.67,
+      "score": 36.66,
       "input_price": 1.25,
       "output_price": 10,
       "context": 400000,
@@ -1231,7 +1231,7 @@
       "organization": "Google",
       "organization_id": "google",
       "country": "US",
-      "score": 36.64,
+      "score": 36.63,
       "input_price": 0.5,
       "output_price": 3,
       "context": 1000000,
@@ -1245,7 +1245,7 @@
       "organization": "OpenAI",
       "organization_id": "openai",
       "country": "US",
-      "score": 36.54,
+      "score": 36.53,
       "input_price": 1.25,
       "output_price": 10,
       "context": 400000,
@@ -1254,12 +1254,26 @@
     },
     {
       "rank": 90,
+      "model_id": "gemini-3.5-flash-cyber",
+      "name": "Gemini 3.5 Flash Cyber",
+      "organization": "Google",
+      "organization_id": "google",
+      "country": "US",
+      "score": 36.36,
+      "input_price": null,
+      "output_price": null,
+      "context": null,
+      "multimodal": false,
+      "url": "https://llm-stats.com/models/gemini-3.5-flash-cyber"
+    },
+    {
+      "rank": 91,
       "model_id": "gpt-5.3-codex",
       "name": "GPT-5.3 Codex",
       "organization": "OpenAI",
       "organization_id": "openai",
       "country": "US",
-      "score": 36.23,
+      "score": 36.22,
       "input_price": 1.75,
       "output_price": 14,
       "context": 400000,
@@ -1267,7 +1281,7 @@
       "url": "https://llm-stats.com/models/gpt-5.3-codex"
     },
     {
-      "rank": 91,
+      "rank": 92,
       "model_id": "ling-3.0-flash",
       "name": "Ling 3.0 Flash",
       "organization": "InclusionAI",
@@ -1281,13 +1295,13 @@
       "url": "https://llm-stats.com/models/ling-3.0-flash"
     },
     {
-      "rank": 92,
+      "rank": 93,
       "model_id": "nemotron-3-ultra-550b-a55b",
       "name": "Nemotron 3 Ultra (550B A55B)",
       "organization": "NVIDIA",
       "organization_id": "nvidia",
       "country": "US",
-      "score": 35.96,
+      "score": 35.95,
       "input_price": 0.5,
       "output_price": 2.2,
       "context": 262144,
@@ -1295,7 +1309,7 @@
       "url": "https://llm-stats.com/models/nemotron-3-ultra-550b-a55b"
     },
     {
-      "rank": 93,
+      "rank": 94,
       "model_id": "deepseek-v4-flash-0423",
       "name": "DeepSeek-V4-Flash-0423",
       "organization": "DeepSeek",
@@ -1309,13 +1323,13 @@
       "url": "https://llm-stats.com/models/deepseek-v4-flash-0423"
     },
     {
-      "rank": 94,
+      "rank": 95,
       "model_id": "mimo-v2.5",
       "name": "MiMo-V2.5",
       "organization": "Xiaomi",
       "organization_id": "xiaomi",
       "country": "CN",
-      "score": 35.91,
+      "score": 35.9,
       "input_price": 0.168,
       "output_price": 0.336,
       "context": 1048576,
@@ -1323,13 +1337,13 @@
       "url": "https://llm-stats.com/models/mimo-v2.5"
     },
     {
-      "rank": 95,
+      "rank": 96,
       "model_id": "kimi-k2-thinking-0905",
       "name": "Kimi K2-Thinking-0905",
       "organization": "Moonshot AI",
       "organization_id": "moonshotai",
       "country": "CN",
-      "score": 35.74,
+      "score": 35.73,
       "input_price": null,
       "output_price": null,
       "context": null,
@@ -1337,13 +1351,13 @@
       "url": "https://llm-stats.com/models/kimi-k2-thinking-0905"
     },
     {
-      "rank": 96,
+      "rank": 97,
       "model_id": "mimo-v2-pro",
       "name": "MiMo-V2-Pro",
       "organization": "Xiaomi",
       "organization_id": "xiaomi",
       "country": "CN",
-      "score": 35.47,
+      "score": 35.46,
       "input_price": null,
       "output_price": null,
       "context": null,
@@ -1351,7 +1365,7 @@
       "url": "https://llm-stats.com/models/mimo-v2-pro"
     },
     {
-      "rank": 97,
+      "rank": 98,
       "model_id": "qwen3.6-27b",
       "name": "Qwen3.6-27B",
       "organization": "Alibaba Cloud / Qwen Team",
@@ -1365,13 +1379,13 @@
       "url": "https://llm-stats.com/models/qwen3.6-27b"
     },
     {
-      "rank": 98,
+      "rank": 99,
       "model_id": "longcat-flash-thinking-2601",
       "name": "LongCat-Flash-Thinking-2601",
       "organization": "Meituan",
       "organization_id": "meituan",
       "country": "CN",
-      "score": 35.37,
+      "score": 35.36,
       "input_price": null,
       "output_price": null,
       "context": null,
@@ -1379,7 +1393,7 @@
       "url": "https://llm-stats.com/models/longcat-flash-thinking-2601"
     },
     {
-      "rank": 99,
+      "rank": 100,
       "model_id": "gpt-5.1-high-2025-11-12",
       "name": "GPT-5.1 High",
       "organization": "OpenAI",
@@ -1393,13 +1407,13 @@
       "url": "https://llm-stats.com/models/gpt-5.1-high-2025-11-12"
     },
     {
-      "rank": 100,
+      "rank": 101,
       "model_id": "minimax-m2.7",
       "name": "MiniMax M2.7",
       "organization": "MiniMax",
       "organization_id": "minimax",
       "country": "CN",
-      "score": 35.07,
+      "score": 35.06,
       "input_price": 0.3,
       "output_price": 1.2,
       "context": 204800,
@@ -1407,7 +1421,7 @@
       "url": "https://llm-stats.com/models/minimax-m2.7"
     },
     {
-      "rank": 101,
+      "rank": 102,
       "model_id": "solar-pro4",
       "name": "Solar Pro 4",
       "organization": "Upstage",
@@ -1421,7 +1435,7 @@
       "url": "https://llm-stats.com/models/solar-pro4"
     },
     {
-      "rank": 102,
+      "rank": 103,
       "model_id": "qwen3.5-122b-a10b",
       "name": "Qwen3.5-122B-A10B",
       "organization": "Alibaba Cloud / Qwen Team",
@@ -1435,13 +1449,13 @@
       "url": "https://llm-stats.com/models/qwen3.5-122b-a10b"
     },
     {
-      "rank": 103,
+      "rank": 104,
       "model_id": "muse-glimmer-30b",
       "name": "Muse Glimmer-30B",
       "organization": "Meta",
       "organization_id": "meta",
       "country": "US",
-      "score": 34.56,
+      "score": 34.55,
       "input_price": 0.3,
       "output_price": 1.2,
       "context": 131072,
@@ -1449,7 +1463,7 @@
       "url": "https://llm-stats.com/models/muse-glimmer-30b"
     },
     {
-      "rank": 104,
+      "rank": 105,
       "model_id": "glm-4.7",
       "name": "GLM-4.7",
       "organization": "Zhipu AI",
@@ -1463,13 +1477,13 @@
       "url": "https://llm-stats.com/models/glm-4.7"
     },
     {
-      "rank": 105,
+      "rank": 106,
       "model_id": "gpt-5.2-codex",
       "name": "GPT-5.2 Codex",
       "organization": "OpenAI",
       "organization_id": "openai",
       "country": "US",
-      "score": 34.08,
+      "score": 34.07,
       "input_price": 1.75,
       "output_price": 14,
       "context": 400000,
@@ -1477,13 +1491,13 @@
       "url": "https://llm-stats.com/models/gpt-5.2-codex"
     },
     {
-      "rank": 106,
+      "rank": 107,
       "model_id": "seed-1.8",
       "name": "Seed 1.8",
       "organization": "ByteDance",
       "organization_id": "bytedance",
       "country": "CN",
-      "score": 34.06,
+      "score": 34.05,
       "input_price": 0.25,
       "output_price": 2,
       "context": 256000,
@@ -1491,7 +1505,7 @@
       "url": "https://llm-stats.com/models/seed-1.8"
     },
     {
-      "rank": 107,
+      "rank": 108,
       "model_id": "gpt-5-high-2025-08-07",
       "name": "GPT-5 High",
       "organization": "OpenAI",
@@ -1505,13 +1519,13 @@
       "url": "https://llm-stats.com/models/gpt-5-high-2025-08-07"
     },
     {
-      "rank": 108,
+      "rank": 109,
       "model_id": "qwen3.5-27b",
       "name": "Qwen3.5-27B",
       "organization": "Alibaba Cloud / Qwen Team",
       "organization_id": "qwen",
       "country": "CN",
-      "score": 33.82,
+      "score": 33.81,
       "input_price": 0.26,
       "output_price": 2.6,
       "context": 262144,
@@ -1519,7 +1533,7 @@
       "url": "https://llm-stats.com/models/qwen3.5-27b"
     },
     {
-      "rank": 109,
+      "rank": 110,
       "model_id": "deepseek-v3.2-speciale",
       "name": "DeepSeek-V3.2-Speciale",
       "organization": "DeepSeek",
@@ -1533,13 +1547,13 @@
       "url": "https://llm-stats.com/models/deepseek-v3.2-speciale"
     },
     {
-      "rank": 110,
+      "rank": 111,
       "model_id": "gpt-5-2025-08-07",
       "name": "GPT-5",
       "organization": "OpenAI",
       "organization_id": "openai",
       "country": "US",
-      "score": 33.72,
+      "score": 33.71,
       "input_price": null,
       "output_price": null,
       "context": null,
@@ -1547,7 +1561,7 @@
       "url": "https://llm-stats.com/models/gpt-5-2025-08-07"
     },
     {
-      "rank": 111,
+      "rank": 112,
       "model_id": "grok-4",
       "name": "Grok-4",
       "organization": "xAI",
@@ -1561,7 +1575,7 @@
       "url": "https://llm-stats.com/models/grok-4"
     },
     {
-      "rank": 112,
+      "rank": 113,
       "model_id": "ernie-5.0",
       "name": "ERNIE 5.0",
       "organization": "Baidu",
@@ -1575,7 +1589,7 @@
       "url": "https://llm-stats.com/models/ernie-5.0"
     },
     {
-      "rank": 113,
+      "rank": 114,
       "model_id": "deepseek-v3.2",
       "name": "DeepSeek-V3.2",
       "organization": "DeepSeek",
@@ -1589,7 +1603,7 @@
       "url": "https://llm-stats.com/models/deepseek-v3.2"
     },
     {
-      "rank": 114,
+      "rank": 115,
       "model_id": "gemma-4-31b-it",
       "name": "Gemma 4 31B",
       "organization": "Google",
@@ -1603,7 +1617,7 @@
       "url": "https://llm-stats.com/models/gemma-4-31b-it"
     },
     {
-      "rank": 115,
+      "rank": 116,
       "model_id": "mai-thinking-1",
       "name": "MAI-Thinking-1",
       "organization": "Microsoft",
@@ -1617,7 +1631,7 @@
       "url": "https://llm-stats.com/models/mai-thinking-1"
     },
     {
-      "rank": 116,
+      "rank": 117,
       "model_id": "qwen3-max-thinking",
       "name": "Qwen3 Max Thinking",
       "organization": "Alibaba Cloud / Qwen Team",
@@ -1631,7 +1645,7 @@
       "url": "https://llm-stats.com/models/qwen3-max-thinking"
     },
     {
-      "rank": 117,
+      "rank": 118,
       "model_id": "deepseek-reasoner",
       "name": "DeepSeek-V3.2 (Thinking)",
       "organization": "DeepSeek",
@@ -1645,7 +1659,7 @@
       "url": "https://llm-stats.com/models/deepseek-reasoner"
     },
     {
-      "rank": 118,
+      "rank": 119,
       "model_id": "qwen3.6-35b-a3b",
       "name": "Qwen3.6-35B-A3B",
       "organization": "Alibaba Cloud / Qwen Team",
@@ -1659,13 +1673,13 @@
       "url": "https://llm-stats.com/models/qwen3.6-35b-a3b"
     },
     {
-      "rank": 119,
+      "rank": 120,
       "model_id": "gpt-5.5-instant",
       "name": "GPT-5.5 Instant",
       "organization": "OpenAI",
       "organization_id": "openai",
       "country": "US",
-      "score": 32.14,
+      "score": 32.13,
       "input_price": 5,
       "output_price": 30,
       "context": 400000,
@@ -1673,7 +1687,7 @@
       "url": "https://llm-stats.com/models/gpt-5.5-instant"
     },
     {
-      "rank": 120,
+      "rank": 121,
       "model_id": "claude-sonnet-4-5-20250929",
       "name": "Claude Sonnet 4.5",
       "organization": "Anthropic",
@@ -1687,13 +1701,13 @@
       "url": "https://llm-stats.com/models/claude-sonnet-4-5-20250929"
     },
     {
-      "rank": 121,
+      "rank": 122,
       "model_id": "solar-mini4",
       "name": "Solar Mini 4",
       "organization": "Upstage",
       "organization_id": "upstage",
       "country": "KR",
-      "score": 31.92,
+      "score": 31.9,
       "input_price": 0.1,
       "output_price": 0.4,
       "context": 524288,
@@ -1701,7 +1715,7 @@
       "url": "https://llm-stats.com/models/solar-mini4"
     },
     {
-      "rank": 122,
+      "rank": 123,
       "model_id": "seed-2.0-lite",
       "name": "Seed 2.0 Lite",
       "organization": "ByteDance",
@@ -1715,7 +1729,7 @@
       "url": "https://llm-stats.com/models/seed-2.0-lite"
     },
     {
-      "rank": 123,
+      "rank": 124,
       "model_id": "minimax-m2.1",
       "name": "MiniMax M2.1",
       "organization": "MiniMax",
@@ -1727,20 +1741,6 @@
       "context": 1000000,
       "multimodal": false,
       "url": "https://llm-stats.com/models/minimax-m2.1"
-    },
-    {
-      "rank": 124,
-      "model_id": "gpt-rosalind-research",
-      "name": "GPT-Rosalind",
-      "organization": "OpenAI",
-      "organization_id": "openai",
-      "country": "US",
-      "score": 31.71,
-      "input_price": 5,
-      "output_price": 25,
-      "context": null,
-      "multimodal": true,
-      "url": "https://llm-stats.com/models/gpt-rosalind-research"
     },
     {
       "rank": 125,
@@ -1758,6 +1758,20 @@
     },
     {
       "rank": 126,
+      "model_id": "gpt-rosalind-research",
+      "name": "GPT-Rosalind",
+      "organization": "OpenAI",
+      "organization_id": "openai",
+      "country": "US",
+      "score": 31.62,
+      "input_price": 5,
+      "output_price": 25,
+      "context": null,
+      "multimodal": true,
+      "url": "https://llm-stats.com/models/gpt-rosalind-research"
+    },
+    {
+      "rank": 127,
       "model_id": "grok-3-mini",
       "name": "Grok-3 Mini",
       "organization": "xAI",
@@ -1771,7 +1785,7 @@
       "url": "https://llm-stats.com/models/grok-3-mini"
     },
     {
-      "rank": 127,
+      "rank": 128,
       "model_id": "gpt-5.1-medium-2025-11-12",
       "name": "GPT-5.1 Medium",
       "organization": "OpenAI",
@@ -1785,13 +1799,13 @@
       "url": "https://llm-stats.com/models/gpt-5.1-medium-2025-11-12"
     },
     {
-      "rank": 128,
+      "rank": 129,
       "model_id": "o3-2025-04-16",
       "name": "o3",
       "organization": "OpenAI",
       "organization_id": "openai",
       "country": "US",
-      "score": 30.99,
+      "score": 30.98,
       "input_price": null,
       "output_price": null,
       "context": null,
@@ -1799,13 +1813,13 @@
       "url": "https://llm-stats.com/models/o3-2025-04-16"
     },
     {
-      "rank": 129,
+      "rank": 130,
       "model_id": "nova-2-pro",
       "name": "Nova 2 Pro",
       "organization": "Amazon",
       "organization_id": "amazon",
       "country": "US",
-      "score": 30.83,
+      "score": 30.82,
       "input_price": null,
       "output_price": null,
       "context": null,
@@ -1813,7 +1827,7 @@
       "url": "https://llm-stats.com/models/nova-2-pro"
     },
     {
-      "rank": 130,
+      "rank": 131,
       "model_id": "gemini-3.1-flash-lite-preview",
       "name": "Gemini 3.1 Flash-Lite",
       "organization": "Google",
@@ -1827,7 +1841,7 @@
       "url": "https://llm-stats.com/models/gemini-3.1-flash-lite-preview"
     },
     {
-      "rank": 131,
+      "rank": 132,
       "model_id": "qwen3.5-35b-a3b",
       "name": "Qwen3.5-35B-A3B",
       "organization": "Alibaba Cloud / Qwen Team",
@@ -1841,13 +1855,13 @@
       "url": "https://llm-stats.com/models/qwen3.5-35b-a3b"
     },
     {
-      "rank": 132,
+      "rank": 133,
       "model_id": "mimo-v2-flash",
       "name": "MiMo-V2-Flash",
       "organization": "Xiaomi",
       "organization_id": "xiaomi",
       "country": "CN",
-      "score": 30.66,
+      "score": 30.65,
       "input_price": null,
       "output_price": null,
       "context": null,
@@ -1855,7 +1869,7 @@
       "url": "https://llm-stats.com/models/mimo-v2-flash"
     },
     {
-      "rank": 133,
+      "rank": 134,
       "model_id": "grok-3",
       "name": "Grok-3",
       "organization": "xAI",
@@ -1869,7 +1883,7 @@
       "url": "https://llm-stats.com/models/grok-3"
     },
     {
-      "rank": 134,
+      "rank": 135,
       "model_id": "glm-5v-turbo",
       "name": "GLM-5V-Turbo",
       "organization": "Zhipu AI",
@@ -1883,13 +1897,13 @@
       "url": "https://llm-stats.com/models/glm-5v-turbo"
     },
     {
-      "rank": 135,
+      "rank": 136,
       "model_id": "gpt-5.4-mini",
       "name": "GPT-5.4 mini",
       "organization": "OpenAI",
       "organization_id": "openai",
       "country": "US",
-      "score": 29.9,
+      "score": 29.89,
       "input_price": 0.75,
       "output_price": 4.5,
       "context": 400000,
@@ -1897,7 +1911,7 @@
       "url": "https://llm-stats.com/models/gpt-5.4-mini"
     },
     {
-      "rank": 136,
+      "rank": 137,
       "model_id": "gemini-2.5-pro-preview-06-05",
       "name": "Gemini 2.5 Pro Preview 06-05",
       "organization": "Google",
@@ -1911,7 +1925,7 @@
       "url": "https://llm-stats.com/models/gemini-2.5-pro-preview-06-05"
     },
     {
-      "rank": 137,
+      "rank": 138,
       "model_id": "claude-opus-4-1-20250805",
       "name": "Claude Opus 4.1",
       "organization": "Anthropic",
@@ -1925,13 +1939,13 @@
       "url": "https://llm-stats.com/models/claude-opus-4-1-20250805"
     },
     {
-      "rank": 138,
+      "rank": 139,
       "model_id": "step-3.7-flash",
       "name": "Step 3.7 Flash",
       "organization": "StepFun",
       "organization_id": "stepfun",
       "country": "CN",
-      "score": 29.73,
+      "score": 29.74,
       "input_price": 0.2,
       "output_price": 1.15,
       "context": 262144,
@@ -1939,7 +1953,7 @@
       "url": "https://llm-stats.com/models/step-3.7-flash"
     },
     {
-      "rank": 139,
+      "rank": 140,
       "model_id": "gpt-5-medium-2025-08-07",
       "name": "GPT-5 Medium",
       "organization": "OpenAI",
@@ -1953,7 +1967,7 @@
       "url": "https://llm-stats.com/models/gpt-5-medium-2025-08-07"
     },
     {
-      "rank": 140,
+      "rank": 141,
       "model_id": "gemma-4-26b-a4b-it",
       "name": "Gemma 4 26B-A4B",
       "organization": "Google",
@@ -1967,13 +1981,13 @@
       "url": "https://llm-stats.com/models/gemma-4-26b-a4b-it"
     },
     {
-      "rank": 141,
+      "rank": 142,
       "model_id": "gemini-3.5-flash-lite",
       "name": "Gemini 3.5 Flash-Lite",
       "organization": "Google",
       "organization_id": "google",
       "country": "US",
-      "score": 29.45,
+      "score": 29.44,
       "input_price": 0.3,
       "output_price": 2.5,
       "context": 1048576,
@@ -1981,7 +1995,7 @@
       "url": "https://llm-stats.com/models/gemini-3.5-flash-lite"
     },
     {
-      "rank": 142,
+      "rank": 143,
       "model_id": "gpt-5.1-codex",
       "name": "GPT-5.1 Codex",
       "organization": "OpenAI",
@@ -1993,20 +2007,6 @@
       "context": null,
       "multimodal": true,
       "url": "https://llm-stats.com/models/gpt-5.1-codex"
-    },
-    {
-      "rank": 143,
-      "model_id": "gpt-5.3-chat-latest",
-      "name": "GPT-5.3 Chat",
-      "organization": "OpenAI",
-      "organization_id": "openai",
-      "country": "US",
-      "score": 29.43,
-      "input_price": 1.75,
-      "output_price": 14,
-      "context": 128000,
-      "multimodal": true,
-      "url": "https://llm-stats.com/models/gpt-5.3-chat-latest"
     },
     {
       "rank": 144,
@@ -2024,6 +2024,20 @@
     },
     {
       "rank": 145,
+      "model_id": "gpt-5.3-chat-latest",
+      "name": "GPT-5.3 Chat",
+      "organization": "OpenAI",
+      "organization_id": "openai",
+      "country": "US",
+      "score": 29.39,
+      "input_price": 1.75,
+      "output_price": 14,
+      "context": 128000,
+      "multimodal": true,
+      "url": "https://llm-stats.com/models/gpt-5.3-chat-latest"
+    },
+    {
+      "rank": 146,
       "model_id": "mai-code-1-flash",
       "name": "MAI-Code-1-Flash",
       "organization": "Microsoft",
@@ -2037,7 +2051,7 @@
       "url": "https://llm-stats.com/models/mai-code-1-flash"
     },
     {
-      "rank": 146,
+      "rank": 147,
       "model_id": "glm-4.6",
       "name": "GLM-4.6",
       "organization": "Zhipu AI",
@@ -2051,7 +2065,7 @@
       "url": "https://llm-stats.com/models/glm-4.6"
     },
     {
-      "rank": 147,
+      "rank": 148,
       "model_id": "longcat-flash-thinking",
       "name": "LongCat-Flash-Thinking",
       "organization": "Meituan",
@@ -2065,13 +2079,13 @@
       "url": "https://llm-stats.com/models/longcat-flash-thinking"
     },
     {
-      "rank": 148,
+      "rank": 149,
       "model_id": "gpt-oss-120b",
       "name": "GPT OSS 120B",
       "organization": "OpenAI",
       "organization_id": "openai",
       "country": "US",
-      "score": 28.55,
+      "score": 28.53,
       "input_price": 0.037,
       "output_price": 0.17,
       "context": 131072,
@@ -2079,7 +2093,7 @@
       "url": "https://llm-stats.com/models/gpt-oss-120b"
     },
     {
-      "rank": 149,
+      "rank": 150,
       "model_id": "deepseek-v3.2-exp",
       "name": "DeepSeek-V3.2-Exp",
       "organization": "DeepSeek",
@@ -2093,13 +2107,13 @@
       "url": "https://llm-stats.com/models/deepseek-v3.2-exp"
     },
     {
-      "rank": 150,
+      "rank": 151,
       "model_id": "seed-2.0-mini",
       "name": "Seed 2.0 Mini",
       "organization": "ByteDance",
       "organization_id": "bytedance",
       "country": "CN",
-      "score": 28.08,
+      "score": 28.07,
       "input_price": 0.1,
       "output_price": 0.4,
       "context": 256000,
@@ -2107,7 +2121,7 @@
       "url": "https://llm-stats.com/models/seed-2.0-mini"
     },
     {
-      "rank": 151,
+      "rank": 152,
       "model_id": "qwen3-235b-a22b-thinking-2507",
       "name": "Qwen3-235B-A22B-Thinking-2507",
       "organization": "Alibaba Cloud / Qwen Team",
@@ -2121,7 +2135,7 @@
       "url": "https://llm-stats.com/models/qwen3-235b-a22b-thinking-2507"
     },
     {
-      "rank": 152,
+      "rank": 153,
       "model_id": "gemini-2.5-pro",
       "name": "Gemini 2.5 Pro",
       "organization": "Google",
@@ -2135,7 +2149,7 @@
       "url": "https://llm-stats.com/models/gemini-2.5-pro"
     },
     {
-      "rank": 153,
+      "rank": 154,
       "model_id": "claude-opus-4-20250514",
       "name": "Claude Opus 4",
       "organization": "Anthropic",
@@ -2149,7 +2163,7 @@
       "url": "https://llm-stats.com/models/claude-opus-4-20250514"
     },
     {
-      "rank": 154,
+      "rank": 155,
       "model_id": "glm-4.5",
       "name": "GLM-4.5",
       "organization": "Zhipu AI",
@@ -2163,7 +2177,7 @@
       "url": "https://llm-stats.com/models/glm-4.5"
     },
     {
-      "rank": 155,
+      "rank": 156,
       "model_id": "gpt-oss-20b-high",
       "name": "GPT OSS 20B High",
       "organization": "OpenAI",
@@ -2177,13 +2191,13 @@
       "url": "https://llm-stats.com/models/gpt-oss-20b-high"
     },
     {
-      "rank": 156,
+      "rank": 157,
       "model_id": "mai-code-1.1-flash",
       "name": "MAI-Code-1.1-Flash",
       "organization": "Microsoft",
       "organization_id": "microsoft",
       "country": "US",
-      "score": 27.56,
+      "score": 27.58,
       "input_price": 0.2,
       "output_price": 1.2,
       "context": 256000,
@@ -2191,7 +2205,7 @@
       "url": "https://llm-stats.com/models/mai-code-1.1-flash"
     },
     {
-      "rank": 157,
+      "rank": 158,
       "model_id": "mimo-v2-omni",
       "name": "MiMo-V2-Omni",
       "organization": "Xiaomi",
@@ -2205,7 +2219,7 @@
       "url": "https://llm-stats.com/models/mimo-v2-omni"
     },
     {
-      "rank": 158,
+      "rank": 159,
       "model_id": "o4-mini",
       "name": "o4-mini",
       "organization": "OpenAI",
@@ -2219,13 +2233,13 @@
       "url": "https://llm-stats.com/models/o4-mini"
     },
     {
-      "rank": 159,
+      "rank": 160,
       "model_id": "gpt-5-mini-2025-08-07",
       "name": "GPT-5 mini",
       "organization": "OpenAI",
       "organization_id": "openai",
       "country": "US",
-      "score": 27.3,
+      "score": 27.29,
       "input_price": 0.25,
       "output_price": 2,
       "context": 400000,
@@ -2233,13 +2247,13 @@
       "url": "https://llm-stats.com/models/gpt-5-mini-2025-08-07"
     },
     {
-      "rank": 160,
+      "rank": 161,
       "model_id": "minimax-m2",
       "name": "MiniMax M2",
       "organization": "MiniMax",
       "organization_id": "minimax",
       "country": "CN",
-      "score": 26.79,
+      "score": 26.78,
       "input_price": 0.3,
       "output_price": 1.2,
       "context": 1000000,
@@ -2247,7 +2261,7 @@
       "url": "https://llm-stats.com/models/minimax-m2"
     },
     {
-      "rank": 161,
+      "rank": 162,
       "model_id": "mistral-medium-3-5",
       "name": "Mistral Medium 3.5",
       "organization": "Mistral AI",
@@ -2261,7 +2275,7 @@
       "url": "https://llm-stats.com/models/mistral-medium-3-5"
     },
     {
-      "rank": 162,
+      "rank": 163,
       "model_id": "nemotron-3-super-120b-a12b",
       "name": "Nemotron 3 Super (120B A12B)",
       "organization": "NVIDIA",
@@ -2275,7 +2289,7 @@
       "url": "https://llm-stats.com/models/nemotron-3-super-120b-a12b"
     },
     {
-      "rank": 163,
+      "rank": 164,
       "model_id": "qwen3-vl-235b-a22b-thinking",
       "name": "Qwen3 VL 235B A22B Thinking",
       "organization": "Alibaba Cloud / Qwen Team",
@@ -2289,7 +2303,7 @@
       "url": "https://llm-stats.com/models/qwen3-vl-235b-a22b-thinking"
     },
     {
-      "rank": 164,
+      "rank": 165,
       "model_id": "gpt-5-codex-2025-09-15",
       "name": "GPT-5 Codex",
       "organization": "OpenAI",
@@ -2303,13 +2317,13 @@
       "url": "https://llm-stats.com/models/gpt-5-codex-2025-09-15"
     },
     {
-      "rank": 165,
+      "rank": 166,
       "model_id": "gpt-5.4-nano",
       "name": "GPT-5.4 nano",
       "organization": "OpenAI",
       "organization_id": "openai",
       "country": "US",
-      "score": 26.47,
+      "score": 26.46,
       "input_price": 0.2,
       "output_price": 1.25,
       "context": 400000,
@@ -2317,13 +2331,13 @@
       "url": "https://llm-stats.com/models/gpt-5.4-nano"
     },
     {
-      "rank": 166,
+      "rank": 167,
       "model_id": "k-exaone-236b-a23b",
       "name": "K-EXAONE-236B-A23B",
       "organization": "LG AI Research",
       "organization_id": "lg",
       "country": "KR",
-      "score": 26.18,
+      "score": 26.17,
       "input_price": null,
       "output_price": null,
       "context": null,
@@ -2331,7 +2345,7 @@
       "url": "https://llm-stats.com/models/k-exaone-236b-a23b"
     },
     {
-      "rank": 167,
+      "rank": 168,
       "model_id": "exaone-4.5-33b",
       "name": "EXAONE 4.5 33B",
       "organization": "LG AI Research",
@@ -2345,13 +2359,13 @@
       "url": "https://llm-stats.com/models/exaone-4.5-33b"
     },
     {
-      "rank": 168,
+      "rank": 169,
       "model_id": "nova-2-omni",
       "name": "Nova 2 Omni",
       "organization": "Amazon",
       "organization_id": "amazon",
       "country": "US",
-      "score": 25.81,
+      "score": 25.8,
       "input_price": null,
       "output_price": null,
       "context": null,
@@ -2359,7 +2373,7 @@
       "url": "https://llm-stats.com/models/nova-2-omni"
     },
     {
-      "rank": 169,
+      "rank": 170,
       "model_id": "sarvam-105b",
       "name": "Sarvam-105B",
       "organization": "Sarvam AI",
@@ -2371,20 +2385,6 @@
       "context": null,
       "multimodal": false,
       "url": "https://llm-stats.com/models/sarvam-105b"
-    },
-    {
-      "rank": 170,
-      "model_id": "mimo-v2.5-pro",
-      "name": "MiMo-V2.5-Pro",
-      "organization": "Xiaomi",
-      "organization_id": "xiaomi",
-      "country": "CN",
-      "score": 25.62,
-      "input_price": 0.435,
-      "output_price": 0.87,
-      "context": 1048576,
-      "multimodal": false,
-      "url": "https://llm-stats.com/models/mimo-v2.5-pro"
     },
     {
       "rank": 171,
@@ -2402,6 +2402,20 @@
     },
     {
       "rank": 172,
+      "model_id": "mimo-v2.5-pro",
+      "name": "MiMo-V2.5-Pro",
+      "organization": "Xiaomi",
+      "organization_id": "xiaomi",
+      "country": "CN",
+      "score": 25.61,
+      "input_price": 0.435,
+      "output_price": 0.87,
+      "context": 1048576,
+      "multimodal": false,
+      "url": "https://llm-stats.com/models/mimo-v2.5-pro"
+    },
+    {
+      "rank": 173,
       "model_id": "gpt-oss-120b-high",
       "name": "GPT OSS 120B High",
       "organization": "OpenAI",
@@ -2413,20 +2427,6 @@
       "context": null,
       "multimodal": false,
       "url": "https://llm-stats.com/models/gpt-oss-120b-high"
-    },
-    {
-      "rank": 173,
-      "model_id": "nova-2-lite",
-      "name": "Nova 2 Lite",
-      "organization": "Amazon",
-      "organization_id": "amazon",
-      "country": "US",
-      "score": 25.38,
-      "input_price": 0.3,
-      "output_price": 2.5,
-      "context": 1000000,
-      "multimodal": true,
-      "url": "https://llm-stats.com/models/nova-2-lite"
     },
     {
       "rank": 174,
@@ -2444,6 +2444,20 @@
     },
     {
       "rank": 175,
+      "model_id": "nova-2-lite",
+      "name": "Nova 2 Lite",
+      "organization": "Amazon",
+      "organization_id": "amazon",
+      "country": "US",
+      "score": 25.37,
+      "input_price": 0.3,
+      "output_price": 2.5,
+      "context": 1000000,
+      "multimodal": true,
+      "url": "https://llm-stats.com/models/nova-2-lite"
+    },
+    {
+      "rank": 176,
       "model_id": "chatgpt-4o-latest",
       "name": "ChatGPT-4o Latest",
       "organization": "OpenAI",
@@ -2457,7 +2471,7 @@
       "url": "https://llm-stats.com/models/chatgpt-4o-latest"
     },
     {
-      "rank": 176,
+      "rank": 177,
       "model_id": "qwen3.5-9b",
       "name": "Qwen3.5-9B",
       "organization": "Alibaba Cloud / Qwen Team",
@@ -2471,7 +2485,7 @@
       "url": "https://llm-stats.com/models/qwen3.5-9b"
     },
     {
-      "rank": 177,
+      "rank": 178,
       "model_id": "qwen3-vl-235b-a22b-instruct",
       "name": "Qwen3 VL 235B A22B Instruct",
       "organization": "Alibaba Cloud / Qwen Team",
@@ -2485,7 +2499,7 @@
       "url": "https://llm-stats.com/models/qwen3-vl-235b-a22b-instruct"
     },
     {
-      "rank": 178,
+      "rank": 179,
       "model_id": "glm-4.5-air",
       "name": "GLM-4.5-Air",
       "organization": "Zhipu AI",
@@ -2499,7 +2513,7 @@
       "url": "https://llm-stats.com/models/glm-4.5-air"
     },
     {
-      "rank": 179,
+      "rank": 180,
       "model_id": "laguna-xs-2.1",
       "name": "Laguna XS 2.1",
       "organization": "Poolside",
@@ -2513,7 +2527,7 @@
       "url": "https://llm-stats.com/models/laguna-xs-2.1"
     },
     {
-      "rank": 180,
+      "rank": 181,
       "model_id": "claude-sonnet-4-20250514",
       "name": "Claude Sonnet 4",
       "organization": "Anthropic",
@@ -2527,13 +2541,13 @@
       "url": "https://llm-stats.com/models/claude-sonnet-4-20250514"
     },
     {
-      "rank": 181,
+      "rank": 182,
       "model_id": "qwen3-235b-a22b-instruct-2507",
       "name": "Qwen3-235B-A22B-Instruct-2507",
       "organization": "Alibaba Cloud / Qwen Team",
       "organization_id": "qwen",
       "country": "CN",
-      "score": 24.13,
+      "score": 24.12,
       "input_price": 0.09,
       "output_price": 0.55,
       "context": 262144,
@@ -2541,7 +2555,7 @@
       "url": "https://llm-stats.com/models/qwen3-235b-a22b-instruct-2507"
     },
     {
-      "rank": 182,
+      "rank": 183,
       "model_id": "deepseek-r1-0528",
       "name": "DeepSeek-R1-0528",
       "organization": "DeepSeek",
@@ -2555,7 +2569,7 @@
       "url": "https://llm-stats.com/models/deepseek-r1-0528"
     },
     {
-      "rank": 183,
+      "rank": 184,
       "model_id": "command-a-plus-05-2026",
       "name": "Command A+",
       "organization": "Cohere",
@@ -2569,7 +2583,7 @@
       "url": "https://llm-stats.com/models/command-a-plus-05-2026"
     },
     {
-      "rank": 184,
+      "rank": 185,
       "model_id": "claude-3-7-sonnet-20250219",
       "name": "Claude 3.7 Sonnet",
       "organization": "Anthropic",
@@ -2583,7 +2597,7 @@
       "url": "https://llm-stats.com/models/claude-3-7-sonnet-20250219"
     },
     {
-      "rank": 185,
+      "rank": 186,
       "model_id": "qwen3-next-80b-a3b-thinking",
       "name": "Qwen3-Next-80B-A3B-Thinking",
       "organization": "Alibaba Cloud / Qwen Team",
@@ -2597,7 +2611,7 @@
       "url": "https://llm-stats.com/models/qwen3-next-80b-a3b-thinking"
     },
     {
-      "rank": 186,
+      "rank": 187,
       "model_id": "granite-4.2-30b",
       "name": "IBM Granite 4.2 30B",
       "organization": "IBM",
@@ -2611,13 +2625,13 @@
       "url": "https://llm-stats.com/models/granite-4.2-30b"
     },
     {
-      "rank": 187,
+      "rank": 188,
       "model_id": "grok-4.20-beta-0309-reasoning",
       "name": "Grok-4.20 Beta Reasoning",
       "organization": "xAI",
       "organization_id": "xai",
       "country": "US",
-      "score": 23.53,
+      "score": 23.52,
       "input_price": null,
       "output_price": null,
       "context": null,
@@ -2625,7 +2639,7 @@
       "url": "https://llm-stats.com/models/grok-4.20-beta-0309-reasoning"
     },
     {
-      "rank": 188,
+      "rank": 189,
       "model_id": "qwen3-vl-32b-thinking",
       "name": "Qwen3 VL 32B Thinking",
       "organization": "Alibaba Cloud / Qwen Team",
@@ -2639,7 +2653,7 @@
       "url": "https://llm-stats.com/models/qwen3-vl-32b-thinking"
     },
     {
-      "rank": 189,
+      "rank": 190,
       "model_id": "mercury-2",
       "name": "Mercury 2",
       "organization": "Inception",
@@ -2653,7 +2667,7 @@
       "url": "https://llm-stats.com/models/mercury-2"
     },
     {
-      "rank": 190,
+      "rank": 191,
       "model_id": "glm-4.7-flash",
       "name": "GLM-4.7-Flash",
       "organization": "Zhipu AI",
@@ -2667,13 +2681,13 @@
       "url": "https://llm-stats.com/models/glm-4.7-flash"
     },
     {
-      "rank": 191,
+      "rank": 192,
       "model_id": "u2",
       "name": "U2",
       "organization": "Unisound",
       "organization_id": "unisound",
       "country": "CN",
-      "score": 23.28,
+      "score": 23.27,
       "input_price": null,
       "output_price": null,
       "context": null,
@@ -2681,7 +2695,7 @@
       "url": "https://llm-stats.com/models/u2"
     },
     {
-      "rank": 192,
+      "rank": 193,
       "model_id": "deepseek-v3.1",
       "name": "DeepSeek-V3.1",
       "organization": "DeepSeek",
@@ -2695,13 +2709,13 @@
       "url": "https://llm-stats.com/models/deepseek-v3.1"
     },
     {
-      "rank": 193,
+      "rank": 194,
       "model_id": "grok-4.3",
       "name": "Grok 4.3",
       "organization": "xAI",
       "organization_id": "xai",
       "country": "US",
-      "score": 22,
+      "score": 21.99,
       "input_price": 1.25,
       "output_price": 2.5,
       "context": 1000000,
@@ -2709,7 +2723,7 @@
       "url": "https://llm-stats.com/models/grok-4.3"
     },
     {
-      "rank": 194,
+      "rank": 195,
       "model_id": "gemma-4-12b-it",
       "name": "Gemma 4 12B",
       "organization": "Google",
@@ -2723,7 +2737,7 @@
       "url": "https://llm-stats.com/models/gemma-4-12b-it"
     },
     {
-      "rank": 195,
+      "rank": 196,
       "model_id": "nemotron-3.5-lightning-30b-a3b",
       "name": "Nemotron 3.5 Lightning (30B A3B)",
       "organization": "NVIDIA",
@@ -2737,7 +2751,7 @@
       "url": "https://llm-stats.com/models/nemotron-3.5-lightning-30b-a3b"
     },
     {
-      "rank": 196,
+      "rank": 197,
       "model_id": "north-mini-code-1.0",
       "name": "North Mini Code 1.0",
       "organization": "Cohere",
@@ -2751,13 +2765,13 @@
       "url": "https://llm-stats.com/models/north-mini-code-1.0"
     },
     {
-      "rank": 197,
+      "rank": 198,
       "model_id": "kimi-k2-instruct",
       "name": "Kimi K2 Instruct",
       "organization": "Moonshot AI",
       "organization_id": "moonshotai",
       "country": "CN",
-      "score": 21.83,
+      "score": 21.82,
       "input_price": null,
       "output_price": null,
       "context": null,
@@ -2765,7 +2779,7 @@
       "url": "https://llm-stats.com/models/kimi-k2-instruct"
     },
     {
-      "rank": 198,
+      "rank": 199,
       "model_id": "gemini-2.5-flash",
       "name": "Gemini 2.5 Flash",
       "organization": "Google",
@@ -2779,7 +2793,7 @@
       "url": "https://llm-stats.com/models/gemini-2.5-flash"
     },
     {
-      "rank": 199,
+      "rank": 200,
       "model_id": "qwen3-max",
       "name": "Qwen3 Max",
       "organization": "Alibaba Cloud / Qwen Team",
@@ -2793,7 +2807,7 @@
       "url": "https://llm-stats.com/models/qwen3-max"
     },
     {
-      "rank": 200,
+      "rank": 201,
       "model_id": "kimi-k2-0905",
       "name": "Kimi K2 0905",
       "organization": "Moonshot AI",
@@ -2807,13 +2821,13 @@
       "url": "https://llm-stats.com/models/kimi-k2-0905"
     },
     {
-      "rank": 201,
+      "rank": 202,
       "model_id": "kimi-k2-instruct-0905",
       "name": "Kimi K2-Instruct-0905",
       "organization": "Moonshot AI",
       "organization_id": "moonshotai",
       "country": "CN",
-      "score": 21.53,
+      "score": 21.52,
       "input_price": null,
       "output_price": null,
       "context": null,
@@ -2821,7 +2835,7 @@
       "url": "https://llm-stats.com/models/kimi-k2-instruct-0905"
     },
     {
-      "rank": 202,
+      "rank": 203,
       "model_id": "o3-mini",
       "name": "o3-mini",
       "organization": "OpenAI",
@@ -2835,13 +2849,13 @@
       "url": "https://llm-stats.com/models/o3-mini"
     },
     {
-      "rank": 203,
+      "rank": 204,
       "model_id": "minimax-m1-80k",
       "name": "MiniMax M1 80K",
       "organization": "MiniMax",
       "organization_id": "minimax",
       "country": "CN",
-      "score": 21.41,
+      "score": 21.4,
       "input_price": null,
       "output_price": null,
       "context": null,
@@ -2849,7 +2863,7 @@
       "url": "https://llm-stats.com/models/minimax-m1-80k"
     },
     {
-      "rank": 204,
+      "rank": 205,
       "model_id": "qwen3-coder-480b-a35b-instruct",
       "name": "Qwen3-Coder 480B A35B Instruct",
       "organization": "Alibaba Cloud / Qwen Team",
@@ -2863,7 +2877,7 @@
       "url": "https://llm-stats.com/models/qwen3-coder-480b-a35b-instruct"
     },
     {
-      "rank": 205,
+      "rank": 206,
       "model_id": "nemotron-3-nano-30b-a3b",
       "name": "Nemotron 3 Nano (30B A3B)",
       "organization": "NVIDIA",
@@ -2877,7 +2891,7 @@
       "url": "https://llm-stats.com/models/nemotron-3-nano-30b-a3b"
     },
     {
-      "rank": 206,
+      "rank": 207,
       "model_id": "o1-2024-12-17",
       "name": "o1",
       "organization": "OpenAI",
@@ -2891,7 +2905,7 @@
       "url": "https://llm-stats.com/models/o1-2024-12-17"
     },
     {
-      "rank": 207,
+      "rank": 208,
       "model_id": "grok-code-fast-1",
       "name": "Grok Code Fast 1",
       "organization": "xAI",
@@ -2905,7 +2919,7 @@
       "url": "https://llm-stats.com/models/grok-code-fast-1"
     },
     {
-      "rank": 208,
+      "rank": 209,
       "model_id": "ministral-14b-latest",
       "name": "Ministral 3 (14B Reasoning 2512)",
       "organization": "Mistral AI",
@@ -2919,13 +2933,13 @@
       "url": "https://llm-stats.com/models/ministral-14b-latest"
     },
     {
-      "rank": 209,
+      "rank": 210,
       "model_id": "minimax-m1-40k",
       "name": "MiniMax M1 40K",
       "organization": "MiniMax",
       "organization_id": "minimax",
       "country": "CN",
-      "score": 20.49,
+      "score": 20.48,
       "input_price": null,
       "output_price": null,
       "context": null,
@@ -2933,7 +2947,7 @@
       "url": "https://llm-stats.com/models/minimax-m1-40k"
     },
     {
-      "rank": 210,
+      "rank": 211,
       "model_id": "qwen3-vl-32b-instruct",
       "name": "Qwen3 VL 32B Instruct",
       "organization": "Alibaba Cloud / Qwen Team",
@@ -2947,13 +2961,13 @@
       "url": "https://llm-stats.com/models/qwen3-vl-32b-instruct"
     },
     {
-      "rank": 211,
+      "rank": 212,
       "model_id": "qwen3-next-80b-a3b-instruct",
       "name": "Qwen3-Next-80B-A3B-Instruct",
       "organization": "Alibaba Cloud / Qwen Team",
       "organization_id": "qwen",
       "country": "CN",
-      "score": 20.13,
+      "score": 20.12,
       "input_price": 0.09,
       "output_price": 1.1,
       "context": 262144,
@@ -2961,7 +2975,7 @@
       "url": "https://llm-stats.com/models/qwen3-next-80b-a3b-instruct"
     },
     {
-      "rank": 212,
+      "rank": 213,
       "model_id": "gpt-4.5",
       "name": "GPT-4.5",
       "organization": "OpenAI",
@@ -2975,13 +2989,13 @@
       "url": "https://llm-stats.com/models/gpt-4.5"
     },
     {
-      "rank": 213,
+      "rank": 214,
       "model_id": "longcat-flash-chat",
       "name": "LongCat-Flash-Chat",
       "organization": "Meituan",
       "organization_id": "meituan",
       "country": "CN",
-      "score": 19.79,
+      "score": 19.78,
       "input_price": null,
       "output_price": null,
       "context": null,
@@ -2989,7 +3003,7 @@
       "url": "https://llm-stats.com/models/longcat-flash-chat"
     },
     {
-      "rank": 214,
+      "rank": 215,
       "model_id": "o1-pro",
       "name": "o1-pro",
       "organization": "OpenAI",
@@ -3003,7 +3017,7 @@
       "url": "https://llm-stats.com/models/o1-pro"
     },
     {
-      "rank": 215,
+      "rank": 216,
       "model_id": "grok-4.1-2025-11-17",
       "name": "Grok-4.1",
       "organization": "xAI",
@@ -3017,7 +3031,7 @@
       "url": "https://llm-stats.com/models/grok-4.1-2025-11-17"
     },
     {
-      "rank": 216,
+      "rank": 217,
       "model_id": "granite-4.2-8b",
       "name": "IBM Granite 4.2 8B",
       "organization": "IBM",
@@ -3031,7 +3045,7 @@
       "url": "https://llm-stats.com/models/granite-4.2-8b"
     },
     {
-      "rank": 217,
+      "rank": 218,
       "model_id": "sarvam-30b",
       "name": "Sarvam-30B",
       "organization": "Sarvam AI",
@@ -3045,7 +3059,7 @@
       "url": "https://llm-stats.com/models/sarvam-30b"
     },
     {
-      "rank": 218,
+      "rank": 219,
       "model_id": "gpt-5-nano-2025-08-07",
       "name": "GPT-5 nano",
       "organization": "OpenAI",
@@ -3059,7 +3073,7 @@
       "url": "https://llm-stats.com/models/gpt-5-nano-2025-08-07"
     },
     {
-      "rank": 219,
+      "rank": 220,
       "model_id": "qwen3.5-4b",
       "name": "Qwen3.5-4B",
       "organization": "Alibaba Cloud / Qwen Team",
@@ -3073,7 +3087,7 @@
       "url": "https://llm-stats.com/models/qwen3.5-4b"
     },
     {
-      "rank": 220,
+      "rank": 221,
       "model_id": "diffusiongemma-26b-a4b-it",
       "name": "DiffusionGemma 26B-A4B",
       "organization": "Google",
@@ -3087,7 +3101,7 @@
       "url": "https://llm-stats.com/models/diffusiongemma-26b-a4b-it"
     },
     {
-      "rank": 221,
+      "rank": 222,
       "model_id": "llama-3.1-nemotron-ultra-253b-v1",
       "name": "Llama 3.1 Nemotron Ultra 253B v1",
       "organization": "NVIDIA",
@@ -3101,7 +3115,7 @@
       "url": "https://llm-stats.com/models/llama-3.1-nemotron-ultra-253b-v1"
     },
     {
-      "rank": 222,
+      "rank": 223,
       "model_id": "claude-3-5-sonnet-20241022",
       "name": "Claude 3.5 Sonnet",
       "organization": "Anthropic",
@@ -3115,13 +3129,13 @@
       "url": "https://llm-stats.com/models/claude-3-5-sonnet-20241022"
     },
     {
-      "rank": 223,
+      "rank": 224,
       "model_id": "lfm-2.5-2.6b",
       "name": "LFM2.5-2.6B",
       "organization": "Liquid AI",
       "organization_id": "liquid",
       "country": "US",
-      "score": 18.95,
+      "score": 18.94,
       "input_price": null,
       "output_price": null,
       "context": null,
@@ -3129,7 +3143,7 @@
       "url": "https://llm-stats.com/models/lfm-2.5-2.6b"
     },
     {
-      "rank": 224,
+      "rank": 225,
       "model_id": "mistral-small-latest",
       "name": "Mistral Small 4",
       "organization": "Mistral AI",
@@ -3143,7 +3157,7 @@
       "url": "https://llm-stats.com/models/mistral-small-latest"
     },
     {
-      "rank": 225,
+      "rank": 226,
       "model_id": "longcat-flash-lite",
       "name": "LongCat-Flash-Lite",
       "organization": "Meituan",
@@ -3157,7 +3171,7 @@
       "url": "https://llm-stats.com/models/longcat-flash-lite"
     },
     {
-      "rank": 226,
+      "rank": 227,
       "model_id": "nvidia-nemotron-nano-9b-v2",
       "name": "Nemotron Nano 9B v2",
       "organization": "NVIDIA",
@@ -3171,13 +3185,13 @@
       "url": "https://llm-stats.com/models/nvidia-nemotron-nano-9b-v2"
     },
     {
-      "rank": 227,
+      "rank": 228,
       "model_id": "qwen3-32b",
       "name": "Qwen3 32B",
       "organization": "Alibaba Cloud / Qwen Team",
       "organization_id": "qwen",
       "country": "CN",
-      "score": 18.4,
+      "score": 18.39,
       "input_price": 0.08,
       "output_price": 0.28,
       "context": 128000,
@@ -3185,7 +3199,7 @@
       "url": "https://llm-stats.com/models/qwen3-32b"
     },
     {
-      "rank": 228,
+      "rank": 229,
       "model_id": "qwen3-vl-30b-a3b-thinking",
       "name": "Qwen3 VL 30B A3B Thinking",
       "organization": "Alibaba Cloud / Qwen Team",
@@ -3199,7 +3213,7 @@
       "url": "https://llm-stats.com/models/qwen3-vl-30b-a3b-thinking"
     },
     {
-      "rank": 229,
+      "rank": 230,
       "model_id": "qwen3-14b",
       "name": "Qwen3 14B",
       "organization": "Alibaba Cloud / Qwen Team",
@@ -3213,13 +3227,13 @@
       "url": "https://llm-stats.com/models/qwen3-14b"
     },
     {
-      "rank": 230,
+      "rank": 231,
       "model_id": "gpt-oss-20b",
       "name": "GPT OSS 20B",
       "organization": "OpenAI",
       "organization_id": "openai",
       "country": "US",
-      "score": 17.99,
+      "score": 17.98,
       "input_price": 0.03,
       "output_price": 0.14,
       "context": 131072,
@@ -3227,7 +3241,7 @@
       "url": "https://llm-stats.com/models/gpt-oss-20b"
     },
     {
-      "rank": 231,
+      "rank": 232,
       "model_id": "gpt-4.1-2025-04-14",
       "name": "GPT-4.1",
       "organization": "OpenAI",
@@ -3241,7 +3255,7 @@
       "url": "https://llm-stats.com/models/gpt-4.1-2025-04-14"
     },
     {
-      "rank": 232,
+      "rank": 233,
       "model_id": "qwen3-30b-a3b",
       "name": "Qwen3 30B A3B",
       "organization": "Alibaba Cloud / Qwen Team",
@@ -3255,7 +3269,7 @@
       "url": "https://llm-stats.com/models/qwen3-30b-a3b"
     },
     {
-      "rank": 233,
+      "rank": 234,
       "model_id": "kimi-k1.5",
       "name": "Kimi-k1.5",
       "organization": "Moonshot AI",
@@ -3269,7 +3283,7 @@
       "url": "https://llm-stats.com/models/kimi-k1.5"
     },
     {
-      "rank": 234,
+      "rank": 235,
       "model_id": "gemini-2.0-flash-thinking",
       "name": "Gemini 2.0 Flash Thinking",
       "organization": "Google",
@@ -3283,7 +3297,7 @@
       "url": "https://llm-stats.com/models/gemini-2.0-flash-thinking"
     },
     {
-      "rank": 235,
+      "rank": 236,
       "model_id": "o1-preview",
       "name": "o1-preview",
       "organization": "OpenAI",
@@ -3297,7 +3311,7 @@
       "url": "https://llm-stats.com/models/o1-preview"
     },
     {
-      "rank": 236,
+      "rank": 237,
       "model_id": "gemini-2.0-flash",
       "name": "Gemini 2.0 Flash",
       "organization": "Google",
@@ -3311,7 +3325,7 @@
       "url": "https://llm-stats.com/models/gemini-2.0-flash"
     },
     {
-      "rank": 237,
+      "rank": 238,
       "model_id": "ministral-8b-latest",
       "name": "Ministral 3 (8B Reasoning 2512)",
       "organization": "Mistral AI",
@@ -3325,7 +3339,7 @@
       "url": "https://llm-stats.com/models/ministral-8b-latest"
     },
     {
-      "rank": 238,
+      "rank": 239,
       "model_id": "qwen3-vl-30b-a3b-instruct",
       "name": "Qwen3 VL 30B A3B Instruct",
       "organization": "Alibaba Cloud / Qwen Team",
@@ -3339,7 +3353,7 @@
       "url": "https://llm-stats.com/models/qwen3-vl-30b-a3b-instruct"
     },
     {
-      "rank": 239,
+      "rank": 240,
       "model_id": "qwen3-vl-8b-thinking",
       "name": "Qwen3 VL 8B Thinking",
       "organization": "Alibaba Cloud / Qwen Team",
@@ -3353,7 +3367,7 @@
       "url": "https://llm-stats.com/models/qwen3-vl-8b-thinking"
     },
     {
-      "rank": 240,
+      "rank": 241,
       "model_id": "grok-4.1-thinking-2025-11-17",
       "name": "Grok-4.1 Thinking",
       "organization": "xAI",
@@ -3367,7 +3381,7 @@
       "url": "https://llm-stats.com/models/grok-4.1-thinking-2025-11-17"
     },
     {
-      "rank": 241,
+      "rank": 242,
       "model_id": "deepseek-r1-zero",
       "name": "DeepSeek R1 Zero",
       "organization": "DeepSeek",
@@ -3381,13 +3395,13 @@
       "url": "https://llm-stats.com/models/deepseek-r1-zero"
     },
     {
-      "rank": 242,
+      "rank": 243,
       "model_id": "claude-3-5-sonnet-20240620",
       "name": "Claude 3.5 Sonnet",
       "organization": "Anthropic",
       "organization_id": "anthropic",
       "country": "US",
-      "score": 15.87,
+      "score": 15.86,
       "input_price": null,
       "output_price": null,
       "context": null,
@@ -3395,7 +3409,7 @@
       "url": "https://llm-stats.com/models/claude-3-5-sonnet-20240620"
     },
     {
-      "rank": 243,
+      "rank": 244,
       "model_id": "deepseek-v3",
       "name": "DeepSeek-V3",
       "organization": "DeepSeek",
@@ -3409,7 +3423,7 @@
       "url": "https://llm-stats.com/models/deepseek-v3"
     },
     {
-      "rank": 244,
+      "rank": 245,
       "model_id": "qwen3-235b-a22b",
       "name": "Qwen3 235B A22B",
       "organization": "Alibaba Cloud / Qwen Team",
@@ -3423,7 +3437,7 @@
       "url": "https://llm-stats.com/models/qwen3-235b-a22b"
     },
     {
-      "rank": 245,
+      "rank": 246,
       "model_id": "granite-4.2-3b",
       "name": "IBM Granite 4.2 3B",
       "organization": "IBM",
@@ -3437,7 +3451,7 @@
       "url": "https://llm-stats.com/models/granite-4.2-3b"
     },
     {
-      "rank": 246,
+      "rank": 247,
       "model_id": "phi-4-reasoning-plus",
       "name": "Phi 4 Reasoning Plus",
       "organization": "Microsoft",
@@ -3451,7 +3465,7 @@
       "url": "https://llm-stats.com/models/phi-4-reasoning-plus"
     },
     {
-      "rank": 247,
+      "rank": 248,
       "model_id": "qwq-32b",
       "name": "QwQ-32B",
       "organization": "Alibaba Cloud / Qwen Team",
@@ -3465,13 +3479,13 @@
       "url": "https://llm-stats.com/models/qwq-32b"
     },
     {
-      "rank": 248,
+      "rank": 249,
       "model_id": "llama-3.1-405b-instruct",
       "name": "Llama 3.1 405B Instruct",
       "organization": "Meta",
       "organization_id": "meta",
       "country": "US",
-      "score": 14.72,
+      "score": 14.71,
       "input_price": null,
       "output_price": null,
       "context": null,
@@ -3479,7 +3493,7 @@
       "url": "https://llm-stats.com/models/llama-3.1-405b-instruct"
     },
     {
-      "rank": 249,
+      "rank": 250,
       "model_id": "llama-4-maverick",
       "name": "Llama 4 Maverick",
       "organization": "Meta",
@@ -3493,7 +3507,7 @@
       "url": "https://llm-stats.com/models/llama-4-maverick"
     },
     {
-      "rank": 250,
+      "rank": 251,
       "model_id": "deepseek-r1-distill-llama-70b",
       "name": "DeepSeek R1 Distill Llama 70B",
       "organization": "DeepSeek",
@@ -3507,7 +3521,7 @@
       "url": "https://llm-stats.com/models/deepseek-r1-distill-llama-70b"
     },
     {
-      "rank": 251,
+      "rank": 252,
       "model_id": "minicpm-sala",
       "name": "MiniCPM-SALA",
       "organization": "OpenBMB",
@@ -3521,7 +3535,7 @@
       "url": "https://llm-stats.com/models/minicpm-sala"
     },
     {
-      "rank": 252,
+      "rank": 253,
       "model_id": "qwen2-vl-72b",
       "name": "Qwen2-VL-72B-Instruct",
       "organization": "Alibaba Cloud / Qwen Team",
@@ -3535,7 +3549,7 @@
       "url": "https://llm-stats.com/models/qwen2-vl-72b"
     },
     {
-      "rank": 253,
+      "rank": 254,
       "model_id": "gpt-4o-2024-08-06",
       "name": "GPT-4o",
       "organization": "OpenAI",
@@ -3549,7 +3563,7 @@
       "url": "https://llm-stats.com/models/gpt-4o-2024-08-06"
     },
     {
-      "rank": 254,
+      "rank": 255,
       "model_id": "gpt-4.1-mini-2025-04-14",
       "name": "GPT-4.1 mini",
       "organization": "OpenAI",
@@ -3563,7 +3577,7 @@
       "url": "https://llm-stats.com/models/gpt-4.1-mini-2025-04-14"
     },
     {
-      "rank": 255,
+      "rank": 256,
       "model_id": "qwen3-vl-8b-instruct",
       "name": "Qwen3 VL 8B Instruct",
       "organization": "Alibaba Cloud / Qwen Team",
@@ -3577,7 +3591,7 @@
       "url": "https://llm-stats.com/models/qwen3-vl-8b-instruct"
     },
     {
-      "rank": 256,
+      "rank": 257,
       "model_id": "llama-3.3-70b-instruct",
       "name": "Llama 3.3 70B Instruct",
       "organization": "Meta",
@@ -3591,7 +3605,7 @@
       "url": "https://llm-stats.com/models/llama-3.3-70b-instruct"
     },
     {
-      "rank": 257,
+      "rank": 258,
       "model_id": "gemma-4-e4b-it",
       "name": "Gemma 4 E4B",
       "organization": "Google",
@@ -3605,7 +3619,7 @@
       "url": "https://llm-stats.com/models/gemma-4-e4b-it"
     },
     {
-      "rank": 258,
+      "rank": 259,
       "model_id": "devstral-medium-2507",
       "name": "Devstral Medium",
       "organization": "Mistral AI",
@@ -3619,7 +3633,7 @@
       "url": "https://llm-stats.com/models/devstral-medium-2507"
     },
     {
-      "rank": 259,
+      "rank": 260,
       "model_id": "kimi-k2-base",
       "name": "Kimi K2 Base",
       "organization": "Moonshot AI",
@@ -3633,7 +3647,7 @@
       "url": "https://llm-stats.com/models/kimi-k2-base"
     },
     {
-      "rank": 260,
+      "rank": 261,
       "model_id": "deepseek-v3-0324",
       "name": "DeepSeek-V3 0324",
       "organization": "DeepSeek",
@@ -3647,7 +3661,7 @@
       "url": "https://llm-stats.com/models/deepseek-v3-0324"
     },
     {
-      "rank": 261,
+      "rank": 262,
       "model_id": "llama-3.3-nemotron-super-49b-v1",
       "name": "Llama-3.3 Nemotron Super 49B v1",
       "organization": "NVIDIA",
@@ -3661,7 +3675,7 @@
       "url": "https://llm-stats.com/models/llama-3.3-nemotron-super-49b-v1"
     },
     {
-      "rank": 262,
+      "rank": 263,
       "model_id": "magistral-medium",
       "name": "Magistral Medium",
       "organization": "Mistral AI",
@@ -3675,7 +3689,7 @@
       "url": "https://llm-stats.com/models/magistral-medium"
     },
     {
-      "rank": 263,
+      "rank": 264,
       "model_id": "deepseek-r1-distill-qwen-32b",
       "name": "DeepSeek R1 Distill Qwen 32B",
       "organization": "DeepSeek",
@@ -3689,7 +3703,7 @@
       "url": "https://llm-stats.com/models/deepseek-r1-distill-qwen-32b"
     },
     {
-      "rank": 264,
+      "rank": 265,
       "model_id": "qwen3-vl-4b-thinking",
       "name": "Qwen3 VL 4B Thinking",
       "organization": "Alibaba Cloud / Qwen Team",
@@ -3703,7 +3717,7 @@
       "url": "https://llm-stats.com/models/qwen3-vl-4b-thinking"
     },
     {
-      "rank": 265,
+      "rank": 266,
       "model_id": "qwen2.5-vl-72b",
       "name": "Qwen2.5 VL 72B Instruct",
       "organization": "Alibaba Cloud / Qwen Team",
@@ -3717,7 +3731,7 @@
       "url": "https://llm-stats.com/models/qwen2.5-vl-72b"
     },
     {
-      "rank": 266,
+      "rank": 267,
       "model_id": "gemini-2.0-flash-lite",
       "name": "Gemini 2.0 Flash-Lite",
       "organization": "Google",
@@ -3731,7 +3745,7 @@
       "url": "https://llm-stats.com/models/gemini-2.0-flash-lite"
     },
     {
-      "rank": 267,
+      "rank": 268,
       "model_id": "nova-pro",
       "name": "Nova Pro",
       "organization": "Amazon",
@@ -3745,7 +3759,7 @@
       "url": "https://llm-stats.com/models/nova-pro"
     },
     {
-      "rank": 268,
+      "rank": 269,
       "model_id": "qwen-2.5-72b-instruct",
       "name": "Qwen2.5 72B Instruct",
       "organization": "Alibaba Cloud / Qwen Team",
@@ -3759,7 +3773,7 @@
       "url": "https://llm-stats.com/models/qwen-2.5-72b-instruct"
     },
     {
-      "rank": 269,
+      "rank": 270,
       "model_id": "phi-4-reasoning",
       "name": "Phi 4 Reasoning",
       "organization": "Microsoft",
@@ -3773,7 +3787,7 @@
       "url": "https://llm-stats.com/models/phi-4-reasoning"
     },
     {
-      "rank": 270,
+      "rank": 271,
       "model_id": "gemini-1.5-pro",
       "name": "Gemini 1.5 Pro",
       "organization": "Google",
@@ -3787,7 +3801,7 @@
       "url": "https://llm-stats.com/models/gemini-1.5-pro"
     },
     {
-      "rank": 271,
+      "rank": 272,
       "model_id": "pixtral-large",
       "name": "Pixtral Large",
       "organization": "Mistral AI",
@@ -3801,13 +3815,13 @@
       "url": "https://llm-stats.com/models/pixtral-large"
     },
     {
-      "rank": 272,
+      "rank": 273,
       "model_id": "gpt-4o-2024-05-13",
       "name": "GPT-4o",
       "organization": "OpenAI",
       "organization_id": "openai",
       "country": "US",
-      "score": 11.5,
+      "score": 11.48,
       "input_price": 2.5,
       "output_price": 10,
       "context": 128000,
@@ -3815,13 +3829,13 @@
       "url": "https://llm-stats.com/models/gpt-4o-2024-05-13"
     },
     {
-      "rank": 273,
+      "rank": 274,
       "model_id": "grok-2",
       "name": "Grok-2",
       "organization": "xAI",
       "organization_id": "xai",
       "country": "US",
-      "score": 11.43,
+      "score": 11.42,
       "input_price": null,
       "output_price": null,
       "context": null,
@@ -3829,7 +3843,7 @@
       "url": "https://llm-stats.com/models/grok-2"
     },
     {
-      "rank": 274,
+      "rank": 275,
       "model_id": "ministral-3b-latest",
       "name": "Min  istral 3 (3B Reasoning 2512)",
       "organization": "Mistral AI",
@@ -3843,7 +3857,7 @@
       "url": "https://llm-stats.com/models/ministral-3b-latest"
     },
     {
-      "rank": 275,
+      "rank": 276,
       "model_id": "deepseek-r1-distill-qwen-14b",
       "name": "DeepSeek R1 Distill Qwen 14B",
       "organization": "DeepSeek",
@@ -3857,7 +3871,7 @@
       "url": "https://llm-stats.com/models/deepseek-r1-distill-qwen-14b"
     },
     {
-      "rank": 276,
+      "rank": 277,
       "model_id": "magistral-small-2506",
       "name": "Magistral Small 2506",
       "organization": "Mistral AI",
@@ -3871,7 +3885,7 @@
       "url": "https://llm-stats.com/models/magistral-small-2506"
     },
     {
-      "rank": 277,
+      "rank": 278,
       "model_id": "qwen3-vl-4b-instruct",
       "name": "Qwen3 VL 4B Instruct",
       "organization": "Alibaba Cloud / Qwen Team",
@@ -3885,7 +3899,7 @@
       "url": "https://llm-stats.com/models/qwen3-vl-4b-instruct"
     },
     {
-      "rank": 278,
+      "rank": 279,
       "model_id": "mistral-large-3-2509",
       "name": "Mistral Large 3",
       "organization": "Mistral AI",
@@ -3899,7 +3913,7 @@
       "url": "https://llm-stats.com/models/mistral-large-3-2509"
     },
     {
-      "rank": 279,
+      "rank": 280,
       "model_id": "gemini-2.5-flash-lite",
       "name": "Gemini 2.5 Flash-Lite",
       "organization": "Google",
@@ -3913,7 +3927,7 @@
       "url": "https://llm-stats.com/models/gemini-2.5-flash-lite"
     },
     {
-      "rank": 280,
+      "rank": 281,
       "model_id": "ministral-3-14b-instruct-2512",
       "name": "MiniStral 3 (14B Instruct 2512)",
       "organization": "Mistral AI",
@@ -3927,7 +3941,7 @@
       "url": "https://llm-stats.com/models/ministral-3-14b-instruct-2512"
     },
     {
-      "rank": 281,
+      "rank": 282,
       "model_id": "o1-mini",
       "name": "o1-mini",
       "organization": "OpenAI",
@@ -3941,13 +3955,13 @@
       "url": "https://llm-stats.com/models/o1-mini"
     },
     {
-      "rank": 282,
+      "rank": 283,
       "model_id": "claude-3-opus-20240229",
       "name": "Claude 3 Opus",
       "organization": "Anthropic",
       "organization_id": "anthropic",
       "country": "US",
-      "score": 9.87,
+      "score": 9.86,
       "input_price": null,
       "output_price": null,
       "context": null,
@@ -3955,7 +3969,7 @@
       "url": "https://llm-stats.com/models/claude-3-opus-20240229"
     },
     {
-      "rank": 283,
+      "rank": 284,
       "model_id": "qwen2.5-vl-32b",
       "name": "Qwen2.5 VL 32B Instruct",
       "organization": "Alibaba Cloud / Qwen Team",
@@ -3969,7 +3983,7 @@
       "url": "https://llm-stats.com/models/qwen2.5-vl-32b"
     },
     {
-      "rank": 284,
+      "rank": 285,
       "model_id": "devstral-small-2507",
       "name": "Devstral Small 1.1",
       "organization": "Mistral AI",
@@ -3981,20 +3995,6 @@
       "context": null,
       "multimodal": false,
       "url": "https://llm-stats.com/models/devstral-small-2507"
-    },
-    {
-      "rank": 285,
-      "model_id": "gpt-4-turbo-2024-04-09",
-      "name": "GPT-4 Turbo",
-      "organization": "OpenAI",
-      "organization_id": "openai",
-      "country": "US",
-      "score": 9.03,
-      "input_price": 10,
-      "output_price": 30,
-      "context": 128000,
-      "multimodal": false,
-      "url": "https://llm-stats.com/models/gpt-4-turbo-2024-04-09"
     },
     {
       "rank": 286,
@@ -4012,6 +4012,20 @@
     },
     {
       "rank": 287,
+      "model_id": "gpt-4-turbo-2024-04-09",
+      "name": "GPT-4 Turbo",
+      "organization": "OpenAI",
+      "organization_id": "openai",
+      "country": "US",
+      "score": 9.01,
+      "input_price": 10,
+      "output_price": 30,
+      "context": 128000,
+      "multimodal": false,
+      "url": "https://llm-stats.com/models/gpt-4-turbo-2024-04-09"
+    },
+    {
+      "rank": 288,
       "model_id": "qwq-32b-preview",
       "name": "QwQ-32B-Preview",
       "organization": "Alibaba Cloud / Qwen Team",
@@ -4025,7 +4039,7 @@
       "url": "https://llm-stats.com/models/qwq-32b-preview"
     },
     {
-      "rank": 288,
+      "rank": 289,
       "model_id": "nova-2-sonic",
       "name": "Nova 2 Sonic",
       "organization": "Amazon",
@@ -4039,7 +4053,7 @@
       "url": "https://llm-stats.com/models/nova-2-sonic"
     },
     {
-      "rank": 289,
+      "rank": 290,
       "model_id": "mistral-large-3-675b-instruct-2512-nvfp4",
       "name": "Mistral Large 3 (675B Instruct 2512 NVFP4)",
       "organization": "Mistral AI",
@@ -4053,7 +4067,7 @@
       "url": "https://llm-stats.com/models/mistral-large-3-675b-instruct-2512-nvfp4"
     },
     {
-      "rank": 290,
+      "rank": 291,
       "model_id": "mistral-large-3-675b-base-2512",
       "name": "Mistral Large 3 (675B Base)",
       "organization": "Mistral AI",
@@ -4067,7 +4081,7 @@
       "url": "https://llm-stats.com/models/mistral-large-3-675b-base-2512"
     },
     {
-      "rank": 291,
+      "rank": 292,
       "model_id": "mistral-large-3-675B-instruct-2512-eagle",
       "name": "Mistral Large 3 (675B Instruct 2512 Eagle)",
       "organization": "Mistral AI",
@@ -4081,7 +4095,7 @@
       "url": "https://llm-stats.com/models/mistral-large-3-675B-instruct-2512-eagle"
     },
     {
-      "rank": 292,
+      "rank": 293,
       "model_id": "grok-2-mini",
       "name": "Grok-2 mini",
       "organization": "xAI",
@@ -4095,7 +4109,7 @@
       "url": "https://llm-stats.com/models/grok-2-mini"
     },
     {
-      "rank": 293,
+      "rank": 294,
       "model_id": "mistral-small-3.2-24b-instruct-2506",
       "name": "Mistral Small 3.2 24B Instruct",
       "organization": "Mistral AI",
@@ -4109,7 +4123,7 @@
       "url": "https://llm-stats.com/models/mistral-small-3.2-24b-instruct-2506"
     },
     {
-      "rank": 294,
+      "rank": 295,
       "model_id": "deepseek-r1-distill-qwen-7b",
       "name": "DeepSeek R1 Distill Qwen 7B",
       "organization": "DeepSeek",
@@ -4123,7 +4137,7 @@
       "url": "https://llm-stats.com/models/deepseek-r1-distill-qwen-7b"
     },
     {
-      "rank": 295,
+      "rank": 296,
       "model_id": "gemma-3-27b-it",
       "name": "Gemma 3 27B",
       "organization": "Google",
@@ -4137,7 +4151,7 @@
       "url": "https://llm-stats.com/models/gemma-3-27b-it"
     },
     {
-      "rank": 296,
+      "rank": 297,
       "model_id": "deepseek-v2.5",
       "name": "DeepSeek-V2.5",
       "organization": "DeepSeek",
@@ -4151,7 +4165,7 @@
       "url": "https://llm-stats.com/models/deepseek-v2.5"
     },
     {
-      "rank": 297,
+      "rank": 298,
       "model_id": "qvq-72b-preview",
       "name": "QvQ-72B-Preview",
       "organization": "Alibaba Cloud / Qwen Team",
@@ -4165,7 +4179,7 @@
       "url": "https://llm-stats.com/models/qvq-72b-preview"
     },
     {
-      "rank": 298,
+      "rank": 299,
       "model_id": "llama-4-scout",
       "name": "Llama 4 Scout",
       "organization": "Meta",
@@ -4179,7 +4193,7 @@
       "url": "https://llm-stats.com/models/llama-4-scout"
     },
     {
-      "rank": 299,
+      "rank": 300,
       "model_id": "qwen-2.5-32b-instruct",
       "name": "Qwen2.5 32B Instruct",
       "organization": "Alibaba Cloud / Qwen Team",
@@ -4193,7 +4207,7 @@
       "url": "https://llm-stats.com/models/qwen-2.5-32b-instruct"
     },
     {
-      "rank": 300,
+      "rank": 301,
       "model_id": "ministral-3-8b-instruct-2512",
       "name": "Ministral 3 (8B Instruct 2512)",
       "organization": "Mistral AI",
@@ -4207,13 +4221,13 @@
       "url": "https://llm-stats.com/models/ministral-3-8b-instruct-2512"
     },
     {
-      "rank": 301,
+      "rank": 302,
       "model_id": "llama-3.1-70b-instruct",
       "name": "Llama 3.1 70B Instruct",
       "organization": "Meta",
       "organization_id": "meta",
       "country": "US",
-      "score": 7.64,
+      "score": 7.63,
       "input_price": 0.4,
       "output_price": 0.4,
       "context": 131072,
@@ -4221,13 +4235,13 @@
       "url": "https://llm-stats.com/models/llama-3.1-70b-instruct"
     },
     {
-      "rank": 302,
+      "rank": 303,
       "model_id": "nova-lite",
       "name": "Nova Lite",
       "organization": "Amazon",
       "organization_id": "amazon",
       "country": "US",
-      "score": 7.55,
+      "score": 7.54,
       "input_price": null,
       "output_price": null,
       "context": null,
@@ -4235,7 +4249,7 @@
       "url": "https://llm-stats.com/models/nova-lite"
     },
     {
-      "rank": 303,
+      "rank": 304,
       "model_id": "mistral-large-2-2407",
       "name": "Mistral Large 2",
       "organization": "Mistral AI",
@@ -4249,7 +4263,7 @@
       "url": "https://llm-stats.com/models/mistral-large-2-2407"
     },
     {
-      "rank": 304,
+      "rank": 305,
       "model_id": "phi-4-mini-reasoning",
       "name": "Phi 4 Mini Reasoning",
       "organization": "Microsoft",
@@ -4263,7 +4277,7 @@
       "url": "https://llm-stats.com/models/phi-4-mini-reasoning"
     },
     {
-      "rank": 305,
+      "rank": 306,
       "model_id": "deepseek-r1-distill-llama-8b",
       "name": "DeepSeek R1 Distill Llama 8B",
       "organization": "DeepSeek",
@@ -4277,7 +4291,7 @@
       "url": "https://llm-stats.com/models/deepseek-r1-distill-llama-8b"
     },
     {
-      "rank": 306,
+      "rank": 307,
       "model_id": "gemma-4-e2b-it",
       "name": "Gemma 4 E2B",
       "organization": "Google",
@@ -4291,13 +4305,13 @@
       "url": "https://llm-stats.com/models/gemma-4-e2b-it"
     },
     {
-      "rank": 307,
+      "rank": 308,
       "model_id": "qwen2.5-vl-7b",
       "name": "Qwen2.5 VL 7B Instruct",
       "organization": "Alibaba Cloud / Qwen Team",
       "organization_id": "qwen",
       "country": "CN",
-      "score": 6.51,
+      "score": 6.5,
       "input_price": null,
       "output_price": null,
       "context": null,
@@ -4305,7 +4319,7 @@
       "url": "https://llm-stats.com/models/qwen2.5-vl-7b"
     },
     {
-      "rank": 308,
+      "rank": 309,
       "model_id": "gemini-1.5-flash",
       "name": "Gemini 1.5 Flash",
       "organization": "Google",
@@ -4319,7 +4333,7 @@
       "url": "https://llm-stats.com/models/gemini-1.5-flash"
     },
     {
-      "rank": 309,
+      "rank": 310,
       "model_id": "qwen2-72b-instruct",
       "name": "Qwen2 72B Instruct",
       "organization": "Alibaba Cloud / Qwen Team",
@@ -4333,7 +4347,7 @@
       "url": "https://llm-stats.com/models/qwen2-72b-instruct"
     },
     {
-      "rank": 310,
+      "rank": 311,
       "model_id": "gemma-3-12b-it",
       "name": "Gemma 3 12B",
       "organization": "Google",
@@ -4347,7 +4361,7 @@
       "url": "https://llm-stats.com/models/gemma-3-12b-it"
     },
     {
-      "rank": 311,
+      "rank": 312,
       "model_id": "phi-4",
       "name": "Phi 4",
       "organization": "Microsoft",
@@ -4361,7 +4375,7 @@
       "url": "https://llm-stats.com/models/phi-4"
     },
     {
-      "rank": 312,
+      "rank": 313,
       "model_id": "llama-3.2-90b-instruct",
       "name": "Llama 3.2 90B Instruct",
       "organization": "Meta",
@@ -4375,13 +4389,13 @@
       "url": "https://llm-stats.com/models/llama-3.2-90b-instruct"
     },
     {
-      "rank": 313,
+      "rank": 314,
       "model_id": "claude-3-5-haiku-20241022",
       "name": "Claude 3.5 Haiku",
       "organization": "Anthropic",
       "organization_id": "anthropic",
       "country": "US",
-      "score": 5.18,
+      "score": 5.16,
       "input_price": null,
       "output_price": null,
       "context": null,
@@ -4389,7 +4403,7 @@
       "url": "https://llm-stats.com/models/claude-3-5-haiku-20241022"
     },
     {
-      "rank": 314,
+      "rank": 315,
       "model_id": "qwen2.5-omni-7b",
       "name": "Qwen2.5-Omni-7B",
       "organization": "Alibaba Cloud / Qwen Team",
@@ -4403,7 +4417,7 @@
       "url": "https://llm-stats.com/models/qwen2.5-omni-7b"
     },
     {
-      "rank": 315,
+      "rank": 316,
       "model_id": "llama-3.1-nemotron-nano-8b-v1",
       "name": "Llama 3.1 Nemotron Nano 8B V1",
       "organization": "NVIDIA",
@@ -4417,7 +4431,7 @@
       "url": "https://llm-stats.com/models/llama-3.1-nemotron-nano-8b-v1"
     },
     {
-      "rank": 316,
+      "rank": 317,
       "model_id": "hermes-3-405b",
       "name": "Hermes 3 405B",
       "organization": "Nous Research",
@@ -4431,7 +4445,7 @@
       "url": "https://llm-stats.com/models/hermes-3-405b"
     },
     {
-      "rank": 317,
+      "rank": 318,
       "model_id": "mistral-small-3.1-24b-instruct-2503",
       "name": "Mistral Small 3.1 24B Instruct",
       "organization": "Mistral AI",
@@ -4445,7 +4459,7 @@
       "url": "https://llm-stats.com/models/mistral-small-3.1-24b-instruct-2503"
     },
     {
-      "rank": 318,
+      "rank": 319,
       "model_id": "mistral-small-24b-instruct-2501",
       "name": "Mistral Small 3 24B Instruct",
       "organization": "Mistral AI",
@@ -4459,7 +4473,7 @@
       "url": "https://llm-stats.com/models/mistral-small-24b-instruct-2501"
     },
     {
-      "rank": 319,
+      "rank": 320,
       "model_id": "hermes-3-70b",
       "name": "Hermes 3 70B",
       "organization": "Nous Research",
@@ -4473,7 +4487,7 @@
       "url": "https://llm-stats.com/models/hermes-3-70b"
     },
     {
-      "rank": 320,
+      "rank": 321,
       "model_id": "qwen-2.5-14b-instruct",
       "name": "Qwen2.5 14B Instruct",
       "organization": "Alibaba Cloud / Qwen Team",
@@ -4487,7 +4501,7 @@
       "url": "https://llm-stats.com/models/qwen-2.5-14b-instruct"
     },
     {
-      "rank": 321,
+      "rank": 322,
       "model_id": "qwen3.5-2b",
       "name": "Qwen3.5-2B",
       "organization": "Alibaba Cloud / Qwen Team",
@@ -4501,13 +4515,13 @@
       "url": "https://llm-stats.com/models/qwen3.5-2b"
     },
     {
-      "rank": 322,
+      "rank": 323,
       "model_id": "gpt-4o-mini-2024-07-18",
       "name": "GPT-4o mini",
       "organization": "OpenAI",
       "organization_id": "openai",
       "country": "US",
-      "score": 3.62,
+      "score": 3.61,
       "input_price": null,
       "output_price": null,
       "context": null,
@@ -4515,7 +4529,7 @@
       "url": "https://llm-stats.com/models/gpt-4o-mini-2024-07-18"
     },
     {
-      "rank": 323,
+      "rank": 324,
       "model_id": "ministral-3-14b-base-2512",
       "name": "Ministral 3 (14B Base 2512)",
       "organization": "Mistral AI",
@@ -4529,7 +4543,7 @@
       "url": "https://llm-stats.com/models/ministral-3-14b-base-2512"
     },
     {
-      "rank": 324,
+      "rank": 325,
       "model_id": "lfm-2.5-vl-3b",
       "name": "LFM2.5-VL-3B",
       "organization": "Liquid AI",
@@ -4543,13 +4557,13 @@
       "url": "https://llm-stats.com/models/lfm-2.5-vl-3b"
     },
     {
-      "rank": 325,
+      "rank": 326,
       "model_id": "gpt-4-0613",
       "name": "GPT-4",
       "organization": "OpenAI",
       "organization_id": "openai",
       "country": "US",
-      "score": 2.96,
+      "score": 2.95,
       "input_price": null,
       "output_price": null,
       "context": null,
@@ -4557,7 +4571,7 @@
       "url": "https://llm-stats.com/models/gpt-4-0613"
     },
     {
-      "rank": 326,
+      "rank": 327,
       "model_id": "deepseek-vl2",
       "name": "DeepSeek VL2",
       "organization": "DeepSeek",
@@ -4571,7 +4585,7 @@
       "url": "https://llm-stats.com/models/deepseek-vl2"
     },
     {
-      "rank": 327,
+      "rank": 328,
       "model_id": "phi-4-multimodal-instruct",
       "name": "Phi-4-multimodal-instruct",
       "organization": "Microsoft",
@@ -4585,7 +4599,7 @@
       "url": "https://llm-stats.com/models/phi-4-multimodal-instruct"
     },
     {
-      "rank": 328,
+      "rank": 329,
       "model_id": "qwen-2.5-7b-instruct",
       "name": "Qwen2.5 7B Instruct",
       "organization": "Alibaba Cloud / Qwen Team",
@@ -4599,13 +4613,13 @@
       "url": "https://llm-stats.com/models/qwen-2.5-7b-instruct"
     },
     {
-      "rank": 329,
+      "rank": 330,
       "model_id": "nova-micro",
       "name": "Nova Micro",
       "organization": "Amazon",
       "organization_id": "amazon",
       "country": "US",
-      "score": 2.44,
+      "score": 2.43,
       "input_price": null,
       "output_price": null,
       "context": null,
@@ -4613,7 +4627,7 @@
       "url": "https://llm-stats.com/models/nova-micro"
     },
     {
-      "rank": 330,
+      "rank": 331,
       "model_id": "granite-3.3-8b-instruct",
       "name": "Granite 3.3 8B Instruct",
       "organization": "IBM",
@@ -4627,7 +4641,7 @@
       "url": "https://llm-stats.com/models/granite-3.3-8b-instruct"
     },
     {
-      "rank": 331,
+      "rank": 332,
       "model_id": "ministral-3-3b-instruct-2512",
       "name": "Ministral 3 (3B Instruct 2512)",
       "organization": "Mistral AI",
@@ -4641,7 +4655,7 @@
       "url": "https://llm-stats.com/models/ministral-3-3b-instruct-2512"
     },
     {
-      "rank": 332,
+      "rank": 333,
       "model_id": "qwen-2.5-coder-32b-instruct",
       "name": "Qwen2.5-Coder 32B Instruct",
       "organization": "Alibaba Cloud / Qwen Team",
@@ -4655,7 +4669,7 @@
       "url": "https://llm-stats.com/models/qwen-2.5-coder-32b-instruct"
     },
     {
-      "rank": 333,
+      "rank": 334,
       "model_id": "phi-3.5-moe-instruct",
       "name": "Phi-3.5-MoE-instruct",
       "organization": "Microsoft",
@@ -4669,7 +4683,7 @@
       "url": "https://llm-stats.com/models/phi-3.5-moe-instruct"
     },
     {
-      "rank": 334,
+      "rank": 335,
       "model_id": "claude-3-sonnet-20240229",
       "name": "Claude 3 Sonnet",
       "organization": "Anthropic",
@@ -4683,7 +4697,7 @@
       "url": "https://llm-stats.com/models/claude-3-sonnet-20240229"
     },
     {
-      "rank": 335,
+      "rank": 336,
       "model_id": "gpt-4.1-nano-2025-04-14",
       "name": "GPT-4.1 nano",
       "organization": "OpenAI",
@@ -4697,7 +4711,7 @@
       "url": "https://llm-stats.com/models/gpt-4.1-nano-2025-04-14"
     },
     {
-      "rank": 336,
+      "rank": 337,
       "model_id": "deepseek-vl2-small",
       "name": "DeepSeek VL2 Small",
       "organization": "DeepSeek",
@@ -4711,7 +4725,7 @@
       "url": "https://llm-stats.com/models/deepseek-vl2-small"
     },
     {
-      "rank": 337,
+      "rank": 338,
       "model_id": "jamba-1.5-large",
       "name": "Jamba 1.5 Large",
       "organization": "AI21 Labs",
@@ -4725,7 +4739,7 @@
       "url": "https://llm-stats.com/models/jamba-1.5-large"
     },
     {
-      "rank": 338,
+      "rank": 339,
       "model_id": "gemini-diffusion",
       "name": "Gemini Diffusion",
       "organization": "Google",
@@ -4739,7 +4753,7 @@
       "url": "https://llm-stats.com/models/gemini-diffusion"
     },
     {
-      "rank": 339,
+      "rank": 340,
       "model_id": "llama-3.1-nemotron-70b-instruct",
       "name": "Llama 3.1 Nemotron 70B Instruct",
       "organization": "NVIDIA",
@@ -4753,7 +4767,7 @@
       "url": "https://llm-stats.com/models/llama-3.1-nemotron-70b-instruct"
     },
     {
-      "rank": 340,
+      "rank": 341,
       "model_id": "mistral-small-3.1-24b-base-2503",
       "name": "Mistral Small 3.1 24B Base",
       "organization": "Mistral AI",
@@ -4767,7 +4781,7 @@
       "url": "https://llm-stats.com/models/mistral-small-3.1-24b-base-2503"
     },
     {
-      "rank": 341,
+      "rank": 342,
       "model_id": "codestral-22b",
       "name": "Codestral-22B",
       "organization": "Mistral AI",
@@ -4781,7 +4795,7 @@
       "url": "https://llm-stats.com/models/codestral-22b"
     },
     {
-      "rank": 342,
+      "rank": 343,
       "model_id": "mistral-small-24b-base-2501",
       "name": "Mistral Small 3 24B Base",
       "organization": "Mistral AI",
@@ -4795,7 +4809,7 @@
       "url": "https://llm-stats.com/models/mistral-small-24b-base-2501"
     },
     {
-      "rank": 343,
+      "rank": 344,
       "model_id": "command-r-plus-04-2024",
       "name": "Command R+",
       "organization": "Cohere",
@@ -4809,7 +4823,7 @@
       "url": "https://llm-stats.com/models/command-r-plus-04-2024"
     },
     {
-      "rank": 344,
+      "rank": 345,
       "model_id": "granite-3.3-8b-base",
       "name": "Granite 3.3 8B Base",
       "organization": "IBM",
@@ -4823,7 +4837,7 @@
       "url": "https://llm-stats.com/models/granite-3.3-8b-base"
     },
     {
-      "rank": 345,
+      "rank": 346,
       "model_id": "gemma-2-27b-it",
       "name": "Gemma 2 27B",
       "organization": "Google",
@@ -4837,7 +4851,7 @@
       "url": "https://llm-stats.com/models/gemma-2-27b-it"
     },
     {
-      "rank": 346,
+      "rank": 347,
       "model_id": "gemini-1.5-flash-8b",
       "name": "Gemini 1.5 Flash 8B",
       "organization": "Google",
@@ -4851,7 +4865,7 @@
       "url": "https://llm-stats.com/models/gemini-1.5-flash-8b"
     },
     {
-      "rank": 347,
+      "rank": 348,
       "model_id": "grok-1.5v",
       "name": "Grok-1.5V",
       "organization": "xAI",
@@ -4865,7 +4879,7 @@
       "url": "https://llm-stats.com/models/grok-1.5v"
     },
     {
-      "rank": 348,
+      "rank": 349,
       "model_id": "ministral-3-8b-base-2512",
       "name": "Ministral 3 (8B Base 2512)",
       "organization": "Mistral AI",
@@ -4879,7 +4893,7 @@
       "url": "https://llm-stats.com/models/ministral-3-8b-base-2512"
     },
     {
-      "rank": 349,
+      "rank": 350,
       "model_id": "llama-3.2-11b-instruct",
       "name": "Llama 3.2 11B Instruct",
       "organization": "Meta",
@@ -4893,7 +4907,7 @@
       "url": "https://llm-stats.com/models/llama-3.2-11b-instruct"
     },
     {
-      "rank": 350,
+      "rank": 351,
       "model_id": "claude-3-haiku-20240307",
       "name": "Claude 3 Haiku",
       "organization": "Anthropic",
@@ -4907,7 +4921,7 @@
       "url": "https://llm-stats.com/models/claude-3-haiku-20240307"
     },
     {
-      "rank": 351,
+      "rank": 352,
       "model_id": "pixtral-12b-2409",
       "name": "Pixtral-12B",
       "organization": "Mistral AI",
@@ -4921,7 +4935,7 @@
       "url": "https://llm-stats.com/models/pixtral-12b-2409"
     },
     {
-      "rank": 352,
+      "rank": 353,
       "model_id": "gemma-3-4b-it",
       "name": "Gemma 3 4B",
       "organization": "Google",
@@ -4935,7 +4949,7 @@
       "url": "https://llm-stats.com/models/gemma-3-4b-it"
     },
     {
-      "rank": 353,
+      "rank": 354,
       "model_id": "shieldstral-1.0-3b",
       "name": "Shieldstral 1.0 (3B)",
       "organization": "Mistral AI",
@@ -4949,7 +4963,7 @@
       "url": "https://llm-stats.com/models/shieldstral-1.0-3b"
     },
     {
-      "rank": 354,
+      "rank": 355,
       "model_id": "llama-3.1-8b-instruct",
       "name": "Llama 3.1 8B Instruct",
       "organization": "Meta",
@@ -4963,7 +4977,7 @@
       "url": "https://llm-stats.com/models/llama-3.1-8b-instruct"
     },
     {
-      "rank": 355,
+      "rank": 356,
       "model_id": "grok-1.5",
       "name": "Grok-1.5",
       "organization": "xAI",
@@ -4977,7 +4991,7 @@
       "url": "https://llm-stats.com/models/grok-1.5"
     },
     {
-      "rank": 356,
+      "rank": 357,
       "model_id": "gpt-5.1-codex-mini",
       "name": "GPT-5.1 Codex Mini",
       "organization": "OpenAI",
@@ -4991,7 +5005,7 @@
       "url": "https://llm-stats.com/models/gpt-5.1-codex-mini"
     },
     {
-      "rank": 357,
+      "rank": 358,
       "model_id": "deepseek-r1-distill-qwen-1.5b",
       "name": "DeepSeek R1 Distill Qwen 1.5B",
       "organization": "DeepSeek",
@@ -5005,7 +5019,7 @@
       "url": "https://llm-stats.com/models/deepseek-r1-distill-qwen-1.5b"
     },
     {
-      "rank": 358,
+      "rank": 359,
       "model_id": "qwen-2.5-coder-7b-instruct",
       "name": "Qwen2.5-Coder 7B Instruct",
       "organization": "Alibaba Cloud / Qwen Team",
@@ -5019,7 +5033,7 @@
       "url": "https://llm-stats.com/models/qwen-2.5-coder-7b-instruct"
     },
     {
-      "rank": 359,
+      "rank": 360,
       "model_id": "phi-3.5-vision-instruct",
       "name": "Phi-3.5-vision-instruct",
       "organization": "Microsoft",
@@ -5033,7 +5047,7 @@
       "url": "https://llm-stats.com/models/phi-3.5-vision-instruct"
     },
     {
-      "rank": 360,
+      "rank": 361,
       "model_id": "grok-4.20-beta-0309-non-reasoning",
       "name": "Grok-4.20 Beta Non-Reasoning",
       "organization": "xAI",
@@ -5047,7 +5061,7 @@
       "url": "https://llm-stats.com/models/grok-4.20-beta-0309-non-reasoning"
     },
     {
-      "rank": 361,
+      "rank": 362,
       "model_id": "phi-3.5-mini-instruct",
       "name": "Phi-3.5-mini-instruct",
       "organization": "Microsoft",
@@ -5061,7 +5075,7 @@
       "url": "https://llm-stats.com/models/phi-3.5-mini-instruct"
     },
     {
-      "rank": 362,
+      "rank": 363,
       "model_id": "phi-4-mini",
       "name": "Phi 4 Mini",
       "organization": "Microsoft",
@@ -5075,7 +5089,7 @@
       "url": "https://llm-stats.com/models/phi-4-mini"
     },
     {
-      "rank": 363,
+      "rank": 364,
       "model_id": "qwen2-7b-instruct",
       "name": "Qwen2 7B Instruct",
       "organization": "Alibaba Cloud / Qwen Team",
@@ -5089,7 +5103,7 @@
       "url": "https://llm-stats.com/models/qwen2-7b-instruct"
     },
     {
-      "rank": 364,
+      "rank": 365,
       "model_id": "medgemma-4b-it",
       "name": "MedGemma 4B IT",
       "organization": "Google",
@@ -5103,7 +5117,7 @@
       "url": "https://llm-stats.com/models/medgemma-4b-it"
     },
     {
-      "rank": 365,
+      "rank": 366,
       "model_id": "gemma-3n-e4b-it",
       "name": "Gemma 3n E4B Instructed",
       "organization": "Google",
@@ -5117,7 +5131,7 @@
       "url": "https://llm-stats.com/models/gemma-3n-e4b-it"
     },
     {
-      "rank": 366,
+      "rank": 367,
       "model_id": "deepseek-vl2-tiny",
       "name": "DeepSeek VL2 Tiny",
       "organization": "DeepSeek",
@@ -5131,7 +5145,7 @@
       "url": "https://llm-stats.com/models/deepseek-vl2-tiny"
     },
     {
-      "rank": 367,
+      "rank": 368,
       "model_id": "ministral-8b-instruct-2410",
       "name": "Ministral 8B Instruct",
       "organization": "Mistral AI",
@@ -5145,13 +5159,13 @@
       "url": "https://llm-stats.com/models/ministral-8b-instruct-2410"
     },
     {
-      "rank": 368,
+      "rank": 369,
       "model_id": "mistral-nemo-instruct-2407",
       "name": "Mistral NeMo Instruct",
       "organization": "Mistral AI",
       "organization_id": "mistral",
       "country": "FR",
-      "score": -4.76,
+      "score": -4.77,
       "input_price": 0.019,
       "output_price": 0.03,
       "context": 131072,
@@ -5159,13 +5173,13 @@
       "url": "https://llm-stats.com/models/mistral-nemo-instruct-2407"
     },
     {
-      "rank": 369,
+      "rank": 370,
       "model_id": "gemma-2-9b-it",
       "name": "Gemma 2 9B",
       "organization": "Google",
       "organization_id": "google",
       "country": "US",
-      "score": -4.86,
+      "score": -4.87,
       "input_price": null,
       "output_price": null,
       "context": null,
@@ -5173,7 +5187,7 @@
       "url": "https://llm-stats.com/models/gemma-2-9b-it"
     },
     {
-      "rank": 370,
+      "rank": 371,
       "model_id": "north-micro-vision-instruct",
       "name": "North Micro Vision Instruct",
       "organization": "Cohere",
@@ -5187,13 +5201,13 @@
       "url": "https://llm-stats.com/models/north-micro-vision-instruct"
     },
     {
-      "rank": 371,
+      "rank": 372,
       "model_id": "gemma-3n-e4b-it-litert-preview",
       "name": "Gemma 3n E4B Instructed LiteRT Preview",
       "organization": "Google",
       "organization_id": "google",
       "country": "US",
-      "score": -5.17,
+      "score": -5.18,
       "input_price": null,
       "output_price": null,
       "context": null,
@@ -5201,7 +5215,7 @@
       "url": "https://llm-stats.com/models/gemma-3n-e4b-it-litert-preview"
     },
     {
-      "rank": 372,
+      "rank": 373,
       "model_id": "gemini-1.0-pro",
       "name": "Gemini 1.0 Pro",
       "organization": "Google",
@@ -5215,7 +5229,7 @@
       "url": "https://llm-stats.com/models/gemini-1.0-pro"
     },
     {
-      "rank": 373,
+      "rank": 374,
       "model_id": "granite-4.0-tiny-preview",
       "name": "IBM Granite 4.0 Tiny Preview",
       "organization": "IBM",
@@ -5229,7 +5243,7 @@
       "url": "https://llm-stats.com/models/granite-4.0-tiny-preview"
     },
     {
-      "rank": 374,
+      "rank": 375,
       "model_id": "jamba-1.5-mini",
       "name": "Jamba 1.5 Mini",
       "organization": "AI21 Labs",
@@ -5243,7 +5257,7 @@
       "url": "https://llm-stats.com/models/jamba-1.5-mini"
     },
     {
-      "rank": 375,
+      "rank": 376,
       "model_id": "llama-3.2-3b-instruct",
       "name": "Llama 3.2 3B Instruct",
       "organization": "Meta",
@@ -5257,7 +5271,7 @@
       "url": "https://llm-stats.com/models/llama-3.2-3b-instruct"
     },
     {
-      "rank": 376,
+      "rank": 377,
       "model_id": "gemma-3n-e4b",
       "name": "Gemma 3n E4B",
       "organization": "Google",
@@ -5271,7 +5285,7 @@
       "url": "https://llm-stats.com/models/gemma-3n-e4b"
     },
     {
-      "rank": 377,
+      "rank": 378,
       "model_id": "qwen3.5-0.8b",
       "name": "Qwen3.5-0.8B",
       "organization": "Alibaba Cloud / Qwen Team",
@@ -5285,7 +5299,7 @@
       "url": "https://llm-stats.com/models/qwen3.5-0.8b"
     },
     {
-      "rank": 378,
+      "rank": 379,
       "model_id": "ministral-3-3b-base-2512",
       "name": "Ministral 3 (3B Base 2512)",
       "organization": "Mistral AI",
@@ -5299,7 +5313,7 @@
       "url": "https://llm-stats.com/models/ministral-3-3b-base-2512"
     },
     {
-      "rank": 379,
+      "rank": 380,
       "model_id": "gpt-3.5-turbo-0125",
       "name": "GPT-3.5 Turbo",
       "organization": "OpenAI",
@@ -5313,7 +5327,7 @@
       "url": "https://llm-stats.com/models/gpt-3.5-turbo-0125"
     },
     {
-      "rank": 380,
+      "rank": 381,
       "model_id": "gemma-3n-e2b-it-litert-preview",
       "name": "Gemma 3n E2B Instructed LiteRT (Preview)",
       "organization": "Google",
@@ -5327,13 +5341,13 @@
       "url": "https://llm-stats.com/models/gemma-3n-e2b-it-litert-preview"
     },
     {
-      "rank": 381,
+      "rank": 382,
       "model_id": "gemma-3n-e2b",
       "name": "Gemma 3n E2B",
       "organization": "Google",
       "organization_id": "google",
       "country": "US",
-      "score": -10.22,
+      "score": -10.23,
       "input_price": null,
       "output_price": null,
       "context": null,
@@ -5341,7 +5355,7 @@
       "url": "https://llm-stats.com/models/gemma-3n-e2b"
     },
     {
-      "rank": 382,
+      "rank": 383,
       "model_id": "gemma-3-1b-it",
       "name": "Gemma 3 1B",
       "organization": "Google",
@@ -5355,7 +5369,7 @@
       "url": "https://llm-stats.com/models/gemma-3-1b-it"
     },
     {
-      "rank": 383,
+      "rank": 384,
       "model_id": "gemma-3n-e2b-it",
       "name": "Gemma 3n E2B Instructed",
       "organization": "Google",
@@ -5369,7 +5383,7 @@
       "url": "https://llm-stats.com/models/gemma-3n-e2b-it"
     },
     {
-      "rank": 384,
+      "rank": 385,
       "model_id": "ernie-4.5",
       "name": "ERNIE 4.5",
       "organization": "Baidu",
@@ -5383,7 +5397,7 @@
       "url": "https://llm-stats.com/models/ernie-4.5"
     },
     {
-      "rank": 385,
+      "rank": 386,
       "model_id": "deepseek-chat",
       "name": "DeepSeek-V3.2 (Non-thinking)",
       "organization": "DeepSeek",
@@ -5397,7 +5411,7 @@
       "url": "https://llm-stats.com/models/deepseek-chat"
     },
     {
-      "rank": 386,
+      "rank": 387,
       "model_id": "deepseek-r1",
       "name": "DeepSeek-R1",
       "organization": "DeepSeek",
@@ -5411,7 +5425,7 @@
       "url": "https://llm-stats.com/models/deepseek-r1"
     },
     {
-      "rank": 387,
+      "rank": 388,
       "model_id": "glm-4.5v",
       "name": "GLM-4.5V",
       "organization": "Zhipu AI",
@@ -5425,7 +5439,7 @@
       "url": "https://llm-stats.com/models/glm-4.5v"
     },
     {
-      "rank": 388,
+      "rank": 389,
       "model_id": "gpt-5.6-cyber",
       "name": "GPT-5.6 Cyber",
       "organization": "OpenAI",
@@ -5439,7 +5453,7 @@
       "url": "https://llm-stats.com/models/gpt-5.6-cyber"
     },
     {
-      "rank": 389,
+      "rank": 390,
       "model_id": "grok-2-image-1212",
       "name": "Grok-2 Image 1212",
       "organization": "xAI",
@@ -5453,7 +5467,7 @@
       "url": "https://llm-stats.com/models/grok-2-image-1212"
     },
     {
-      "rank": 390,
+      "rank": 391,
       "model_id": "grok-4-1-fast-non-reasoning",
       "name": "Grok-4.1 Fast Non-Reasoning",
       "organization": "xAI",
@@ -5467,7 +5481,7 @@
       "url": "https://llm-stats.com/models/grok-4-1-fast-non-reasoning"
     },
     {
-      "rank": 391,
+      "rank": 392,
       "model_id": "grok-4-1-fast-reasoning",
       "name": "Grok-4.1 Fast Reasoning",
       "organization": "xAI",
@@ -5481,7 +5495,7 @@
       "url": "https://llm-stats.com/models/grok-4-1-fast-reasoning"
     },
     {
-      "rank": 392,
+      "rank": 393,
       "model_id": "grok-4.20-multi-agent-beta-0309",
       "name": "Grok-4.20 Multi-Agent Beta",
       "organization": "xAI",
@@ -5495,7 +5509,7 @@
       "url": "https://llm-stats.com/models/grok-4.20-multi-agent-beta-0309"
     },
     {
-      "rank": 393,
+      "rank": 394,
       "model_id": "grok-4-fast-non-reasoning",
       "name": "Grok-4 Fast Non-Reasoning",
       "organization": "xAI",
@@ -5509,7 +5523,7 @@
       "url": "https://llm-stats.com/models/grok-4-fast-non-reasoning"
     },
     {
-      "rank": 394,
+      "rank": 395,
       "model_id": "grok-4-fast-reasoning",
       "name": "Grok-4 Fast Reasoning",
       "organization": "xAI",
@@ -5523,7 +5537,7 @@
       "url": "https://llm-stats.com/models/grok-4-fast-reasoning"
     },
     {
-      "rank": 395,
+      "rank": 396,
       "model_id": "kimi-k2.8",
       "name": "Kimi K2.8 Preview",
       "organization": "Moonshot AI",
@@ -5537,7 +5551,7 @@
       "url": "https://llm-stats.com/models/kimi-k2.8"
     },
     {
-      "rank": 396,
+      "rank": 397,
       "model_id": "l3.1-70b-euryale-v2.2",
       "name": "L3.1 70B Euryale v2.2",
       "organization": "Sao10K",
@@ -5551,7 +5565,7 @@
       "url": "https://llm-stats.com/models/l3.1-70b-euryale-v2.2"
     },
     {
-      "rank": 397,
+      "rank": 398,
       "model_id": "l3-8b-lunaris-v1",
       "name": "L3 8B Lunaris v1",
       "organization": "Sao10K",
@@ -5565,7 +5579,7 @@
       "url": "https://llm-stats.com/models/l3-8b-lunaris-v1"
     },
     {
-      "rank": 398,
+      "rank": 399,
       "model_id": "llama-guard-4-12b",
       "name": "Llama Guard 4 12B",
       "organization": "Meta",
@@ -5579,7 +5593,7 @@
       "url": "https://llm-stats.com/models/llama-guard-4-12b"
     },
     {
-      "rank": 399,
+      "rank": 400,
       "model_id": "mistral-small-2409",
       "name": "Mistral Small",
       "organization": "Mistral AI",
@@ -5593,7 +5607,7 @@
       "url": "https://llm-stats.com/models/mistral-small-2409"
     },
     {
-      "rank": 400,
+      "rank": 401,
       "model_id": "mythomax-l2-13b",
       "name": "MythoMax L2 13B",
       "organization": "Gryphe",
@@ -5607,7 +5621,7 @@
       "url": "https://llm-stats.com/models/mythomax-l2-13b"
     },
     {
-      "rank": 401,
+      "rank": 402,
       "model_id": "nemotron-content-safety-3.5",
       "name": "Nemotron Content Safety 3.5",
       "organization": "NVIDIA",
@@ -5621,7 +5635,7 @@
       "url": "https://llm-stats.com/models/nemotron-content-safety-3.5"
     },
     {
-      "rank": 402,
+      "rank": 403,
       "model_id": "o3-pro-2025-06-10",
       "name": "o3-pro",
       "organization": "OpenAI",
@@ -5635,7 +5649,7 @@
       "url": "https://llm-stats.com/models/o3-pro-2025-06-10"
     },
     {
-      "rank": 403,
+      "rank": 404,
       "model_id": "parse-v5.0",
       "name": "Parse",
       "organization": "Cohere",
@@ -5649,7 +5663,7 @@
       "url": "https://llm-stats.com/models/parse-v5.0"
     },
     {
-      "rank": 404,
+      "rank": 405,
       "model_id": "qwen3.8-2.4t-a95b",
       "name": "Qwen3.8-2.4T-A95B",
       "organization": "Alibaba Cloud / Qwen Team",
@@ -5663,7 +5677,7 @@
       "url": "https://llm-stats.com/models/qwen3.8-2.4t-a95b"
     },
     {
-      "rank": 405,
+      "rank": 406,
       "model_id": "qwen3-coder",
       "name": "Qwen3-Coder",
       "organization": "Alibaba Cloud / Qwen Team",
@@ -5677,7 +5691,7 @@
       "url": "https://llm-stats.com/models/qwen3-coder"
     },
     {
-      "rank": 406,
+      "rank": 407,
       "model_id": "qwen3-next-80b-a3b-base",
       "name": "Qwen3-Next-80B-A3B-Base",
       "organization": "Alibaba Cloud / Qwen Team",
@@ -5691,7 +5705,7 @@
       "url": "https://llm-stats.com/models/qwen3-next-80b-a3b-base"
     },
     {
-      "rank": 407,
+      "rank": 408,
       "model_id": "seed-2.0-code",
       "name": "Seed 2.0 Code",
       "organization": "ByteDance",

@@ -99,7 +99,7 @@ export default function LeaderboardPage() {
   const maxScore = filteredModels[0]?.score ?? 1;
 
   return (
-    <div className="min-h-screen flex flex-col bg-white font-[family-name:var(--font-dm-sans)]">
+    <div className="min-h-screen flex flex-col bg-white font-[family-name:var(--font-gilroy)]">
       {/* Header */}
       <div className="sticky top-0 z-50 bg-white border-b border-gray-100">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-3">

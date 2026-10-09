@@ -768,7 +768,7 @@ function SubscribeSection() {
     <div className="bg-white rounded-xl border border-gray-100 p-4 sm:p-5">
       <div className="flex items-center gap-2 mb-2">
         <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />
-        <h3 className="font-[family-name:var(--font-space-grotesk)] text-sm sm:text-base font-bold text-gray-900">Daily Briefing</h3>
+        <h3 className="font-[family-name:var(--font-gilroy)] text-sm sm:text-base font-bold text-gray-900">Daily Briefing</h3>
       </div>
       <p className="text-xs text-gray-500 font-[family-name:var(--font-gilroy)] leading-relaxed mb-3">Get the top AI &amp; tech stories delivered to your inbox every morning.</p>
       <div className="flex gap-2">

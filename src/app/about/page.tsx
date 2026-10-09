@@ -1,15 +1,14 @@
 'use client';
 
 import React from 'react';
-import { useRouter } from 'next/navigation';
 import {
   ArrowLeft, ShieldCheck, TrendingUp, Globe, Trophy, Send,
 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import Link from 'next/link';
 
 export default function AboutPage() {
-  const router = useRouter();
 
   return (
     <div className="min-h-screen flex flex-col bg-white font-[family-name:var(--font-gilroy)]">
@@ -63,7 +62,7 @@ export default function AboutPage() {
           <Separator className="my-8 sm:my-10" />
 
           <div>
-            <h2 className="font-[family-name:var(--font-lora)] text-xl sm:text-2xl font-bold text-gray-900 mb-4">Stay Connected</h2>
+            <h2 className="font-[family-name:var(--font-space-grotesk)] text-xl sm:text-2xl font-bold text-gray-900 mb-4">Stay Connected</h2>
             <div className="flex flex-wrap gap-3">
               <a href="https://t.me/News_Shore" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-sky-50 border border-sky-200 text-sky-700 hover:bg-sky-100 transition-colors text-sm font-medium">
                 <Send className="w-4 h-4" /> Telegram

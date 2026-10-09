@@ -959,7 +959,7 @@ export function Home({ initialArticles }: { initialArticles: NewsArticle[] }) {
           <Separator className="my-1 sm:my-2" />
           <div id="latest-stories" className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 pb-8 sm:pb-12">
             <div className="lg:col-span-2">
-              <div className="flex items-center gap-2 mb-5 sm:mb-6"><Zap className="w-5 h-5 text-red-600" /><h2 className="font-[family-name:var(--font-space-grotesk)] text-xl sm:text-2xl font-bold text-gray-900">{activeCategory === 'Latest' ? 'Latest Stories' : activeCategory}</h2></div>
+              <div className="flex items-center gap-2 mb-5 sm:mb-6"><Zap className="w-5 h-5 text-red-600" /><h2 className="font-[family-name:var(--font-gilroy)] text-xl sm:text-2xl font-bold text-gray-900">{activeCategory === 'Latest' ? 'Latest Stories' : activeCategory}</h2></div>
               {filtered.length === 0 ? (<div className="text-center py-16 text-gray-400"><p className="text-lg font-[family-name:var(--font-space-grotesk)]">No articles found</p><p className="text-sm mt-1">Try selecting a different category</p></div>) : (<div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">{filtered.slice(0, visibleCount).map((article, i) => (<NewsCard key={article.id} article={article} index={i} onClick={openArticle} />))}</div>)}
               {activeCategory === 'Latest' && (<div className="mt-8"><Button variant="outline" size="lg" className="w-full sm:w-auto mx-auto flex items-center gap-2 font-[family-name:var(--font-gilroy)] text-sm text-gray-600 border-gray-300 hover:border-[#0f1b3d] hover:text-[#0f1b3d]" onClick={() => setVisibleCount((v) => v + 60)}>Load More Stories<ArrowRight className="w-4 h-4" /></Button></div>)}
             </div>

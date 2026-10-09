@@ -593,7 +593,7 @@ function SidebarLeaderboard({ onSeeMore, models, loading, arenaModels, arenaLoad
       <div className="bg-white rounded-xl border border-gray-100 p-4 sm:p-5">
         <div className="flex items-center gap-2 mb-3">
           <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500" />
-          <h3 className="font-[family-name:var(--font-space-grotesk)] text-sm sm:text-base font-bold text-gray-900">Top 5 AI Models</h3>
+          <h3 className="font-[family-name:var(--font-gilroy)] text-sm sm:text-base font-bold text-gray-900">Top 5 AI Models</h3>
         </div>
 
         {/* ── Tab Switcher (3 tabs) ── */}

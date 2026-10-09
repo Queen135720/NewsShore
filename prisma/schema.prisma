@@ -27,7 +27,7 @@ model Article {
   sourceUrl   String   @unique @map("source_url")
   sourceName  String?  @map("source_name")
   reliability String   @default("claimed") @map("reliability")
-  glossary    Json     @default("[]") @map("glossary")
+  glossary    Json?    @default("[]") @map("glossary")
   imageUrl    String?  @map("image_url")
   imageCreditName String? @map("image_credit_name")
   imageCreditUrl  String? @map("image_credit_url")

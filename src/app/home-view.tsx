@@ -374,7 +374,7 @@ function FullLeaderboard({ open, onClose, models, arenaModels, activeTab, onTabC
       <div className="flex-1 overflow-y-auto custom-scrollbar" ref={scrollRef}>
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6">
           <div className="flex items-center gap-2 mb-1">
-            <Trophy className="w-5 h-5 sm:w-6 sm:h-6 text-amber-500" />
+            <Crown className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500" />
             <h1 className="font-[family-name:var(--font-lora)] text-xl sm:text-2xl font-bold text-gray-900">AI Model Leaderboard</h1>
           </div>
           {/* Tab Switcher + Methodology */}
@@ -592,7 +592,7 @@ function SidebarLeaderboard({ onSeeMore, models, loading, arenaModels, arenaLoad
     <aside ref={ref} className="lg:col-span-1 flex flex-col gap-4">
       <div className="bg-white rounded-xl border border-gray-100 p-4 sm:p-5">
         <div className="flex items-center gap-2 mb-3">
-          <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500" />
+          <Crown className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500" />
           <h3 className="font-[family-name:var(--font-gilroy)] text-sm sm:text-base font-bold text-gray-900">Top 5 AI Models</h3>
         </div>
 

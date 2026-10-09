@@ -505,22 +505,22 @@ function Header({ onCategoryClick, onAboutOpen, onArticleSelect, searchableArtic
         <div className="flex items-center justify-between h-14 sm:h-16">
           <button onClick={() => { onCategoryClick('Latest'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="flex items-center" style={{ touchAction: 'manipulation' }}><img src="/logo-full-transparent.png" alt="NewsShore" className="h-[18px] sm:h-[21px] lg:h-[27px] w-auto object-contain" /></button>
           <nav ref={navRef} className="hidden lg:flex items-center gap-1">
-            {NAV_CATEGORIES.map((link) => (<button key={link} onClick={() => handleNavClick(link)} className="px-3 py-2 text-sm font-[family-name:var(--font-dm-sans)] font-medium text-gray-300 hover:text-white transition-colors rounded-md hover:bg-white/10">{link}</button>))}
-            <button onClick={() => handleNavClick('About')} className="px-3 py-2 text-sm font-[family-name:var(--font-dm-sans)] font-medium text-gray-300 hover:text-white transition-colors rounded-md hover:bg-white/10">About</button>
+            {NAV_CATEGORIES.map((link) => (<button key={link} onClick={() => handleNavClick(link)} className="px-3 py-2 text-sm font-[family-name:var(--font-gilroy)] font-medium text-gray-300 hover:text-white transition-colors rounded-md hover:bg-white/10">{link}</button>))}
+            <button onClick={() => handleNavClick('About')} className="px-3 py-2 text-sm font-[family-name:var(--font-gilroy)] font-medium text-gray-300 hover:text-white transition-colors rounded-md hover:bg-white/10">About</button>
           </nav>
           <div className="flex items-center gap-1 relative">
             {searchActive && (
               <div className="absolute top-full right-0 mt-2 w-80 sm:w-96 z-50">
-                <div className="relative"><Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" /><input ref={searchInputRef} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search articles..." className="w-full pl-9 pr-8 py-2 bg-white rounded-xl shadow-2xl border border-gray-100 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0f1b3d]/20 font-[family-name:var(--font-dm-sans)]" />{searchQuery && (<button onClick={closeSearch} className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-gray-100 text-gray-400 hover:text-gray-600"><X className="w-3.5 h-3.5" /></button>)}</div>
-                {searchResults.length > 0 && (<div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden"><div className="max-h-80 overflow-y-auto custom-scrollbar">{searchResults.map((article) => (<button key={article.id} className="w-full flex items-start gap-3 p-3 hover:bg-gray-50 transition-colors text-left border-b border-gray-50 last:border-0" onClick={() => { closeSearch(); onArticleSelect(article); }} style={{ touchAction: 'manipulation' }}><img src={article.image} alt="" className="w-14 h-14 rounded-lg object-cover shrink-0" /><div className="min-w-0"><p className="text-sm font-[family-name:var(--font-lora)] font-semibold text-gray-900 line-clamp-2 leading-snug">{article.title}</p><p className="text-xs text-gray-400 mt-1 font-[family-name:var(--font-dm-sans)]">{article.category} · {timeAgo(article.publishedAt)}</p></div></button>))}</div></div>)}
-                {searchQuery.length > 1 && searchResults.length === 0 && (<div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-2xl border border-gray-100 p-6 text-center"><p className="text-sm text-gray-400 font-[family-name:var(--font-dm-sans)]">No results found</p></div>)}
+                <div className="relative"><Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" /><input ref={searchInputRef} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search articles..." className="w-full pl-9 pr-8 py-2 bg-white rounded-xl shadow-2xl border border-gray-100 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0f1b3d]/20 font-[family-name:var(--font-gilroy)]" />{searchQuery && (<button onClick={closeSearch} className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-gray-100 text-gray-400 hover:text-gray-600"><X className="w-3.5 h-3.5" /></button>)}</div>
+                {searchResults.length > 0 && (<div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden"><div className="max-h-80 overflow-y-auto custom-scrollbar">{searchResults.map((article) => (<button key={article.id} className="w-full flex items-start gap-3 p-3 hover:bg-gray-50 transition-colors text-left border-b border-gray-50 last:border-0" onClick={() => { closeSearch(); onArticleSelect(article); }} style={{ touchAction: 'manipulation' }}><img src={article.image} alt="" className="w-14 h-14 rounded-lg object-cover shrink-0" /><div className="min-w-0"><p className="text-sm font-[family-name:var(--font-space-grotesk)] font-semibold text-gray-900 line-clamp-2 leading-snug">{article.title}</p><p className="text-xs text-gray-400 mt-1 font-[family-name:var(--font-gilroy)]">{article.category} · {timeAgo(article.publishedAt)}</p></div></button>))}</div></div>)}
+                {searchQuery.length > 1 && searchResults.length === 0 && (<div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-2xl border border-gray-100 p-6 text-center"><p className="text-sm text-gray-400 font-[family-name:var(--font-gilroy)]">No results found</p></div>)}
               </div>
             )}
             <Button variant="ghost" size="icon" onClick={openSearch} className="text-gray-300 hover:text-white hover:bg-white/10"><Search className="w-5 h-5" /></Button>
             <Button variant="ghost" size="icon" className="lg:hidden text-gray-300 hover:text-white hover:bg-white/10" onClick={() => setMobileOpen(!mobileOpen)}>{mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}</Button>
           </div>
         </div>
-        {mobileOpen && (<nav className="lg:hidden pb-4 border-t border-white/10"><div className="grid grid-cols-2 gap-1 pt-3">{NAV_CATEGORIES.map((link) => (<button key={link} onClick={() => handleNavClick(link)} className="px-3 py-2.5 text-sm font-[family-name:var(--font-dm-sans)] font-medium text-gray-300 hover:text-white hover:bg-white/10 rounded-md text-left transition-colors" style={{ touchAction: 'manipulation' }}>{link}</button>))}<button onClick={() => handleNavClick('About')} className="px-3 py-2.5 text-sm font-[family-name:var(--font-dm-sans)] font-medium text-gray-300 hover:text-white hover:bg-white/10 rounded-md text-left transition-colors" style={{ touchAction: 'manipulation' }}>About</button></div></nav>)}
+        {mobileOpen && (<nav className="lg:hidden pb-4 border-t border-white/10"><div className="grid grid-cols-2 gap-1 pt-3">{NAV_CATEGORIES.map((link) => (<button key={link} onClick={() => handleNavClick(link)} className="px-3 py-2.5 text-sm font-[family-name:var(--font-gilroy)] font-medium text-gray-300 hover:text-white hover:bg-white/10 rounded-md text-left transition-colors" style={{ touchAction: 'manipulation' }}>{link}</button>))}<button onClick={() => handleNavClick('About')} className="px-3 py-2.5 text-sm font-[family-name:var(--font-gilroy)] font-medium text-gray-300 hover:text-white hover:bg-white/10 rounded-md text-left transition-colors" style={{ touchAction: 'manipulation' }}>About</button></div></nav>)}
       </div>
     </header>
   );
@@ -541,15 +541,15 @@ function HeroTopNews({ heroArticle, onArticleClick }: { heroArticle: NewsArticle
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-8 lg:p-10">
           <div className="flex flex-wrap items-center gap-2 mb-2 sm:mb-3">
-            <Badge className={`${CATEGORY_COLOR[heroArticle.category] || 'bg-gray-100 text-gray-700'} font-[family-name:var(--font-dm-sans)] text-xs sm:text-sm`}>{heroArticle.category}</Badge>
+            <Badge className={`${CATEGORY_COLOR[heroArticle.category] || 'bg-gray-100 text-gray-700'} font-[family-name:var(--font-gilroy)] text-xs sm:text-sm`}>{heroArticle.category}</Badge>
             <ReliabilityBadge reliability={heroArticle.reliability} />
             <Badge variant="outline" className="bg-white/10 border-white/20 text-white text-[10px] sm:text-xs font-[family-name:var(--font-dm-sans)] gap-1"><Globe className="w-3 h-3" /> {heroArticle.region}</Badge>
           </div>
-          <h1 className="font-[family-name:var(--font-lora)] text-xl sm:text-3xl lg:text-4xl font-bold text-white leading-tight mt-2">{heroArticle.title}</h1>
-          <p className="font-[family-name:var(--font-dm-sans)] text-gray-300 mt-2 sm:mt-3 text-sm sm:text-base lg:text-lg line-clamp-2 max-w-2xl">{heroArticle.summary}</p>
+          <h1 className="font-[family-name:var(--font-space-grotesk)] text-xl sm:text-3xl lg:text-4xl font-bold text-white leading-tight mt-2">{heroArticle.title}</h1>
+          <p className="font-[family-name:var(--font-gilroy)] text-gray-300 mt-2 sm:mt-3 text-sm sm:text-base lg:text-lg line-clamp-2 max-w-2xl">{heroArticle.summary}</p>
           <div className="flex items-center gap-3 sm:gap-4 mt-3 sm:mt-4">
             <ReadTimeBadge text={heroArticle.body} minutes={(heroArticle as any).readMinutes} className="text-gray-300 text-xs sm:text-sm" />
-            <span className="text-gray-400 text-xs sm:text-sm font-[family-name:var(--font-dm-sans)]">{timeAgo(heroArticle.publishedAt)}</span>
+            <span className="text-gray-400 text-xs sm:text-sm font-[family-name:var(--font-gilroy)]">{timeAgo(heroArticle.publishedAt)}</span>
           </div>
         </div>
       </article>
@@ -593,29 +593,29 @@ function SidebarLeaderboard({ onSeeMore, models, loading, arenaModels, arenaLoad
       <div className="bg-white rounded-xl border border-gray-100 p-4 sm:p-5">
         <div className="flex items-center gap-2 mb-3">
           <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500" />
-          <h3 className="font-[family-name:var(--font-lora)] text-sm sm:text-base font-bold text-gray-900">Top 5 AI Models</h3>
+          <h3 className="font-[family-name:var(--font-space-grotesk)] text-sm sm:text-base font-bold text-gray-900">Top 5 AI Models</h3>
         </div>
 
         {/* ── Tab Switcher (3 tabs) ── */}
         <div className="flex gap-1 mb-1 p-0.5 bg-gray-100 rounded-lg">
-          <button onClick={() => onTabChange('benchmark')} className={`flex-1 flex items-center justify-center gap-1 px-1 py-1.5 rounded-md text-[9px] sm:text-[10px] font-[family-name:var(--font-dm-sans)] font-semibold transition-all ${activeTab === 'benchmark' ? 'bg-white text-[#0f1b3d] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`} style={{ touchAction: 'manipulation' }}>
+          <button onClick={() => onTabChange('benchmark')} className={`flex-1 flex items-center justify-center gap-1 px-1 py-1.5 rounded-md text-[9px] sm:text-[10px] font-[family-name:var(--font-gilroy)] font-semibold transition-all ${activeTab === 'benchmark' ? 'bg-white text-[#0f1b3d] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`} style={{ touchAction: 'manipulation' }}>
             <BarChart3 className="w-3 h-3" /> Power
           </button>
-          <button onClick={() => onTabChange('arena')} className={`flex-1 flex items-center justify-center gap-1 px-1 py-1.5 rounded-md text-[9px] sm:text-[10px] font-[family-name:var(--font-dm-sans)] font-semibold transition-all ${activeTab === 'arena' ? 'bg-white text-[#0f1b3d] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`} style={{ touchAction: 'manipulation' }}>
+          <button onClick={() => onTabChange('arena')} className={`flex-1 flex items-center justify-center gap-1 px-1 py-1.5 rounded-md text-[9px] sm:text-[10px] font-[family-name:var(--font-gilroy)] font-semibold transition-all ${activeTab === 'arena' ? 'bg-white text-[#0f1b3d] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`} style={{ touchAction: 'manipulation' }}>
             <Users className="w-3 h-3" /> Votes
           </button>
-          <button onClick={() => onTabChange('agent')} className={`flex-1 flex items-center justify-center gap-1 px-1 py-1.5 rounded-md text-[9px] sm:text-[10px] font-[family-name:var(--font-dm-sans)] font-semibold transition-all ${activeTab === 'agent' ? 'bg-white text-[#0f1b3d] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`} style={{ touchAction: 'manipulation' }}>
+          <button onClick={() => onTabChange('agent')} className={`flex-1 flex items-center justify-center gap-1 px-1 py-1.5 rounded-md text-[9px] sm:text-[10px] font-[family-name:var(--font-gilroy)] font-semibold transition-all ${activeTab === 'agent' ? 'bg-white text-[#0f1b3d] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`} style={{ touchAction: 'manipulation' }}>
             <Bot className="w-3 h-3" /> Agent
           </button>
         </div>
 
         {/* ── Methodology Label ── */}
         {activeTab === 'benchmark' ? (
-          <p className="text-[9px] sm:text-[10px] text-gray-400 font-[family-name:var(--font-dm-sans)] mb-3 leading-tight">Ranked by benchmark performance <a href="https://llm-stats.com/methodology/llm-stats-score" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-red-600 underline decoration-dotted underline-offset-2">(LLM Stats Score)</a> — standardized tests for coding, math & reasoning</p>
+          <p className="text-[9px] sm:text-[10px] text-gray-400 font-[family-name:var(--font-gilroy)] mb-3 leading-tight">Ranked by benchmark performance <a href="https://llm-stats.com/methodology/llm-stats-score" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-red-600 underline decoration-dotted underline-offset-2">(LLM Stats Score)</a> — standardized tests for coding, math & reasoning</p>
         ) : activeTab === 'arena' ? (
-          <p className="text-[9px] sm:text-[10px] text-gray-400 font-[family-name:var(--font-dm-sans)] mb-3 leading-tight">Ranked by human preference <a href="https://arena.ai/leaderboard/text" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-red-600 underline decoration-dotted underline-offset-2">(Arena Score)</a> — blind head-to-head votes from real users</p>
+          <p className="text-[9px] sm:text-[10px] text-gray-400 font-[family-name:var(--font-gilroy)] mb-3 leading-tight">Ranked by human preference <a href="https://arena.ai/leaderboard/text" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-red-600 underline decoration-dotted underline-offset-2">(Arena Score)</a> — blind head-to-head votes from real users</p>
         ) : (
-          <p className="text-[9px] sm:text-[10px] text-gray-400 font-[family-name:var(--font-dm-sans)] mb-3 leading-tight">Ranked by agent capability <a href="https://arena.ai/leaderboard/agent" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-red-600 underline decoration-dotted underline-offset-2">(Net Improvement)</a> — tool use, planning & multi-step reasoning</p>
+          <p className="text-[9px] sm:text-[10px] text-gray-400 font-[family-name:var(--font-gilroy)] mb-3 leading-tight">Ranked by agent capability <a href="https://arena.ai/leaderboard/agent" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-red-600 underline decoration-dotted underline-offset-2">(Net Improvement)</a> — tool use, planning & multi-step reasoning</p>
         )}
 
         {/* ── Benchmark Tab ── */}
@@ -634,11 +634,11 @@ function SidebarLeaderboard({ onSeeMore, models, loading, arenaModels, arenaLoad
                     <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0 ${model.rank === 1 ? 'bg-amber-400' : model.rank === 2 ? 'bg-gray-400' : model.rank === 3 ? 'bg-amber-600' : 'bg-gray-200 text-gray-500'}`}>{model.rank}</span>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-1">
-                        <p className="font-[family-name:var(--font-lora)] text-xs sm:text-sm font-bold text-gray-900 truncate group-hover:text-red-600 transition-colors inline-flex items-center gap-1">{model.name}<ExternalLink className="w-3 h-3 text-gray-300 group-hover:text-red-400 shrink-0" /></p>
-                        <span className="text-[10px] text-gray-400 font-[family-name:var(--font-dm-sans)] tabular-nums">{model.score ?? '—'}</span>
+                        <p className="font-[family-name:var(--font-space-grotesk)] text-xs sm:text-sm font-bold text-gray-900 truncate group-hover:text-red-600 transition-colors inline-flex items-center gap-1">{model.name}<ExternalLink className="w-3 h-3 text-gray-300 group-hover:text-red-400 shrink-0" /></p>
+                        <span className="text-[10px] text-gray-400 font-[family-name:var(--font-gilroy)] tabular-nums">{model.score ?? '—'}</span>
                       </div>
                       <div className="flex items-center justify-between mt-1">
-                        <span className="text-[10px] text-gray-500 font-[family-name:var(--font-dm-sans)]">{model.organization}</span>
+                        <span className="text-[10px] text-gray-500 font-[family-name:var(--font-gilroy)]">{model.organization}</span>
                       </div>
                       <div className="mt-1.5 h-1.5 bg-gray-100 rounded-full overflow-hidden">
                         <div className="h-full rounded-full bg-[#0f1b3d]" style={{ width: `${((model.score ?? 0) / maxScore) * 100}%`, opacity: 0.8 }} />
@@ -667,12 +667,12 @@ function SidebarLeaderboard({ onSeeMore, models, loading, arenaModels, arenaLoad
                     <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0 ${model.rank === 1 ? 'bg-emerald-400' : model.rank === 2 ? 'bg-gray-400' : model.rank === 3 ? 'bg-emerald-600' : 'bg-gray-200 text-gray-500'}`}>{model.rank}</span>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-1">
-                        <p className="font-[family-name:var(--font-lora)] text-xs sm:text-sm font-bold text-gray-900 truncate group-hover:text-red-600 transition-colors inline-flex items-center gap-1">{formatArenaModelName(model.name)}<ExternalLink className="w-3 h-3 text-gray-300 group-hover:text-red-400 shrink-0" /></p>
-                        <span className="text-[10px] text-gray-400 font-[family-name:var(--font-dm-sans)] tabular-nums">{model.arena_score}</span>
+                        <p className="font-[family-name:var(--font-space-grotesk)] text-xs sm:text-sm font-bold text-gray-900 truncate group-hover:text-red-600 transition-colors inline-flex items-center gap-1">{formatArenaModelName(model.name)}<ExternalLink className="w-3 h-3 text-gray-300 group-hover:text-red-400 shrink-0" /></p>
+                        <span className="text-[10px] text-gray-400 font-[family-name:var(--font-gilroy)]] tabular-nums">{model.arena_score}</span>
                       </div>
                       <div className="flex items-center justify-between mt-1">
-                        <span className="text-[10px] text-gray-500 font-[family-name:var(--font-dm-sans)]">{model.organization}</span>
-                        <span className="text-[9px] text-gray-400 font-[family-name:var(--font-dm-sans)]">{formatCI(model.ci_lower, model.ci_upper)} &middot; {model.votes.toLocaleString()} votes</span>
+                        <span className="text-[10px] text-gray-500 font-[family-name:var(--font-gilroy)]">{model.organization}</span>
+                        <span className="text-[9px] text-gray-400 font-[family-name:var(--font-gilroy)]">{formatCI(model.ci_lower, model.ci_upper)} &middot; {model.votes.toLocaleString()} votes</span>
                       </div>
                       <div className="mt-1.5 h-1.5 bg-gray-100 rounded-full overflow-hidden">
                         <div className="h-full rounded-full bg-emerald-600" style={{ width: `${((model.arena_score - (maxArena - 100)) / 100) * 100}%`, opacity: 0.75 }} />
@@ -701,12 +701,12 @@ function SidebarLeaderboard({ onSeeMore, models, loading, arenaModels, arenaLoad
                     <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0 ${model.rank === 1 ? 'bg-violet-400' : model.rank === 2 ? 'bg-gray-400' : model.rank === 3 ? 'bg-violet-600' : 'bg-gray-200 text-gray-500'}`}>{model.rank}</span>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-1">
-                        <p className="font-[family-name:var(--font-lora)] text-xs sm:text-sm font-bold text-gray-900 truncate group-hover:text-red-600 transition-colors inline-flex items-center gap-1">{formatArenaModelName(model.name)}<ExternalLink className="w-3 h-3 text-gray-300 group-hover:text-red-400 shrink-0" /></p>
-                        <span className="text-[10px] text-gray-400 font-[family-name:var(--font-dm-sans)] tabular-nums">{model.net_improvement}%</span>
+                        <p className="font-[family-name:var(--font-space-grotesk)] text-xs sm:text-sm font-bold text-gray-900 truncate group-hover:text-red-600 transition-colors inline-flex items-center gap-1">{formatArenaModelName(model.name)}<ExternalLink className="w-3 h-3 text-gray-300 group-hover:text-red-400 shrink-0" /></p>
+                        <span className="text-[10px] text-gray-400 font-[family-name:var(--font-gilroy)] tabular-nums">{model.net_improvement}%</span>
                       </div>
                       <div className="flex items-center justify-between mt-1">
-                        <span className="text-[10px] text-gray-500 font-[family-name:var(--font-dm-sans)]">{model.organization}</span>
-                        <span className="text-[9px] text-gray-400 font-[family-name:var(--font-dm-sans)]">±{model.net_improvement_ci}% &middot; {model.sessions.toLocaleString()} sessions</span>
+                        <span className="text-[10px] text-gray-500 font-font-[family-name:var(--font-gilroy)]">{model.organization}</span>
+                        <span className="text-[9px] text-gray-400 font-[family-name:var(--font-gilroy)]">±{model.net_improvement_ci}% &middot; {model.sessions.toLocaleString()} sessions</span>
                       </div>
                       <div className="mt-1.5 h-1.5 bg-gray-100 rounded-full overflow-hidden">
                         <div className="h-full rounded-full bg-violet-600" style={{ width: `${(model.net_improvement / maxNet) * 100}%`, opacity: 0.75 }} />
@@ -768,9 +768,9 @@ function SubscribeSection() {
     <div className="bg-white rounded-xl border border-gray-100 p-4 sm:p-5">
       <div className="flex items-center gap-2 mb-2">
         <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />
-        <h3 className="font-[family-name:var(--font-lora)] text-sm sm:text-base font-bold text-gray-900">Daily Briefing</h3>
+        <h3 className="font-[family-name:var(--font-space-grotesk)] text-sm sm:text-base font-bold text-gray-900">Daily Briefing</h3>
       </div>
-      <p className="text-xs text-gray-500 font-[family-name:var(--font-dm-sans)] leading-relaxed mb-3">Get the top AI &amp; tech stories delivered to your inbox every morning.</p>
+      <p className="text-xs text-gray-500 font-[family-name:var(--font-gilroy)] leading-relaxed mb-3">Get the top AI &amp; tech stories delivered to your inbox every morning.</p>
       <div className="flex gap-2">
         <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="your@email.com" className="flex-1 min-w-0 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0f1b3d]/20 font-[family-name:var(--font-dm-sans)]" onKeyDown={(e) => { if (e.key === 'Enter') handleSubscribe(); }} />
         <Button size="sm" className="bg-red-600 hover:bg-red-500 text-white font-semibold text-xs sm:text-sm px-3 sm:px-4 shrink-0 disabled:opacity-60" onClick={handleSubscribe} disabled={loading}>
@@ -789,11 +789,11 @@ function NewsCard({ article, index, onClick }: { article: NewsArticle; index: nu
     <div ref={cardRef}><article className="group bg-white rounded-xl overflow-hidden border border-gray-100 hover:border-gray-200 hover:shadow-lg transition-all duration-300 cursor-pointer h-full flex flex-col news-card-hover" onClick={() => onClick(article)} style={{ touchAction: 'manipulation' }}>
       <div className="relative h-36 sm:h-48 overflow-hidden"><img src={article.image} alt={article.title} loading="lazy" className="w-full h-full object-cover img-zoom" /><div className="absolute top-2.5 left-2.5 sm:top-3 sm:left-3 flex flex-wrap items-center gap-1.5"><Badge className={`${CATEGORY_COLOR[article.category] || 'bg-gray-100 text-gray-700'} text-[10px] sm:text-xs font-[family-name:var(--font-dm-sans)]`}>{article.category}</Badge><ReliabilityBadge reliability={article.reliability} /></div></div>
       <div className="p-3.5 sm:p-5 flex flex-col flex-1">
-        <h3 className="font-[family-name:var(--font-lora)] text-base sm:text-lg font-bold text-gray-900 leading-snug line-clamp-2 group-hover:text-red-600 transition-colors">{article.title}</h3>
-        <p className="font-[family-name:var(--font-dm-sans)] text-xs sm:text-sm text-gray-500 mt-2 line-clamp-2 flex-1">{article.summary}</p>
+        <h3 className="font-[family-name:var(--font-space-grotesk)] text-base sm:text-lg font-bold text-gray-900 leading-snug line-clamp-2 group-hover:text-red-600 transition-colors">{article.title}</h3>
+        <p className="font-[family-name:var(--font-gilroy)] text-xs sm:text-sm text-gray-500 mt-2 line-clamp-2 flex-1">{article.summary}</p>
         <div className="flex items-center justify-between mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-gray-50">
-          <Badge variant="outline" className="text-[10px] sm:text-xs border-gray-200 text-gray-500 font-[family-name:var(--font-dm-sans)] gap-1"><Globe className="w-2.5 h-2.5 sm:w-3 sm:h-3" /> {article.region}</Badge>
-          <div className="flex items-center gap-2"><ReadTimeBadge text={article.body} className="text-[10px] sm:text-xs" /><span className="text-[10px] sm:text-xs text-gray-400 font-[family-name:var(--font-dm-sans)]">{timeAgo(article.publishedAt)}</span></div>
+          <Badge variant="outline" className="text-[10px] sm:text-xs border-gray-200 text-gray-500 font-[family-name:var(--font-gilroy)] gap-1"><Globe className="w-2.5 h-2.5 sm:w-3 sm:h-3" /> {article.region}</Badge>
+          <div className="flex items-center gap-2"><ReadTimeBadge text={article.body} className="text-[10px] sm:text-xs" /><span className="text-[10px] sm:text-xs text-gray-400 font-[family-name:var(--font-gilroy)]">{timeAgo(article.publishedAt)}</span></div>
         </div>
       </div>
     </article></div>
@@ -807,10 +807,10 @@ function TrendingItem({ article, index, onClick }: { article: NewsArticle; index
   return (
     <div ref={ref} onClick={() => onClick(article)} style={{ touchAction: 'manipulation' }}>
       <div className="flex gap-3 group cursor-pointer py-1">
-        <span className="font-[family-name:var(--font-lora)] text-2xl sm:text-3xl font-bold text-red-200 shrink-0 w-7 sm:w-8">{String(index + 1).padStart(2, '0')}</span>
+        <span className="font-[family-name:var(--font-space-grotesk)] text-2xl sm:text-3xl font-bold text-red-200 shrink-0 w-7 sm:w-8">{String(index + 1).padStart(2, '0')}</span>
         <div className="min-w-0 flex-1">
-          <p className="font-[family-name:var(--font-lora)] text-xs sm:text-sm font-semibold text-gray-900 leading-snug line-clamp-2 group-hover:text-red-600 transition-colors">{article.title}</p>
-          <div className="flex items-center gap-2 mt-1 text-[10px] sm:text-xs text-gray-400 font-[family-name:var(--font-dm-sans)]"><span>{article.category}</span><span>&middot;</span><span>{article.region}</span><span>&middot;</span><ReadTimeBadge text={article.body} className="text-[10px] text-gray-400" /></div>
+          <p className="font-[family-name:var(--font-space-grotesk)] text-xs sm:text-sm font-semibold text-gray-900 leading-snug line-clamp-2 group-hover:text-red-600 transition-colors">{article.title}</p>
+          <div className="flex items-center gap-2 mt-1 text-[10px] sm:text-xs text-gray-400 font-[family-name:var(--font-gilroy)]"><span>{article.category}</span><span>&middot;</span><span>{article.region}</span><span>&middot;</span><ReadTimeBadge text={article.body} className="text-[10px] text-gray-400" /></div>
         </div>
       </div>
     </div>
@@ -832,9 +832,9 @@ function Footer({ onCategoryClick, onAboutOpen }: { onCategoryClick: (cat: strin
               <a href="https://web.facebook.com/profile.php?id=61592735245077" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/20 transition-colors"><svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></a>
             </div>
           </div>
-          <div><h4 className="font-[family-name:var(--font-lora)] font-bold text-white mb-3 sm:mb-4 text-sm sm:text-base">Sections</h4><ul className="space-y-2 sm:space-y-2.5">{['AI News', 'Tech Giants', 'Startups & Funding', 'Research', 'Global & China'].map((item) => (<li key={item}><button onClick={() => onCategoryClick(item)} className="text-xs sm:text-sm text-gray-400 hover:text-white transition-colors" style={{ touchAction: 'manipulation' }}>{item}</button></li>))}</ul></div>
-          <div><h4 className="font-[family-name:var(--font-lora)] font-bold text-white mb-3 sm:mb-4 text-sm sm:text-base">Company</h4><ul className="space-y-2 sm:space-y-2.5">{['About Us', 'Careers', 'Contact', 'Advertise', 'Press Kit'].map((item) => (<li key={item}><button onClick={() => { if (item === 'About Us') onAboutOpen(); else toast.info(`${item} page coming soon!`); }} className="text-xs sm:text-sm text-gray-400 hover:text-white transition-colors" style={{ touchAction: 'manipulation' }}>{item}</button></li>))}</ul></div>
-          <div><h4 className="font-[family-name:var(--font-lora)] font-bold text-white mb-3 sm:mb-4 text-sm sm:text-base">Legal</h4><ul className="space-y-2 sm:space-y-2.5">{['Privacy Policy', 'Terms of Service', 'Cookie Policy', 'Accessibility'].map((item) => (<li key={item}><button onClick={() => toast.info(`${item} page coming soon!`)} className="text-xs sm:text-sm text-gray-400 hover:text-white transition-colors" style={{ touchAction: 'manipulation' }}>{item}</button></li>))}</ul></div>
+          <div><h4 className="font-[family-name:var(--font-space-grotesk)] font-bold text-white mb-3 sm:mb-4 text-sm sm:text-base">Sections</h4><ul className="space-y-2 sm:space-y-2.5">{['AI News', 'Tech Giants', 'Startups & Funding', 'Research', 'Global & China'].map((item) => (<li key={item}><button onClick={() => onCategoryClick(item)} className="text-xs sm:text-sm text-gray-400 hover:text-white transition-colors" style={{ touchAction: 'manipulation' }}>{item}</button></li>))}</ul></div>
+          <div><h4 className="font-[family-name:var(--font-space-grotesk)] font-bold text-white mb-3 sm:mb-4 text-sm sm:text-base">Company</h4><ul className="space-y-2 sm:space-y-2.5">{['About Us', 'Careers', 'Contact', 'Advertise', 'Press Kit'].map((item) => (<li key={item}><button onClick={() => { if (item === 'About Us') onAboutOpen(); else toast.info(`${item} page coming soon!`); }} className="text-xs sm:text-sm text-gray-400 hover:text-white transition-colors" style={{ touchAction: 'manipulation' }}>{item}</button></li>))}</ul></div>
+          <div><h4 className="font-[family-name:var(--font-space-grotesk)] font-bold text-white mb-3 sm:mb-4 text-sm sm:text-base">Legal</h4><ul className="space-y-2 sm:space-y-2.5">{['Privacy Policy', 'Terms of Service', 'Cookie Policy', 'Accessibility'].map((item) => (<li key={item}><button onClick={() => toast.info(`${item} page coming soon!`)} className="text-xs sm:text-sm text-gray-400 hover:text-white transition-colors" style={{ touchAction: 'manipulation' }}>{item}</button></li>))}</ul></div>
         </div>
         <Separator className="bg-white/10 my-6 sm:my-8" />
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 text-xs sm:text-sm text-gray-500">
@@ -959,11 +959,11 @@ export function Home({ initialArticles }: { initialArticles: NewsArticle[] }) {
           <Separator className="my-1 sm:my-2" />
           <div id="latest-stories" className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 pb-8 sm:pb-12">
             <div className="lg:col-span-2">
-              <div className="flex items-center gap-2 mb-5 sm:mb-6"><Zap className="w-5 h-5 text-red-600" /><h2 className="font-[family-name:var(--font-lora)] text-xl sm:text-2xl font-bold text-gray-900">{activeCategory === 'Latest' ? 'Latest Stories' : activeCategory}</h2></div>
-              {filtered.length === 0 ? (<div className="text-center py-16 text-gray-400"><p className="text-lg font-[family-name:var(--font-lora)]">No articles found</p><p className="text-sm mt-1">Try selecting a different category</p></div>) : (<div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">{filtered.slice(0, visibleCount).map((article, i) => (<NewsCard key={article.id} article={article} index={i} onClick={openArticle} />))}</div>)}
-              {activeCategory === 'Latest' && (<div className="mt-8"><Button variant="outline" size="lg" className="w-full sm:w-auto mx-auto flex items-center gap-2 font-[family-name:var(--font-dm-sans)] text-sm text-gray-600 border-gray-300 hover:border-[#0f1b3d] hover:text-[#0f1b3d]" onClick={() => setVisibleCount((v) => v + 60)}>Load More Stories<ArrowRight className="w-4 h-4" /></Button></div>)}
+              <div className="flex items-center gap-2 mb-5 sm:mb-6"><Zap className="w-5 h-5 text-red-600" /><h2 className="font-[family-name:var(--font-space-grotesk)] text-xl sm:text-2xl font-bold text-gray-900">{activeCategory === 'Latest' ? 'Latest Stories' : activeCategory}</h2></div>
+              {filtered.length === 0 ? (<div className="text-center py-16 text-gray-400"><p className="text-lg font-[family-name:var(--font-space-grotesk)]">No articles found</p><p className="text-sm mt-1">Try selecting a different category</p></div>) : (<div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">{filtered.slice(0, visibleCount).map((article, i) => (<NewsCard key={article.id} article={article} index={i} onClick={openArticle} />))}</div>)}
+              {activeCategory === 'Latest' && (<div className="mt-8"><Button variant="outline" size="lg" className="w-full sm:w-auto mx-auto flex items-center gap-2 font-[family-name:var(--font-gilroy)] text-sm text-gray-600 border-gray-300 hover:border-[#0f1b3d] hover:text-[#0f1b3d]" onClick={() => setVisibleCount((v) => v + 60)}>Load More Stories<ArrowRight className="w-4 h-4" /></Button></div>)}
             </div>
-            <aside className="lg:col-span-1"><div className="lg:sticky lg:top-20 space-y-4 sm:space-y-6"><div className="bg-white rounded-xl border border-gray-100 p-4 sm:p-5"><div className="flex items-center gap-2 mb-4 sm:mb-5"><TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" /><h3 className="font-[family-name:var(--font-lora)] text-base sm:text-lg font-bold text-gray-900">Trending Now</h3></div><div className="space-y-3 sm:space-y-4 max-h-96 overflow-y-auto custom-scrollbar">{(allArticles.length >= 8 ? allArticles.slice(3, 8) : FALLBACK_TRENDING).map((article, i) => (<TrendingItem key={article.id} article={article} index={i} onClick={openArticle} />))}</div></div></div></aside>
+            <aside className="lg:col-span-1"><div className="lg:sticky lg:top-20 space-y-4 sm:space-y-6"><div className="bg-white rounded-xl border border-gray-100 p-4 sm:p-5"><div className="flex items-center gap-2 mb-4 sm:mb-5"><TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" /><h3 className="font-[family-name:var(--font-space-grotesk)] text-base sm:text-lg font-bold text-gray-900">Trending Now</h3></div><div className="space-y-3 sm:space-y-4 max-h-96 overflow-y-auto custom-scrollbar">{(allArticles.length >= 8 ? allArticles.slice(3, 8) : FALLBACK_TRENDING).map((article, i) => (<TrendingItem key={article.id} article={article} index={i} onClick={openArticle} />))}</div></div></div></aside>
           </div>
         </div>
       </main>

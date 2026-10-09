@@ -474,7 +474,7 @@ function BreakingTicker({ articles }: { articles: NewsArticle[] }) {
   return (
     <div className="bg-red-600 text-white overflow-hidden">
       <div className="flex items-center">
-        <div className="bg-red-700 px-3 sm:px-4 py-2 flex items-center gap-2 shrink-0 z-10 font-[family-name:var(--font-dm-sans)] font-bold text-xs sm:text-sm uppercase tracking-wider"><Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4" /><span>Breaking</span></div>
+        <div className="bg-red-700 px-3 sm:px-4 py-2 flex items-center gap-2 shrink-0 z-10 font-[family-name:var(--font-dm-sans)] font-bold text-xs sm:text-sm uppercase tracking-wider"><span className="w-2 h-2 rounded-full bg-white animate-pulse" /><span>Breaking</span></div>
         <div className="flex-1 overflow-hidden py-2"><div ref={innerRef} className="flex whitespace-nowrap gap-12 sm:gap-16">{doubled.map((item, i) => (<span key={i} className="text-xs sm:text-sm font-[family-name:var(--font-dm-sans)] inline-flex items-center gap-2 sm:gap-3"><span className="text-red-200">●</span>{item.title}</span>))}</div></div>
       </div>
     </div>

@@ -9,7 +9,7 @@ export default async function Page() {
 
   const rows = await db.article.findMany({
     orderBy: { createdAt: 'desc' },
-    take: total,
+    take: 200,
   });
 
   const articles = rows

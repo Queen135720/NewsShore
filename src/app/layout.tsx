@@ -1,18 +1,20 @@
 import type { Metadata } from "next";
-import { Lora, DM_Sans } from "next/font/google";
+import { Space_Grotesk, Poppins } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
 
-const lora = Lora({
-  variable: "--font-lora",
-  subsets: ["latin"],
-  display: "swap",
+const spaceGrotesk = Space_Grotesk({ 
+  variable: "--font-space-grotesk", 
+  subsets: ["latin"], 
+  weight: ["300", "400", "500", "600", "700"],
+  display: "swap" 
 });
 
-const dmSans = DM_Sans({
-  variable: "--font-dm-sans",
+const gilroy = Poppins({ 
+  variable: "--font-gilroy", 
   subsets: ["latin"],
-  display: "swap",
+  weight: ["400", "500", "600", "700"],
+  display: "swap" 
 });
 
 export const metadata: Metadata = {
@@ -49,7 +51,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${lora.variable} ${dmSans.variable} antialiased bg-background text-foreground`}
+        className={`${spaceGrotesk.variable} ${gilroy.variable} antialiased bg-background text-foreground`}
       >
         {children}
         <Toaster position="top-right" richColors closeButton />

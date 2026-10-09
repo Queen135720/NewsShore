@@ -131,7 +131,7 @@ export default function ArticlePage() {
   const creditUrl = (article as any).imageCreditUrl as string | null | undefined;
 
   return (
-    <div className="min-h-screen flex flex-col font-[family-name:var(--font-dm-sans)] bg-white">
+    <div className="min-h-screen flex flex-col font-[family-name:var(--font-gilroy)] bg-white">
       {/* Sticky Header */}
       <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-3">
@@ -174,7 +174,7 @@ export default function ArticlePage() {
         <div className="max-w-4xl mx-auto px-5 sm:px-8 lg:px-10 py-6 sm:py-8">
           {/* Photo credit — required by Unsplash guidelines */}
           {creditName && (
-            <p className="text-xs text-gray-400 font-[family-name:var(--font-dm-sans)] mb-4">
+            <p className="text-xs text-gray-400 font-[family-name:var(--font-gilroy)] mb-4">
               Photo by{' '}
               <a href={creditUrl ?? 'https://unsplash.com'} target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-600">{creditName}</a>{' '}
               on{' '}

@@ -434,7 +434,7 @@ async function saveArticle(item, rewritten, usedKeys) {
     source_url: item.link,
     source_name: item.sourceName,
     reliability: rewritten.reliability,
-    glossary: rewritten.glossary,
+    glossary: Array.isArray(rewritten.glossary) ? rewritten.glossary : [],
     published: true,
     image_url: image?.url ?? null,
     image_credit_name: image?.creditName ?? null,

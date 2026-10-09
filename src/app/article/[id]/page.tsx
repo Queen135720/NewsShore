@@ -140,9 +140,7 @@ export default function ArticlePage() {
             className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-[#0f1b3d] active:text-[#0f1b3d] transition-colors py-2 px-2 -ml-2 rounded-lg"
             style={{ touchAction: 'manipulation' }}
           >
-            <ArrowLeft className="w-4 h-4" />
-            <span className="hidden sm:inline">Back to News</span>
-            <span className="sm:hidden">Back</span>
+            <ArrowLeft className="w-4 h-4" /><span>Back to News</span>
           </Link>
           <div className="flex-1" />
           <Link href="/" className="font-[family-name:var(--font-lora)] font-bold text-[#0f1b3d] text-lg hidden sm:block">NewsShore</Link>

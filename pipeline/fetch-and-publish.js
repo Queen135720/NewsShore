@@ -99,15 +99,14 @@ const SOURCES = [
 // ---- 2. FETCH NEW ITEMS ----
 async function fetchNewItems() {
   // Load ALL existing article URLs in ONE query
-  const { data: existingRows } = await supabase
-    .from('articles')
-    .select('source_url');
-  const existingUrls = new Set((existingRows ?? []).map((r) => r.source_url));
-
     const { data: processedRows } = await supabase
     .from('processed_urls')
-    .select('source_url');
-  const processedUrls = new Set((processedRows ?? []).map((r) => r.source_url));
+    .select('source_url, status, created_at');
+  const processedUrls = new Set(
+    (processedRows ?? [])
+      .filter((r) => r.status === 'rejected' || new Date(r.created_at).getTime() > Date.now() - 24 * 60 * 60 * 1000)
+      .map((r) => r.source_url)
+  );
 
   const allItems = [];
   const seenThisRun = new Set();

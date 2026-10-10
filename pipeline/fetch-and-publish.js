@@ -205,7 +205,7 @@ Source title: ${item.title}
 Source site: ${item.sourceName} (suggested category: "${item.category}", suggested region: "${item.region}" — override these if the story content says otherwise)
 Source content: ${sourceContent}
 
-    if (!providerDown.gemini) {
+  if (!providerDown.gemini) {
     try { return await callGemini(prompt); }
     catch (err) {
       if (/429|quota/i.test(err.message)) { providerDown.gemini = true; console.warn('Gemini quota dead — skipping rest of this run'); }
@@ -226,7 +226,7 @@ Source content: ${sourceContent}
       else console.warn(`Groq failed, falling back: ${err.message}`);
     }
   }
-    if (!providerDown.mistral) {
+  if (!providerDown.mistral) {
     try { return await callMistral(prompt); }
     catch (err) {
       if (/429/i.test(err.message)) { providerDown.mistral = true; console.warn('Mistral throttled — skipping rest of this run'); }

@@ -351,6 +351,27 @@ async function callMistral(prompt) {
   return safeParseJSON(data.choices[0].message.content);
 }
 
+async function callOpenRouter(prompt) {
+  if (!process.env.OPENROUTER_API_KEY) throw new Error('OPENROUTER_API_KEY not set');
+  const res = await retryFetch('https://openrouter.ai/api/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model: 'meta-llama/llama-3.3-70b-instruct:free',
+      messages: [{ role: 'user', content: prompt }],
+    }),
+  });
+  if (!res.ok) {
+    const errBody = await res.text();
+    throw new Error(`OpenRouter error: ${res.status} — ${errBody.substring(0, 200)}`);
+  }
+  const data = await res.json();
+  return safeParseJSON(data.choices[0].message.content);
+}
+
 async function callDeepSeek(prompt) {
   if (!process.env.DEEPSEEK_API_KEY) throw new Error('DEEPSEEK_API_KEY not set');
   const res = await retryFetch('https://api.deepseek.com/chat/completions', {

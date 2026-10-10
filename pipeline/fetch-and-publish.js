@@ -11,7 +11,7 @@
 import Parser from 'rss-parser';
 import { createClient } from '@supabase/supabase-js';
 
-const providerDown = { gemini: false, glm: false, groq: false, deepseek: false };
+const providerDown = { gemini: false, glm: false, groq: false, mistral: false, openrouter: false, deepseek: false };
 
 const parser = new Parser({
   timeout: 10000,
@@ -224,6 +224,20 @@ Source content: ${sourceContent}
     catch (err) {
       if (/429/i.test(err.message)) { providerDown.groq = true; console.warn('Groq throttled — skipping rest of this run'); }
       else console.warn(`Groq failed, falling back: ${err.message}`);
+    }
+  }
+    if (!providerDown.mistral) {
+    try { return await callMistral(prompt); }
+    catch (err) {
+      if (/429/i.test(err.message)) { providerDown.mistral = true; console.warn('Mistral throttled — skipping rest of this run'); }
+      else console.warn(`Mistral failed, falling back: ${err.message}`);
+    }
+  }
+  if (!providerDown.openrouter) {
+    try { return await callOpenRouter(prompt); }
+    catch (err) {
+      if (/429|rate/i.test(err.message)) { providerDown.openrouter = true; console.warn('OpenRouter throttled — skipping rest of this run'); }
+      else console.warn(`OpenRouter failed, falling back: ${err.message}`);
     }
   }
   if (!providerDown.deepseek) {

@@ -326,6 +326,28 @@ async function callGroq(prompt) {
   return safeParseJSON(data.choices[0].message.content);
 }
 
+async function callMistral(prompt) {
+  if (!process.env.MISTRAL_API_KEY) throw new Error('MISTRAL_API_KEY not set');
+  const res = await retryFetch('https://api.mistral.ai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${process.env.MISTRAL_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model: 'mistral-small-latest',
+      messages: [{ role: 'user', content: prompt }],
+      response_format: { type: 'json_object' }, // forces valid JSON — much more reliable
+    }),
+  });
+  if (!res.ok) {
+    const errBody = await res.text();
+    throw new Error(`Mistral error: ${res.status} — ${errBody.substring(0, 200)}`);
+  }
+  const data = await res.json();
+  return safeParseJSON(data.choices[0].message.content);
+}
+
 async function callDeepSeek(prompt) {
   if (!process.env.DEEPSEEK_API_KEY) throw new Error('DEEPSEEK_API_KEY not set');
   const res = await retryFetch('https://api.deepseek.com/chat/completions', {

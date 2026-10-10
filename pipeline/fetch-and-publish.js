@@ -155,6 +155,9 @@ async function fetchNewItems() {
 
 // ---- 3. REWRITE WITH AI ----
 async function rewriteArticle(item) {
+  const rawContent = item.contentSnippet || item.content || '';
+  const sourceContent = rawContent.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 8000);
+  
   const prompt = `You are a neutral tech news writer for a general, non-technical global audience.
 RELEVANCE CHECK — do this first:
 Decide if the story is GENUINELY tech news. It must be primarily about technology, AI, software, hardware, gadgets, internet, robotics, science, space, quantum computing, cyber security, startups, or the tech industry itself.
@@ -190,6 +193,7 @@ CATEGORY RULES:
 When unsure between two categories, choose the one a reader would most expect the story to appear under on a tech news site.
 
 IMPORTANT RULES:
+- Do not begin a Summary with "This article".
 - Do not invent quotes, sources, statistics, or links.
 - Do not fabricate any information not present in the source text.
 - If you don't know something, leave it out rather than guessing.
@@ -200,7 +204,7 @@ Respond ONLY in this exact JSON format, nothing else:
 
 Source title: ${item.title}
 Source site: ${item.sourceName} (suggested category: "${item.category}", suggested region: "${item.region}" — override these if the story content says otherwise)
-Source content: ${item.contentSnippet || item.content || ''}`;
+Source content: ${sourceContent}
 
     if (!providerDown.gemini) {
     try { return await callGemini(prompt); }

@@ -358,7 +358,7 @@ async function callOpenRouter(prompt) {
       Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
     },
     body: JSON.stringify({
-      model: 'thinkingmachines/inkling:free',
+      model: 'nvidia/nemotron-3-ultra-550b-a55b:free',
       messages: [{ role: 'user', content: prompt }],
     }),
   });

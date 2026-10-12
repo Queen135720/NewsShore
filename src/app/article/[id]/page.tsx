@@ -141,9 +141,26 @@ export default function ArticlePage() {
     </div>
   );
 
+  {creditName && (
+  creditUrl?.includes('unsplash.com') ? (
+    <p className="text-xs text-gray-400 font-[family-name:var(--font-dm-sans)] mb-4">
+      Photo by{' '}
+      <a href={creditUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-600">{creditName}</a>{' '}
+      on{' '}
+      <a href="https://unsplash.com" target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-600">Unsplash</a>
+    </p>
+  ) : (
+    <p className="text-xs text-gray-400 font-[family-name:var(--font-dm-sans)] mb-4">
+      Image:{' '}
+      <a href={creditUrl ?? '#'} target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-600">{creditName}</a>
+    </p>
+  )
+)}
+
   // Read credit info (cast keeps this safe regardless of the NewsArticle type)
   const creditName = (article as any).imageCreditName as string | null | undefined;
   const creditUrl = (article as any).imageCreditUrl as string | null | undefined;
+  
 
   return (
     <div className="min-h-screen flex flex-col font-[family-name:var(--font-gilroy)] bg-white">

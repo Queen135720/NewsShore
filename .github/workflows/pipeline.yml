@@ -11,12 +11,12 @@ concurrency:
 
 on:
   schedule:
-    - cron: '*/5 * * * *'      # at :00, :05, :10, :15...
-    - cron: '2-59/5 * * * *'   # at :02, :07, :12, :17... — fills gaps when GitHub delays a run
-  workflow_dispatch:            # keep this if present — manual trigger button
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
 
 jobs:
   run-pipeline:
+    timeout-minutes: 8
     runs-on: ubuntu-latest
     defaults:
       run:

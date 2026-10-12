@@ -19,6 +19,9 @@ const parser = new Parser({
     'User-Agent': 'NewsShore-Bot/1.0 (https://newsshore.com)',
     Accept: 'application/rss+xml, application/xml, text/xml, application/atom+xml, */*',
   },
+  customFields: {
+    item: ['media:content', 'media:thumbnail'],
+  },
 });
 
 const supabase = createClient(
@@ -430,6 +433,49 @@ function imageKey(url) {
   return m ? m[1] : url;
 }
 
+// ---- Source image extraction: use the publisher's own photo when it's clean ----
+const BANNED_IMAGE_HOSTS = /(alamy|shutterstock|gettyimages|istockphoto|dreamstime|123rf|depositphotos|stock\.adobe)/i;
+
+function extractSourceImage(item) {
+  const candidates = [];
+
+  // 1. media:content — where TechCrunch/WIRED/Verge put their hero image
+  const mc = item['media:content'];
+  if (mc) {
+    for (const m of (Array.isArray(mc) ? mc : [mc])) {
+      if (m?.url && (!m.type || m.type.startsWith('image/'))) {
+        candidates.push({ url: m.url, width: parseInt(m.width || 0, 10) });
+      }
+    }
+  }
+
+  // 2. media:thumbnail
+  if (item['media:thumbnail']?.url) {
+    candidates.push({ url: item['media:thumbnail'].url, width: parseInt(item['media:thumbnail'].width || 0, 10) });
+  }
+
+  // 3. enclosure (built into rss-parser)
+  if (item.enclosure?.url && (item.enclosure.type || '').startsWith('image/')) {
+    candidates.push({ url: item.enclosure.url, width: 0 });
+  }
+
+  // 4. first <img> in the content HTML
+  const imgMatch = (item.content || '').match(/<img[^>]+src=["']([^"']+)["']/i);
+  if (imgMatch) candidates.push({ url: imgMatch[1], width: 0 });
+
+  // Validate: biggest first; reject stock-photo hosts, non-images, tiny, logos
+  for (const c of candidates.sort((a, b) => b.width - a.width)) {
+    const u = c.url || '';
+    if (!/^https?:\/\//.test(u)) continue;
+    if (BANNED_IMAGE_HOSTS.test(u)) continue;
+    if (/\.(svg|gif)(\?|$)/i.test(u)) continue;
+    if (c.width && c.width < 400) continue;
+    if (/logo|icon|avatar|tracking|analytics|1x1|spacer/i.test(u)) continue;
+    return c.url;
+  }
+  return null;
+}
+
 async function loadUsedImageKeys() {
   const { data } = await supabase
     .from('articles')
@@ -492,7 +538,15 @@ async function saveArticle(item, rewritten, usedKeys) {
   const category = VALID_CATEGORIES.includes(rewritten.category) ? rewritten.category : item.category;
   const region = (typeof rewritten.region === 'string' && rewritten.region.trim().length > 0) ? rewritten.region.trim() : item.region;
 
-  const image = await fetchImage(rewritten, item.category, usedKeys);
+    // 1) Publisher's own image = exact subject match (press photo)
+  const sourceImageUrl = extractSourceImage(item);
+  let image;
+  if (sourceImageUrl) {
+    image = { url: sourceImageUrl, creditName: item.sourceName, creditUrl: item.link };
+  } else {
+    // 2) Unsplash fallback — safe, relevant-but-generic
+    image = await fetchImage(rewritten, category, usedKeys);
+  }
 
   const { error } = await supabase.from('articles').insert({
     title: rewritten.headline,

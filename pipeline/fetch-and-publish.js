@@ -203,7 +203,7 @@ Respond ONLY in this exact JSON format, nothing else:
 
 Source title: ${item.title}
 Source site: ${item.sourceName} (suggested category: "${item.category}", suggested region: "${item.region}" — override these if the story content says otherwise)
-Source content: ${sourceContent}
+Source content: ${sourceContent};
 
   if (!providerDown.gemini) {
     try { return await callGemini(prompt); }

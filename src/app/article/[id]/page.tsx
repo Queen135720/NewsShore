@@ -57,18 +57,20 @@ function inlineFormat(text: string): React.ReactNode {
 function renderBody(body: string) {
   return body.split('\n\n').map((block, i) => {
     const trimmed = block.trim();
+    const cleaned = cleanText(trimmed);
+    if (!cleaned) return null;
     if (!trimmed) return null;
 
     // Subheading: lines starting with # through ######
-    if (/^#{1,6}\s+/.test(trimmed)) {
+    if (/^#{1,6}\s+/.test(cleaned)) {
       return (
         <h2 key={i} className="font-[family-name:var(--font-lora)] text-lg sm:text-xl font-bold text-gray-900 mt-8 mb-4">
-          {inlineFormat(trimmed.replace(/^#{1,6}\s+/, ''))}
+          {inlineFormat(cleaned.replace(/^#{1,6}\s+/, ''))}
         </h2>
       );
     }
 
-    const lines = trimmed.split('\n').map((l) => l.trim()).filter(Boolean);
+    const lines = cleaned.split('\n').map((l) => l.trim()).filter(Boolean);
 
     // Bulleted list: every line starts with -, *, or •
     if (lines.length > 0 && lines.every((l) => /^[-*•]\s+/.test(l))) {

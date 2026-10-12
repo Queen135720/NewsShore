@@ -215,42 +215,42 @@ Source content: ${sourceContent}`;
   if (!providerDown.glm) {
     try { return await callGLM(prompt); }
     catch (err) {
-      if (/429/i.test(err.message)) { providerDown.glm = true; console.warn('GLM throttled — skipping rest of this run'); }
+      if (/429|rate|unavailable for free|403/i.test(err.message)) { providerDown.glm = true; console.warn('GLM throttled — skipping rest of this run'); }
       else console.warn(`GLM failed, falling back: ${err.message}`);
     }
   }
   if (!providerDown.groq) {
     try { return await callGroq(prompt); }
     catch (err) {
-      if (/429|413/i.test(err.message)) { providerDown.groq = true; console.warn('Groq throttled — skipping rest of this run'); }
+      if (/429|rate|unavailable for free|403/i.test(err.message)) { providerDown.groq = true; console.warn('Groq throttled — skipping rest of this run'); }
       else console.warn(`Groq failed, falling back: ${err.message}`);
     }
   }
   if (!providerDown.mistral) {
     try { return await callMistral(prompt); }
     catch (err) {
-      if (/429/i.test(err.message)) { providerDown.mistral = true; console.warn('Mistral throttled — skipping rest of this run'); }
+      if (/429|rate|unavailable for free|403/i.test(err.message)) { providerDown.mistral = true; console.warn('Mistral throttled — skipping rest of this run'); }
       else console.warn(`Mistral failed, falling back: ${err.message}`);
     }
   }
   if (!providerDown.openrouter) {
     try { return await callOpenRouter(prompt); }
     catch (err) {
-      if (/429|rate|unavailable for free|403/i.test(err.message)) { { providerDown.openrouter = true; console.warn('OpenRouter throttled — skipping rest of this run'); }
+      if (/429|rate|unavailable for free|403/i.test(err.message)) { providerDown.openrouter = true; console.warn('OpenRouter throttled — skipping rest of this run'); }
       else console.warn(`OpenRouter failed, falling back: ${err.message}`);
     }
   }
   if (!providerDown.gemini) {
     try { return await callGemini(prompt); }
     catch (err) {
-      if (/429|quota/i.test(err.message)) { providerDown.gemini = true; console.warn('Gemini quota dead — skipping rest of this run'); }
+      if (/429|rate|unavailable for free|403/i.test(err.message)) { providerDown.gemini = true; console.warn('Gemini quota dead — skipping rest of this run'); }
       else console.warn(`Gemini failed, falling back: ${err.message}`);
     }
   }
   if (!providerDown.deepseek) {
     try { return await callDeepSeek(prompt); }
     catch (err) {
-      if (/402|insufficient/i.test(err.message)) { providerDown.deepseek = true; console.warn('DeepSeek balance empty — skipping rest of this run'); }
+      if (/429|rate|unavailable for free|403/i.test(err.message)) { providerDown.deepseek = true; console.warn('DeepSeek balance empty — skipping rest of this run'); }
       else console.warn(`DeepSeek failed: ${err.message}`);
     }
   }

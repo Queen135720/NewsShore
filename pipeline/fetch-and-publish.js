@@ -154,10 +154,12 @@ async function fetchNewItems() {
 
 // ---- 3. REWRITE WITH AI ----
 async function rewriteArticle(item) {
+  // Truncate source content — keeps every provider under its token limits
   const rawContent = item.contentSnippet || item.content || '';
   const sourceContent = rawContent.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 8000);
-  
+
   const prompt = `You are a neutral tech news writer for a general, non-technical global audience.
+
 RELEVANCE CHECK — do this first:
 Decide if the story is GENUINELY tech news. It must be primarily about technology, AI, software, hardware, gadgets, internet, robotics, science, space, quantum computing, cyber security, startups, or the tech industry itself.
 Reject ALL of these even if a tech company or tech person is mentioned:
@@ -170,7 +172,7 @@ Reject ALL of these even if a tech company or tech person is mentioned:
 If the tech angle is not the CENTRAL subject of the story, respond ONLY with:
 {"reject": true, "reason": "one short sentence"}
 
-Rewrite the following into:
+If the story passes the relevance check, rewrite it into:
 1. A clear headline (under 12 words)
 2. A 2-3 sentence summary that captures the key points
 3. A 500-1000 word article body, fully in your own words but accurate and verifiable. Do not copy phrases from the original.
@@ -183,7 +185,7 @@ Rewrite the following into:
 CATEGORY RULES:
 - "AI News" — artificial intelligence: models, AI companies, AI research, AI applications, AI policy
 - "Mobile & Social" — smartphones, phone hardware, phone reviews, apps, app stores, social media platforms and their features
-- "Tech Giants" — tech industry LEADERS as people: their statements, essays, predictions, career moves, controversies. ONLY when the story is ABOUT the person. If a CEO simply commented on policy (e.g., praising a government framework), that is NOT Tech Giants — it is not tech news at all, reject it unless their statement is about technology itself
+- "Tech Giants" — tech industry LEADERS as people: their statements, essays, predictions, career moves, controversies. ONLY when the story is ABOUT the person. If a CEO simply commented on policy, that is not Tech Giants — reject it unless the statement is about technology itself
 - "Tech News" — general technology: laptops, gadgets, robotics, hardware, cyber security, space tech, tech company product launches
 - "Startups & Funding" — startup launches, funding rounds, venture capital, accelerators, startup ecosystem
 - "Research" — scientific research, AI research papers, quantum computing research, biotech, lab breakthroughs
@@ -197,13 +199,14 @@ IMPORTANT RULES:
 - Do not fabricate any information not present in the source text.
 - If you don't know something, leave it out rather than guessing.
 - Format the body in simple markdown only: use "## Subheading" for section headings, "- item" for bullet lists, and **bold** for emphasis. Never use tables, code blocks, or # symbols for anything else.
+- Do not add disclaimers, notes about verification, or meta-commentary about the source. Just report what the source says.
 
 Respond ONLY in this exact JSON format, nothing else:
 {"headline": "...", "summary": "...", "body": "...", "reliability": "...", "category": "...", "region": "...", "glossary": [{"term":"...","definition":"..."}], "imageQueries": ["...", "...", "..."]}
 
 Source title: ${item.title}
 Source site: ${item.sourceName} (suggested category: "${item.category}", suggested region: "${item.region}" — override these if the story content says otherwise)
-Source content: ${sourceContent};
+Source content: ${sourceContent}`;
 
   if (!providerDown.gemini) {
     try { return await callGemini(prompt); }
@@ -222,7 +225,7 @@ Source content: ${sourceContent};
   if (!providerDown.groq) {
     try { return await callGroq(prompt); }
     catch (err) {
-      if (/429/i.test(err.message)) { providerDown.groq = true; console.warn('Groq throttled — skipping rest of this run'); }
+      if (/429|413/i.test(err.message)) { providerDown.groq = true; console.warn('Groq throttled — skipping rest of this run'); }
       else console.warn(`Groq failed, falling back: ${err.message}`);
     }
   }
@@ -243,11 +246,11 @@ Source content: ${sourceContent};
   if (!providerDown.deepseek) {
     try { return await callDeepSeek(prompt); }
     catch (err) {
-      if (/402|insufficient/i.test(err.message)) { providerDown.deepSeek = true; console.warn('DeepSeek balance empty — skipping rest of this run'); }
+      if (/402|insufficient/i.test(err.message)) { providerDown.deepseek = true; console.warn('DeepSeek balance empty — skipping rest of this run'); }
       else console.warn(`DeepSeek failed: ${err.message}`);
     }
   }
-  throw new Error('All 4 AI providers failed');
+  throw new Error('All 6 AI providers failed');
 }
 
 async function retryFetch(url, options) {

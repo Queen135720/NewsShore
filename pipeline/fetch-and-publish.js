@@ -236,7 +236,7 @@ Source content: ${sourceContent}`;
   if (!providerDown.openrouter) {
     try { return await callOpenRouter(prompt); }
     catch (err) {
-      if (/429|rate|unavailable for free/i.test(err.message)) { providerDown.openrouter = true; console.warn('OpenRouter throttled — skipping rest of this run'); }
+      if (/429|rate|unavailable for free|403/i.test(err.message)) { { providerDown.openrouter = true; console.warn('OpenRouter throttled — skipping rest of this run'); }
       else console.warn(`OpenRouter failed, falling back: ${err.message}`);
     }
   }

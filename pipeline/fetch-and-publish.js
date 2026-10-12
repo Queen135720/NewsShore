@@ -236,7 +236,7 @@ Source content: ${sourceContent}`;
   if (!providerDown.openrouter) {
     try { return await callOpenRouter(prompt); }
     catch (err) {
-      if (/429|rate|unavailable for free|403/i.test(err.message)) { providerDown.openrouter = true; console.warn('OpenRouter throttled — skipping rest of this run'); }
+      if (/429|rate|unavailable for free|403|empty response/i.test(err.message)) { providerDown.openrouter = true; console.warn('OpenRouter throttled — skipping rest of this run'); }
       else console.warn(`OpenRouter failed, falling back: ${err.message}`);
     }
   }
@@ -367,7 +367,10 @@ async function callOpenRouter(prompt) {
     throw new Error(`OpenRouter error: ${res.status} — ${errBody.substring(0, 200)}`);
   }
   const data = await res.json();
-  return safeParseJSON(data.choices[0].message.content);
+  // Free models sometimes return 200 with no choices — treat as a clean failure
+  const content = data?.choices?.[0]?.message?.content;
+  if (!content) throw new Error('OpenRouter returned an empty response (free model capacity)');
+  return safeParseJSON(content);
 }
 
 async function callGemini(prompt) {

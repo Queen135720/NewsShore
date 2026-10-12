@@ -485,13 +485,20 @@ function fingerprint(text) {
   return [...new Set(words)].sort();
 }
 
+// Words that signal a DIFFERENT story about the same product — never a duplicate
+const DIFFERENTIATORS = /\b(update|delay|cancel|recall|patch|fix|review|rumor|rumour|versus|discount|lawsuit|sues|probe)\b/i;
+
 function isLikelyDuplicate(titleA, titleB) {
-  const a = fingerprint(titleA);
-  const b = fingerprint(titleB);
+  if (DIFFERENTIATORS.test(titleA) || DIFFERENTIATORS.test(titleB)) return false;
+
+  const words = (t) => t.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/)
+    .filter(w => w.length > 2 && !STOP_WORDS.has(w));
+  const a = [...new Set(words(titleA))].sort();
+  const b = [...new Set(words(titleB))].sort();
   if (!a.length || !b.length) return false;
+  if (a.length < 3 || b.length < 3) return a.join(' ') === b.join(' '); // short titles need exact match
   const shared = a.filter(w => b.includes(w)).length;
-  const similarity = shared / Math.max(a.length, b.length);
-  return similarity >= 0.6;
+  return shared / Math.max(a.length, b.length) >= 0.6;
 }
 
 async function loadUsedImageKeys() {

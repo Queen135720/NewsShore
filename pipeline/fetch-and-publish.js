@@ -99,7 +99,13 @@ const SOURCES = [
 // ---- 2. FETCH NEW ITEMS ----
 async function fetchNewItems() {
   // Load ALL existing article URLs in ONE query
-    const { data: processedRows } = await supabase
+  const { data: existingRows } = await supabase
+    .from('articles')
+    .select('source_url');
+  const existingUrls = new Set((existingRows ?? []).map((r) => r.source_url));
+
+  // Load processed URLs: rejections are permanent, failures retry after 24 hours
+  const { data: processedRows } = await supabase
     .from('processed_urls')
     .select('source_url, status, created_at');
   const processedUrls = new Set(
@@ -124,7 +130,7 @@ async function fetchNewItems() {
         for (const item of items) {
           if (!item.link || seenThisRun.has(item.link)) continue;
           if (existingUrls.has(item.link)) continue; // already saved
-          if (processedUrls.has(item.link)) continue; // previously rejected or failed
+          if (processedUrls.has(item.link)) continue; // rejected, or failed recently
 
           // Skip old items — only ingest news from the last 10 days
           const itemDate = item.isoDate ? new Date(item.isoDate).getTime() : 0;
@@ -151,7 +157,6 @@ async function fetchNewItems() {
 
   return allItems;
 }
-
 // ---- 3. REWRITE WITH AI ----
 async function rewriteArticle(item) {
   // Truncate source content — keeps every provider under its token limits

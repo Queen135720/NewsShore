@@ -11,7 +11,7 @@
 import Parser from 'rss-parser';
 import { createClient } from '@supabase/supabase-js';
 
-const providerDown = { gemini: false, glm: false, groq: false, mistral: false, openrouter: false, deepseek: false };
+const providerDown = { glm: false, groq: false, mistral: false, openrouter: false, gemini: false, deepseek: false };
 
 const parser = new Parser({
   timeout: 10000,
@@ -212,13 +212,6 @@ Source title: ${item.title}
 Source site: ${item.sourceName} (suggested category: "${item.category}", suggested region: "${item.region}" — override these if the story content says otherwise)
 Source content: ${sourceContent}`;
 
-  if (!providerDown.gemini) {
-    try { return await callGemini(prompt); }
-    catch (err) {
-      if (/429|quota/i.test(err.message)) { providerDown.gemini = true; console.warn('Gemini quota dead — skipping rest of this run'); }
-      else console.warn(`Gemini failed, falling back: ${err.message}`);
-    }
-  }
   if (!providerDown.glm) {
     try { return await callGLM(prompt); }
     catch (err) {
@@ -245,6 +238,13 @@ Source content: ${sourceContent}`;
     catch (err) {
       if (/429|rate|unavailable for free/i.test(err.message)) { providerDown.openrouter = true; console.warn('OpenRouter throttled — skipping rest of this run'); }
       else console.warn(`OpenRouter failed, falling back: ${err.message}`);
+    }
+  }
+  if (!providerDown.gemini) {
+    try { return await callGemini(prompt); }
+    catch (err) {
+      if (/429|quota/i.test(err.message)) { providerDown.gemini = true; console.warn('Gemini quota dead — skipping rest of this run'); }
+      else console.warn(`Gemini failed, falling back: ${err.message}`);
     }
   }
   if (!providerDown.deepseek) {
@@ -289,28 +289,6 @@ function safeParseJSON(text) {
     result += ch;
   }
   try { return JSON.parse(result); } catch (e) { throw new Error('Failed to parse AI JSON'); }
-}
-
-async function callGemini(prompt) {
-  if (!process.env.GEMINI_API_KEY) throw new Error('GEMINI_API_KEY not set');
-  const res = await retryFetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        tools: [{ google_search: {} }],
-      }),
-    }
-  );
-  if (!res.ok) {
-    const errBody = await res.text();
-    throw new Error(`Gemini error: ${res.status} — ${errBody.substring(0, 200)}`);
-  }
-  const data = await res.json();
-  const text = data.candidates[0].content.parts[0].text;
-  return safeParseJSON(text); // ★ was a double-return with dead code — fixed
 }
 
 async function callGLM(prompt) {
@@ -390,6 +368,28 @@ async function callOpenRouter(prompt) {
   }
   const data = await res.json();
   return safeParseJSON(data.choices[0].message.content);
+}
+
+async function callGemini(prompt) {
+  if (!process.env.GEMINI_API_KEY) throw new Error('GEMINI_API_KEY not set');
+  const res = await retryFetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        tools: [{ google_search: {} }],
+      }),
+    }
+  );
+  if (!res.ok) {
+    const errBody = await res.text();
+    throw new Error(`Gemini error: ${res.status} — ${errBody.substring(0, 200)}`);
+  }
+  const data = await res.json();
+  const text = data.candidates[0].content.parts[0].text;
+  return safeParseJSON(text); // ★ was a double-return with dead code — fixed
 }
 
 async function callDeepSeek(prompt) {

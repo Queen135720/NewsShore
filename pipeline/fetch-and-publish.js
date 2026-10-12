@@ -380,7 +380,7 @@ async function callOpenRouter(prompt) {
       Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
     },
     body: JSON.stringify({
-      model: 'meta-llama/llama-3.3-70b-instruct:free',
+      model: 'thinkingmachines/inkling:free',
       messages: [{ role: 'user', content: prompt }],
     }),
   });

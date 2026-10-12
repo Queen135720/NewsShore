@@ -454,7 +454,7 @@ function extractSourceImage(item) {
     candidates.push({ url: item['media:thumbnail'].url, width: parseInt(item['media:thumbnail'].width || 0, 10) });
   }
 
-  // 3. enclosure (built into rss-parser)
+  // 3. enclosure
   if (item.enclosure?.url && (item.enclosure.type || '').startsWith('image/')) {
     candidates.push({ url: item.enclosure.url, width: 0 });
   }
@@ -463,7 +463,7 @@ function extractSourceImage(item) {
   const imgMatch = (item.content || '').match(/<img[^>]+src=["']([^"']+)["']/i);
   if (imgMatch) candidates.push({ url: imgMatch[1], width: 0 });
 
-  // Validate: biggest first; reject stock-photo hosts, non-images, tiny, logos
+  // Validate: biggest first; reject stock hosts, non-images, tiny, logos
   for (const c of candidates.sort((a, b) => b.width - a.width)) {
     const u = c.url || '';
     if (!/^https?:\/\//.test(u)) continue;
@@ -474,6 +474,24 @@ function extractSourceImage(item) {
     return c.url;
   }
   return null;
+}
+
+// ---- Fuzzy duplicate detection: same story → same meaningful-word signature ----
+const STOP_WORDS = new Set(['the','a','an','of','for','and','or','to','in','on','with','new','its','is','are','as','at','by','from','this','that','unveils','rolls','out','launches','announces','reveals','partners','gets','says','will']);
+
+function fingerprint(text) {
+  const words = text.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/)
+    .filter(w => w.length > 2 && !STOP_WORDS.has(w));
+  return [...new Set(words)].sort();
+}
+
+function isLikelyDuplicate(titleA, titleB) {
+  const a = fingerprint(titleA);
+  const b = fingerprint(titleB);
+  if (!a.length || !b.length) return false;
+  const shared = a.filter(w => b.includes(w)).length;
+  const similarity = shared / Math.max(a.length, b.length);
+  return similarity >= 0.6;
 }
 
 async function loadUsedImageKeys() {
@@ -528,23 +546,37 @@ async function fetchImage(rewritten, category, usedKeys) {
 }
 
 async function saveArticle(item, rewritten, usedKeys) {
+  // Guard: skip empty/broken rewrites
   if (!rewritten?.headline?.trim() || !rewritten?.body?.trim() || !rewritten?.summary?.trim()) {
     console.log('Skipping empty article:', item.title ?? item.link);
     return false;
   }
 
-  // ★ Category/region: trust the LLM's read of the story, fall back to the source's values
+  // Category/region: trust the LLM's read of the story, fall back to the source's values
   const VALID_CATEGORIES = ['AI News', 'Mobile & Social', 'Tech News', 'Tech Giants', 'Startups & Funding', 'Research', 'Deals', 'Global Tech'];
   const category = VALID_CATEGORIES.includes(rewritten.category) ? rewritten.category : item.category;
   const region = (typeof rewritten.region === 'string' && rewritten.region.trim().length > 0) ? rewritten.region.trim() : item.region;
 
-    // 1) Publisher's own image = exact subject match (press photo)
+  // Fuzzy duplicate check: skip if a similar story was saved in the last 3 days
+  const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
+  const { data: recent } = await supabase
+    .from('articles')
+    .select('id, title')
+    .gte('created_at', threeDaysAgo);
+  for (const r of recent ?? []) {
+    if (isLikelyDuplicate(rewritten.headline, r.title)) {
+      console.log(`Skipping duplicate: "${rewritten.headline}" ~ already saved as "${r.title}"`);
+      await supabase.from('processed_urls').insert({ source_url: item.link, status: 'rejected' });
+      return false;
+    }
+  }
+
+  // Image: publisher's own photo first (exact subject match), Unsplash as fallback
   const sourceImageUrl = extractSourceImage(item);
   let image;
   if (sourceImageUrl) {
     image = { url: sourceImageUrl, creditName: item.sourceName, creditUrl: item.link };
   } else {
-    // 2) Unsplash fallback — safe, relevant-but-generic
     image = await fetchImage(rewritten, category, usedKeys);
   }
 
@@ -552,11 +584,11 @@ async function saveArticle(item, rewritten, usedKeys) {
     title: rewritten.headline,
     summary: rewritten.summary,
     body: rewritten.body,
-    category: item.category,
-    region: item.region,
+    category: category,
+    region: region,
     source_url: item.link,
     source_name: item.sourceName,
-    reliability: rewritten.reliability,
+    reliability: rewritten.reliability === 'verified' ? 'verified' : 'claimed',
     glossary: Array.isArray(rewritten.glossary) ? rewritten.glossary : [],
     published: true,
     image_url: image?.url ?? null,
@@ -567,10 +599,9 @@ async function saveArticle(item, rewritten, usedKeys) {
     console.error(`Failed to save article: ${error.message}`);
     return false;
   }
-  console.log(`Saved: ${rewritten.headline}`);
+  console.log(`Saved: ${rewritten.headline} [${category} · ${region}]`);
   return true;
 }
-
 // ---- 6. MAIN ----
 async function run() {
   console.log('Checking sources for new articles...');

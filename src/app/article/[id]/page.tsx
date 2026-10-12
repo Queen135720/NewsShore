@@ -127,6 +127,11 @@ export default function ArticlePage() {
       .finally(() => setLoading(false));
   }, [id]);
 
+  
+  // Read credit info (cast keeps this safe regardless of the NewsArticle type)
+  const creditName = (article as any).imageCreditName as string | null | undefined;
+  const creditUrl = (article as any).imageCreditUrl as string | null | undefined;
+
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center bg-white">
       <div className="animate-spin w-8 h-8 border-4 border-gray-200 border-t-red-600 rounded-full" />
@@ -156,11 +161,6 @@ export default function ArticlePage() {
     </p>
   )
 )}
-
-  // Read credit info (cast keeps this safe regardless of the NewsArticle type)
-  const creditName = (article as any).imageCreditName as string | null | undefined;
-  const creditUrl = (article as any).imageCreditUrl as string | null | undefined;
-  
 
   return (
     <div className="min-h-screen flex flex-col font-[family-name:var(--font-gilroy)] bg-white">

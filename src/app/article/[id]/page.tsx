@@ -31,9 +31,22 @@ function ReliabilityBadge({ r }: { r: string }) {
     : <Badge className="bg-yellow-100 text-yellow-700 text-xs"><span className="inline-block w-1.5 h-1.5 rounded-full bg-yellow-500 mr-1" />Claimed</Badge>;
 }
 
-// Convert AI markdown (## subheads, - bullets, **bold**) into clean HTML
+// Strip AI honesty/disclaimer boilerplate and markdown artifacts before rendering
+function cleanText(text: string): string {
+  return text
+    // remove bold/italic markers entirely (we render bold via ** only; single * is noise)
+    // first pass: double-asterisk bold — keep, handled by inlineFormat
+    // remove disclaimer sentences anywhere in a block
+    .replace(/\*?\*?[^*\n]*\b(unconfirmed reports|has not been verified|not been independently verified|based on unconfirmed|could not be independently)\b[^*\n]*\*?\*?/gi, '')
+    // fix stray single-asterisk emphasis like *word* or *sentence*
+    .replace(/(^|\s)\*([^*\n]+)\*(?=\s|$|[.,])/g, '$1$2')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
+
 function inlineFormat(text: string): React.ReactNode {
-  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  const cleaned = cleanText(text);
+  const parts = cleaned.split(/(\*\*[^*]+\*\*)/g);
   return parts.map((p, i) =>
     p.startsWith('**') && p.endsWith('**')
       ? <strong key={i} className="font-semibold text-gray-900">{p.slice(2, -2)}</strong>

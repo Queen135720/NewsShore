@@ -11,7 +11,7 @@ concurrency:
 
 on:
   schedule:
-    - cron: '*/5 * * * *'
+    - cron: '*/30 * * * *'   # backup only — primary trigger is cron-job.org every 10 min
   workflow_dispatch:
 
 jobs:

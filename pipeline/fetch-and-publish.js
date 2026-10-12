@@ -83,7 +83,6 @@ const SOURCES = [
   { name: 'MIT News AI', url: 'https://news.mit.edu/rss/topic/artificial-intelligence2', category: 'Research', region: 'US' },
   { name: 'Nature Tech', url: 'https://www.nature.com/subjects/technology.rss', category: 'Research', region: 'Global' },
   { name: 'Quantum Computing Report', url: 'https://quantumcomputingreport.com/news/feed/', category: 'Research', region: 'Global' },
-  { name: 'Quantum Zeitgeist', url: 'https://quantumzeitgeist.com/feed/', category: 'Research', region: 'Global' },
   { name: 'Inside Quantum Technology', url: 'https://insidequantumtechnology.com/feed/', category: 'Research', region: 'Global' }, // ⚠ verify
 
   // ---- Global Tech (country-specific) ----
@@ -261,8 +260,7 @@ Source content: ${sourceContent}`;
 async function retryFetch(url, options) {
   const res = await fetch(url, options);
   if (res.status === 429) {
-    console.log('  Got 429, waiting 10s and retrying...');
-    await new Promise(r => setTimeout(r, 3000));
+    await new Promise(r => setTimeout(r, 2500)); // 2.5s — with the circuit breaker, a long wait is wasted time
     return fetch(url, options);
   }
   return res;
@@ -524,7 +522,7 @@ async function run() {
 
   const usedKeys = await loadUsedImageKeys();
 
-  const MAX_PER_RUN = 15;
+  const MAX_PER_RUN = 12;
   const batch = newItems.slice(0, MAX_PER_RUN);
   if (newItems.length > MAX_PER_RUN) {
     console.log(`Processing ${MAX_PER_RUN} of ${newItems.length} — the rest will be picked up on the next run.`);

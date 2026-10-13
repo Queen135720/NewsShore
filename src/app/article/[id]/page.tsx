@@ -127,11 +127,6 @@ export default function ArticlePage() {
       .finally(() => setLoading(false));
   }, [id]);
 
-  
-  // Read credit info (cast keeps this safe regardless of the NewsArticle type)
-  const creditName = (article as any).imageCreditName as string | null | undefined;
-  const creditUrl = (article as any).imageCreditUrl as string | null | undefined;
-
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center bg-white">
       <div className="animate-spin w-8 h-8 border-4 border-gray-200 border-t-red-600 rounded-full" />
@@ -145,6 +140,10 @@ export default function ArticlePage() {
       <Link href="/" className="text-red-600 hover:underline font-medium inline-flex items-center gap-2"><ArrowLeft className="w-4 h-4" /> Back to News</Link>
     </div>
   );
+
+    // Read credit info (cast keeps this safe regardless of the NewsArticle type)
+  const creditName = (article as any).imageCreditName as string | null | undefined;
+  const creditUrl = (article as any).imageCreditUrl as string | null | undefined;
 
   {creditName && (
   creditUrl?.includes('unsplash.com') ? (

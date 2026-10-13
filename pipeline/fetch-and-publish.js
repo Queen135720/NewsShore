@@ -476,12 +476,6 @@ function extractSourceImage(item) {
   return null;
 }
 
-// Turn any image URL into a dedup key (Unsplash photo ID, or the URL itself)
-function imageKey(url) {
-  const m = (url || '').match(/photo-([\w-]+)/);
-  return m ? m[1] : url;
-}
-
 // Seed dedup with the last 300 images used in articles
 async function loadUsedImageKeys() {
   const { data } = await supabase

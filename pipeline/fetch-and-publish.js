@@ -215,6 +215,11 @@ Source title: ${item.title}
 Source site: ${item.sourceName} (suggested category: "${item.category}", suggested region: "${item.region}" — override these if the story content says otherwise)
 Source content: ${sourceContent}`;
 
+    // All providers already down this run → fail fast, don't hammer
+  if (providerDown.gemini && providerDown.glm && providerDown.groq && providerDown.mistral && providerDown.openrouter) {
+    throw new Error('All providers throttled — pausing this run');
+  }
+
   if (!providerDown.glm) {
     try { return await callGLM(prompt); }
     catch (err) {
@@ -610,6 +615,18 @@ async function run() {
   console.log('Checking sources for new articles...');
   const newItems = await fetchNewItems();
   console.log(`Found ${newItems.length} new item(s).`);
+
+      } catch (err) {
+      console.error(`Skipping "${item.title}" — ${err.message}`);
+      await supabase.from('processed_urls').insert({ source_url: item.link, status: 'failed' });
+      failed++;
+      // If every provider was down for this article, abort the batch —
+      // remaining articles would fail identically and burn more quota
+      if (providerDown.gemini && providerDown.glm && providerDown.groq && providerDown.mistral && providerDown.openrouter) {
+        console.log('All providers exhausted — ending this run early. They will recover before the next one.');
+        break;
+      }
+    }
 
   const usedKeys = await loadUsedImageKeys();
 

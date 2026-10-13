@@ -612,11 +612,8 @@ async function saveArticle(item, rewritten, usedKeys) {
 }
 // ---- 6. MAIN ----
 async function run() {
-  console.log('Checking sources for new articles...');
-  const newItems = await fetchNewItems();
-  console.log(`Found ${newItems.length} new item(s).`);
 
-      } catch (err) {
+   } catch (err) {
       console.error(`Skipping "${item.title}" — ${err.message}`);
       await supabase.from('processed_urls').insert({ source_url: item.link, status: 'failed' });
       failed++;
@@ -627,6 +624,9 @@ async function run() {
         break;
       }
     }
+  console.log('Checking sources for new articles...');
+  const newItems = await fetchNewItems();
+  console.log(`Found ${newItems.length} new item(s).`);
 
   const usedKeys = await loadUsedImageKeys();
 

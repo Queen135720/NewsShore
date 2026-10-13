@@ -147,14 +147,14 @@ export default function ArticlePage() {
 
   {creditName && (
   creditUrl?.includes('unsplash.com') ? (
-    <p className="text-xs text-gray-400 font-[family-name:var(--font-dm-sans)] mb-4">
+    <p className="text-xs text-gray-400 font-[family-name:var(--font-space-grotesk)] mb-4">
       Photo by{' '}
       <a href={creditUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-600">{creditName}</a>{' '}
       on{' '}
       <a href="https://unsplash.com" target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-600">Unsplash</a>
     </p>
   ) : (
-    <p className="text-xs text-gray-400 font-[family-name:var(--font-dm-sans)] mb-4">
+    <p className="text-xs text-gray-400 font-[family-name:var(--font-space-grotesk)] mb-4">
       Image:{' '}
       <a href={creditUrl ?? '#'} target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-600">{creditName}</a>
     </p>

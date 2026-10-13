@@ -486,50 +486,36 @@ function fingerprint(text) {
 }
 
 // Words that signal a DIFFERENT story about the same product — never a duplicate
-const DIFFERENTIATORS = /\b(update|delay|cancel|recall|patch|fix|review|rumor|rumour|versus|discount|lawsuit|sues|probe)\b/i;
+const DIFFERENTIATORS = /\b(update|updates|delay|delays|cancel|cancelled|recall|patch|fix|fixes|review|rumor|rumour|versus|discount|lawsuit|sues|probe)\b/i;
 
 function isLikelyDuplicate(titleA, titleB) {
   if (DIFFERENTIATORS.test(titleA) || DIFFERENTIATORS.test(titleB)) return false;
 
+  // Extract proper-noun phrases (capitalized word pairs like "Fitbit Air", "Z Fold")
+  const properNouns = (t) => {
+    const matches = (t.match(/\b[A-Z][a-z0-9]+(?:\s+[A-Z0-9][a-z0-9]+)*/g) ?? []);
+    return [...new Set(matches.filter((p) => p.length > 3))];
+  };
+  const pnA = properNouns(titleA);
+  const pnB = properNouns(titleB);
+
+  // Two matching proper-noun phrases ≥ 10 chars total = same subject ("Fitbit Air" + "Apple Watch")
+  if (pnA.length >= 1 && pnB.length >= 1) {
+    const shared = pnA.filter((p) => pnB.some((q) => q.toLowerCase() === q && p.toLowerCase() === q.toLowerCase() && p.length >= 4));
+    // require the shared phrase to be meaningful (≥ 8 chars, e.g. "Fitbit Air" = 10)
+    const meaningfulShared = shared.filter((p) => p.replace(/\s/g, '').length >= 8);
+    if (meaningfulShared.length >= 1) return true;
+  }
+
+  // Original word-overlap check (still active for titles without clear proper nouns)
   const words = (t) => t.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/)
-    .filter(w => w.length > 2 && !STOP_WORDS.has(w));
+    .filter((w) => w.length > 2 && !STOP_WORDS.has(w));
   const a = [...new Set(words(titleA))].sort();
   const b = [...new Set(words(titleB))].sort();
   if (!a.length || !b.length) return false;
-  if (a.length < 3 || b.length < 3) return a.join(' ') === b.join(' '); // short titles need exact match
-  const shared = a.filter(w => b.includes(w)).length;
-  return shared / Math.max(a.length, b.length) >= 0.6;
-}
-
-async function loadUsedImageKeys() {
-  const { data } = await supabase
-    .from('articles')
-    .select('image_url')
-    .order('created_at', { ascending: false })
-    .limit(300);
-  return new Set((data ?? []).map((r) => imageKey(r.image_url)).filter(Boolean));
-}
-
-async function searchUnsplash(query, usedKeys) {
-  const url =
-    'https://api.unsplash.com/search/photos?query=' +
-    encodeURIComponent(query) +
-    '&per_page=30&orientation=landscape&content_filter=high';
-  const res = await fetch(url, {
-    headers: { Authorization: `Client-ID ${process.env.UNSPLASH_ACCESS_KEY}` },
-  });
-  if (!res.ok) return [];
-  const { results = [] } = await res.json();
-  return results
-    .filter((r) => !r.premium)
-    .filter((r) => r.width >= 1600 && r.height >= 900)
-    .filter((r) => !usedKeys.has(imageKey(r.urls.raw)))
-    .map((r) => ({
-      url: `${r.urls.raw}&w=1600&q=80&fm=jpg`,
-      key: imageKey(r.urls.raw),
-      creditName: r.user?.name ?? 'Unsplash photographer',
-      creditUrl: r.user?.links?.html ?? 'https://unsplash.com',
-    }));
+  if (a.length < 3 || b.length < 3) return a.join(' ') === b.join(' ');
+  const sharedWords = a.filter((w) => b.includes(w)).length;
+  return sharedWords / Math.max(a.length, b.length) >= 0.6;
 }
 
 async function fetchImage(rewritten, category, usedKeys) {

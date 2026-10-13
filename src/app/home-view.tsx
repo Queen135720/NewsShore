@@ -301,7 +301,7 @@ function ArticleDetail({ article, open, onClose, onArticleChange }: { article: N
             {article.glossary.length > 0 && (
               <div className="article-anim glossary-box rounded-lg p-4 sm:p-5 mt-6">
                 <h3 className="text-red-600 font-bold font-[family-name:var(--font-space-grotesk)] text-base sm:text-lg mb-3">Understand This Story</h3>
-                <div className="space-y-3">{article.glossary.map((item, i) => (<div key={i}><p className="font-semibold text-gray-900 text-sm font-[family-name:var(--font-gilroy)]">{item.term}</p><p className="text-sm text-gray-600 font-[family-name:var(--font-dm-sans)] mt-0.5 leading-relaxed">{item.definition}</p></div>))}</div>
+                <div className="space-y-3">{article.glossary.map((item, i) => (<div key={i}><p className="font-semibold text-gray-900 text-sm font-[family-name:var(--font-gilroy)]">{item.term}</p><p className="text-sm text-gray-600 font-[family-name:var(--font-space-grotesk)] mt-0.5 leading-relaxed">{item.definition}</p></div>))}</div>
               </div>
             )}
             <div className="article-anim mt-8">
@@ -381,8 +381,8 @@ function FullLeaderboard({ open, onClose, models, arenaModels, activeTab, onTabC
           {/* Tab Switcher + Methodology */}
           <div className="flex items-center gap-3 mb-1 ml-7 sm:ml-8 flex-wrap">
             <div className="flex gap-1 p-0.5 bg-gray-100 rounded-lg">
-              <button onClick={() => onTabChange('benchmark')} className={`flex items-center gap-1 px-3 py-1.5 rounded-md text-xs sm:text-sm font-[family-name:var(--font-dm-sans)] font-semibold transition-all ${activeTab === 'benchmark' ? 'bg-white text-[#0f1b3d] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`} style={{ touchAction: 'manipulation' }}><BarChart3 className="w-3.5 h-3.5" /> Power Rank</button>
-              <button onClick={() => onTabChange('arena')} className={`flex items-center gap-1 px-3 py-1.5 rounded-md text-xs sm:text-sm font-[family-name:var(--font-dm-sans)] font-semibold transition-all ${activeTab === 'arena' ? 'bg-white text-[#0f1b3d] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`} style={{ touchAction: 'manipulation' }}><Users className="w-3.5 h-3.5" /> Human Votes</button>
+              <button onClick={() => onTabChange('benchmark')} className={`flex items-center gap-1 px-3 py-1.5 rounded-md text-xs sm:text-sm font-[family-name:var(--font-space-grotesk)] font-semibold transition-all ${activeTab === 'benchmark' ? 'bg-white text-[#0f1b3d] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`} style={{ touchAction: 'manipulation' }}><BarChart3 className="w-3.5 h-3.5" /> Power Rank</button>
+              <button onClick={() => onTabChange('arena')} className={`flex items-center gap-1 px-3 py-1.5 rounded-md text-xs sm:text-sm font-[family-name:var(--font-space-grotesk)] font-semibold transition-all ${activeTab === 'arena' ? 'bg-white text-[#0f1b3d] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`} style={{ touchAction: 'manipulation' }}><Users className="w-3.5 h-3.5" /> Human Votes</button>
             </div>
           </div>
           {activeTab === 'benchmark' ? (
@@ -393,7 +393,7 @@ function FullLeaderboard({ open, onClose, models, arenaModels, activeTab, onTabC
 
           {activeTab === 'benchmark' ? (
           <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
-            <div className="hidden sm:grid grid-cols-12 gap-2 px-5 py-3 bg-gray-50 border-b border-gray-100 text-xs font-[family-name:var(--font-dm-sans)] font-semibold text-gray-500 uppercase tracking-wider">
+            <div className="hidden sm:grid grid-cols-12 gap-2 px-5 py-3 bg-gray-50 border-b border-gray-100 text-xs font-[family-name:var(--font-space-grotesk)] font-semibold text-gray-500 uppercase tracking-wider">
               <div className="col-span-1">Rank</div><div className="col-span-3">Model</div><div className="col-span-2">Org</div><div className="col-span-2">Score</div><div className="col-span-3">Context</div><div className="col-span-1 text-right">Link</div>
             </div>
             <div className="divide-y divide-gray-50">
@@ -402,18 +402,18 @@ function FullLeaderboard({ open, onClose, models, arenaModels, activeTab, onTabC
                   <div className="col-span-1 flex items-center">{model.rank <= 3 ? (<span className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold text-white shadow-sm ${model.rank === 1 ? 'bg-amber-400' : model.rank === 2 ? 'bg-gray-400' : 'bg-amber-600'}`}>{model.rank}</span>) : (<span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center text-[10px] sm:text-xs font-bold">{model.rank}</span>)}</div>
                   <div className="col-span-7 sm:col-span-3 min-w-0">
                     <p className="font-[family-name:var(--font-space-grotesk)] text-sm sm:text-base font-bold text-gray-900 truncate">{model.name}</p>
-                    <p className="text-[10px] sm:text-xs text-gray-500 font-[family-name:var(--font-dm-sans)] sm:hidden">{model.organization} &middot; {formatContext(model.context)}</p>
+                    <p className="text-[10px] sm:text-xs text-gray-500 font-[family-name:var(--font-space-grotesk)] sm:hidden">{model.organization} &middot; {formatContext(model.context)}</p>
                   </div>
-                  <div className="hidden sm:block sm:col-span-2"><p className="text-xs sm:text-sm text-gray-600 font-[family-name:var(--font-dm-sans)] truncate">{model.organization}</p></div>
+                  <div className="hidden sm:block sm:col-span-2"><p className="text-xs sm:text-sm text-gray-600 font-[family-name:var(--font-space-grotesk)] truncate">{model.organization}</p></div>
                   <div className="hidden sm:flex sm:col-span-2 items-center gap-2">
                     {model.score !== null ? (
                     <div className="flex-1 h-5 bg-gray-100 rounded-full overflow-hidden relative">
                       <div className="h-full rounded-full bg-[#0f1b3d]" style={{ width: `${(model.score / maxScore) * 100}%`, opacity: 0.85 }} />
-                      <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-gray-700 font-[family-name:var(--font-dm-sans)]">{model.score}</span>
+                      <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-gray-700 font-[family-name:var(--font-space-grotesk)]">{model.score}</span>
                     </div>
                     ) : (<span className="text-xs text-gray-400">—</span>)}
                   </div>
-                  <div className="hidden sm:block sm:col-span-3"><p className="text-[10px] sm:text-xs text-gray-500 font-[family-name:var(--font-dm-sans)]">{formatContext(model.context)}</p></div>
+                  <div className="hidden sm:block sm:col-span-3"><p className="text-[10px] sm:text-xs text-gray-500 font-[family-name:var(--font-space-grotesk)]">{formatContext(model.context)}</p></div>
                   <div className="col-span-4 sm:col-span-1 flex justify-end">
                     <ExternalLink className="w-3.5 h-3.5 text-gray-400" />
                   </div>
@@ -423,7 +423,7 @@ function FullLeaderboard({ open, onClose, models, arenaModels, activeTab, onTabC
           </div>
           ) : (
           <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
-            <div className="hidden sm:grid grid-cols-12 gap-2 px-5 py-3 bg-gray-50 border-b border-gray-100 text-xs font-[family-name:var(--font-dm-sans)] font-semibold text-gray-500 uppercase tracking-wider">
+            <div className="hidden sm:grid grid-cols-12 gap-2 px-5 py-3 bg-gray-50 border-b border-gray-100 text-xs font-[family-name:var(--font-space-grotesk)] font-semibold text-gray-500 uppercase tracking-wider">
               <div className="col-span-1">Rank</div><div className="col-span-3">Model</div><div className="col-span-2">Org</div><div className="col-span-2">Score</div><div className="col-span-2">Votes</div><div className="col-span-2 text-right">Link</div>
             </div>
             <div className="divide-y divide-gray-50">
@@ -432,18 +432,18 @@ function FullLeaderboard({ open, onClose, models, arenaModels, activeTab, onTabC
                   <div className="col-span-1 flex items-center">{model.rank <= 3 ? (<span className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold text-white shadow-sm ${model.rank === 1 ? 'bg-emerald-400' : model.rank === 2 ? 'bg-gray-400' : 'bg-emerald-600'}`}>{model.rank}</span>) : (<span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center text-[10px] sm:text-xs font-bold">{model.rank}</span>)}</div>
                   <div className="col-span-7 sm:col-span-3 min-w-0">
                     <p className="font-[family-name:var(--font-space-grotesk)] text-sm sm:text-base font-bold text-gray-900 truncate">{formatArenaModelName(model.name)}</p>
-                    <p className="text-[10px] sm:text-xs text-gray-500 font-[family-name:var(--font-dm-sans)] sm:hidden">{model.organization} &middot; {model.arena_score} {formatCI(model.ci_lower, model.ci_upper)}</p>
+                    <p className="text-[10px] sm:text-xs text-gray-500 font-[family-name:var(--font-space-grotesk)] sm:hidden">{model.organization} &middot; {model.arena_score} {formatCI(model.ci_lower, model.ci_upper)}</p>
                   </div>
-                  <div className="hidden sm:block sm:col-span-2"><p className="text-xs sm:text-sm text-gray-600 font-[family-name:var(--font-dm-sans)] truncate">{model.organization}</p></div>
+                  <div className="hidden sm:block sm:col-span-2"><p className="text-xs sm:text-sm text-gray-600 font-[family-name:var(--font-space-grotesk)] truncate">{model.organization}</p></div>
                   <div className="hidden sm:flex sm:col-span-2 items-center gap-2">
                     <div className="flex-1 h-5 bg-gray-100 rounded-full overflow-hidden relative">
                       <div className="h-full rounded-full bg-emerald-600" style={{ width: `${((model.arena_score - (arenaModels[0]?.arena_score ?? 1500) + 80) / 80) * 100}%`, opacity: 0.8 }} />
-                      <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-gray-700 font-[family-name:var(--font-dm-sans)]">{model.arena_score}</span>
+                      <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-gray-700 font-[family-name:var(--font-space-grotesk)]">{model.arena_score}</span>
                     </div>
                   </div>
                   <div className="hidden sm:block sm:col-span-2">
-                    <p className="text-[10px] sm:text-xs text-gray-500 font-[family-name:var(--font-dm-sans)]">{model.votes.toLocaleString()} votes</p>
-                    <p className="text-[9px] text-gray-400 font-[family-name:var(--font-dm-sans)]">{formatCI(model.ci_lower, model.ci_upper)}</p>
+                    <p className="text-[10px] sm:text-xs text-gray-500 font-[family-name:var(--font-space-grotesk)]">{model.votes.toLocaleString()} votes</p>
+                    <p className="text-[9px] text-gray-400 font-[family-name:var(--font-space-grotesk)]">{formatCI(model.ci_lower, model.ci_upper)}</p>
                   </div>
                   <div className="col-span-4 sm:col-span-2 flex justify-end">
                     <ExternalLink className="w-3.5 h-3.5 text-gray-400" />
@@ -453,7 +453,7 @@ function FullLeaderboard({ open, onClose, models, arenaModels, activeTab, onTabC
             </div>
           </div>
           )}
-          <p className="text-[10px] sm:text-xs text-gray-400 mt-2 ml-1 font-[family-name:var(--font-dm-sans)]">
+          <p className="text-[10px] sm:text-xs text-gray-400 mt-2 ml-1 font-[family-name:var(--font-space-grotesk)]">
             {activeTab === 'benchmark'
               ? <>Ranked by <strong>LLM Stats Score</strong> — a composite metric from public benchmarks and live API metrics. A model can rank differently on human-preference leaderboards — see the Human Votes tab.</>
               : <>Ranked by <strong>Arena Score</strong> — Bradley-Terry ratings from blind human preference votes. Rankings may differ from benchmark leaderboards — see the Power Rank tab.</>}
@@ -475,8 +475,8 @@ function BreakingTicker({ articles }: { articles: NewsArticle[] }) {
   return (
     <div className="bg-red-600 text-white overflow-hidden">
       <div className="flex items-center">
-        <div className="bg-red-700 px-3 sm:px-4 py-2 flex items-center gap-2 shrink-0 z-10 font-[family-name:var(--font-dm-sans)] font-bold text-xs sm:text-sm uppercase tracking-wider"><span className="w-2 h-2 rounded-full bg-white animate-pulse" /><span>Breaking</span></div>
-        <div className="flex-1 overflow-hidden py-2"><div ref={innerRef} className="flex whitespace-nowrap gap-12 sm:gap-16">{doubled.map((item, i) => (<span key={i} className="text-xs sm:text-sm font-[family-name:var(--font-dm-sans)] inline-flex items-center gap-2 sm:gap-3"><span className="text-red-200">●</span>{item.title}</span>))}</div></div>
+        <div className="bg-red-700 px-3 sm:px-4 py-2 flex items-center gap-2 shrink-0 z-10 font-[family-name:var(--font-space-grotesk)] font-bold text-xs sm:text-sm uppercase tracking-wider"><span className="w-2 h-2 rounded-full bg-white animate-pulse" /><span>Breaking</span></div>
+        <div className="flex-1 overflow-hidden py-2"><div ref={innerRef} className="flex whitespace-nowrap gap-12 sm:gap-16">{doubled.map((item, i) => (<span key={i} className="text-xs sm:text-sm font-[family-name:var(--font-space-grotesk)] inline-flex items-center gap-2 sm:gap-3"><span className="text-red-200">●</span>{item.title}</span>))}</div></div>
       </div>
     </div>
   );
@@ -544,7 +544,7 @@ function HeroTopNews({ heroArticle, onArticleClick }: { heroArticle: NewsArticle
           <div className="flex flex-wrap items-center gap-2 mb-2 sm:mb-3">
             <Badge className={`${CATEGORY_COLOR[heroArticle.category] || 'bg-gray-100 text-gray-700'} font-[family-name:var(--font-gilroy)] text-xs sm:text-sm`}>{heroArticle.category}</Badge>
             <ReliabilityBadge reliability={heroArticle.reliability} />
-            <Badge variant="outline" className="bg-white/10 border-white/20 text-white text-[10px] sm:text-xs font-[family-name:var(--font-dm-sans)] gap-1"><Globe className="w-3 h-3" /> {heroArticle.region}</Badge>
+            <Badge variant="outline" className="bg-white/10 border-white/20 text-white text-[10px] sm:text-xs font-[family-name:var(--font-space-grotesk)] gap-1"><Globe className="w-3 h-3" /> {heroArticle.region}</Badge>
           </div>
           <h1 className="font-[family-name:var(--font-space-grotesk)] text-xl sm:text-3xl lg:text-4xl font-bold text-white leading-tight mt-2">{heroArticle.title}</h1>
           <p className="font-[family-name:var(--font-gilroy)] text-gray-300 mt-2 sm:mt-3 text-sm sm:text-base lg:text-lg line-clamp-2 max-w-2xl">{heroArticle.summary}</p>
@@ -720,7 +720,7 @@ function SidebarLeaderboard({ onSeeMore, models, loading, arenaModels, arenaLoad
           )
         )}
 
-        <button onClick={onSeeMore} className="w-full mt-3 flex items-center justify-center gap-1.5 text-xs sm:text-sm font-[family-name:var(--font-dm-sans)] font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg py-2 transition-colors" style={{ touchAction: 'manipulation' }}>
+        <button onClick={onSeeMore} className="w-full mt-3 flex items-center justify-center gap-1.5 text-xs sm:text-sm font-[family-name:var(--font-space-grotesk)] font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg py-2 transition-colors" style={{ touchAction: 'manipulation' }}>
           See Full Leaderboard <ChevronRight className="w-4 h-4" />
         </button>
       </div>
@@ -773,7 +773,7 @@ function SubscribeSection() {
       </div>
       <p className="text-xs text-gray-500 font-[family-name:var(--font-gilroy)] leading-relaxed mb-3">Get the top AI &amp; tech stories delivered to your inbox every morning.</p>
       <div className="flex gap-2">
-        <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="your@email.com" className="flex-1 min-w-0 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0f1b3d]/20 font-[family-name:var(--font-dm-sans)]" onKeyDown={(e) => { if (e.key === 'Enter') handleSubscribe(); }} />
+        <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="your@email.com" className="flex-1 min-w-0 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0f1b3d]/20 font-[family-name:var(--font-space-grotesk)]" onKeyDown={(e) => { if (e.key === 'Enter') handleSubscribe(); }} />
         <Button size="sm" className="bg-red-600 hover:bg-red-500 text-white font-semibold text-xs sm:text-sm px-3 sm:px-4 shrink-0 disabled:opacity-60" onClick={handleSubscribe} disabled={loading}>
           {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Subscribe'}
         </Button>

@@ -128,7 +128,7 @@ export default function LeaderboardPage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
           <div className="flex items-center gap-2 mb-1">
             <Trophy className="w-5 h-5 sm:w-6 sm:h-6 text-amber-500" />
-            <h1 className="font-[family-name:var(--font-lora)] text-xl sm:text-2xl font-bold text-gray-900">AI Model Leaderboard</h1>
+            <h1 className="font-[family-name:var(--font-space-grotesk)] text-xl sm:text-2xl font-bold text-gray-900">AI Model Leaderboard</h1>
           </div>
 
           {/* Tab Switcher — 3 tabs */}
@@ -202,7 +202,7 @@ export default function LeaderboardPage() {
                         )}
                       </div>
                       <div className="col-span-7 sm:col-span-3 min-w-0">
-                        <p className="font-[family-name:var(--font-lora)] text-sm sm:text-base font-bold text-gray-900 truncate">{model.name}</p>
+                        <p className="font-[family-name:var(--font-space-grotesk)] text-sm sm:text-base font-bold text-gray-900 truncate">{model.name}</p>
                         <p className="text-[10px] sm:text-xs text-gray-500 sm:hidden">{model.organization} &middot; {formatContext(model.context)}</p>
                       </div>
                       <div className="hidden sm:block sm:col-span-2">
@@ -255,7 +255,7 @@ export default function LeaderboardPage() {
                         )}
                       </div>
                       <div className="col-span-7 sm:col-span-3 min-w-0">
-                        <p className="font-[family-name:var(--font-lora)] text-sm sm:text-base font-bold text-gray-900 truncate">{formatArenaModelName(model.name)}</p>
+                        <p className="font-[family-name:var(--font-space-grotesk)] text-sm sm:text-base font-bold text-gray-900 truncate">{formatArenaModelName(model.name)}</p>
                         <p className="text-[10px] sm:text-xs text-gray-500 sm:hidden">{model.organization} &middot; {model.arena_score} {formatCI(model.ci_lower, model.ci_upper)}</p>
                       </div>
                       <div className="hidden sm:block sm:col-span-2">
@@ -310,7 +310,7 @@ export default function LeaderboardPage() {
                           )}
                         </div>
                         <div className="col-span-7 sm:col-span-3 min-w-0">
-                          <p className="font-[family-name:var(--font-lora)] text-sm sm:text-base font-bold text-gray-900 truncate">{formatArenaModelName(model.name)}</p>
+                          <p className="font-[family-name:var(--font-space-grotesk)] text-sm sm:text-base font-bold text-gray-900 truncate">{formatArenaModelName(model.name)}</p>
                           <p className="text-[10px] sm:text-xs text-gray-500 sm:hidden">{model.organization} &middot; {model.net_improvement}% &middot; {model.sessions.toLocaleString()} sessions</p>
                         </div>
                         <div className="hidden sm:block sm:col-span-2">

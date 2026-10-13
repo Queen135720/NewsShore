@@ -281,7 +281,7 @@ function ArticleDetail({ article, open, onClose, onArticleChange }: { article: N
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-8 lg:p-10">
               <div className="flex flex-wrap items-center gap-2 mb-3"><Badge className={`${CATEGORY_COLOR[article.category] || 'bg-gray-100 text-gray-700'} text-xs`}>{article.category}</Badge><ReliabilityBadge reliability={article.reliability} /></div>
-              <h1 className="article-anim font-[family-name:var(--font-lora)] text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-white leading-tight">{article.title}</h1>
+              <h1 className="article-anim font-[family-name:var(--font-space-grotesk)] text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-white leading-tight">{article.title}</h1>
             </div>
           </div>
           <div className="px-5 sm:px-8 lg:px-10 py-6 sm:py-8">
@@ -300,12 +300,12 @@ function ArticleDetail({ article, open, onClose, onArticleChange }: { article: N
             </div>
             {article.glossary.length > 0 && (
               <div className="article-anim glossary-box rounded-lg p-4 sm:p-5 mt-6">
-                <h3 className="text-red-600 font-bold font-[family-name:var(--font-lora)] text-base sm:text-lg mb-3">Understand This Story</h3>
+                <h3 className="text-red-600 font-bold font-[family-name:var(--font-space-grotesk)] text-base sm:text-lg mb-3">Understand This Story</h3>
                 <div className="space-y-3">{article.glossary.map((item, i) => (<div key={i}><p className="font-semibold text-gray-900 text-sm font-[family-name:var(--font-gilroy)]">{item.term}</p><p className="text-sm text-gray-600 font-[family-name:var(--font-dm-sans)] mt-0.5 leading-relaxed">{item.definition}</p></div>))}</div>
               </div>
             )}
             <div className="article-anim mt-8">
-              <h3 className="font-[family-name:var(--font-lora)] text-lg font-bold text-gray-900 mb-4">Related Stories</h3>
+              <h3 className="font-[family-name:var(--font-space-grotesk)] text-lg font-bold text-gray-900 mb-4">Related Stories</h3>
               <Tabs defaultValue={RELATED_TABS[0].category}>
                 <TabsList className="w-full justify-start flex-wrap h-auto gap-1 bg-gray-100 p-1">
                   {RELATED_TABS.map((tab) => { const count = allArticles.filter((a) => a.category === tab.category && a.id !== article.id).length; return (<TabsTrigger key={tab.category} value={tab.category} className="text-xs sm:text-sm data-[state=active]:bg-[#0f1b3d] data-[state=active]:text-white">{tab.label}{count > 0 ? ` (${count})` : ''}</TabsTrigger>); })}
@@ -316,7 +316,7 @@ function ArticleDetail({ article, open, onClose, onArticleChange }: { article: N
                     {related.length === 0 ? (<p className="text-sm text-gray-400 py-4 font-[family-name:var(--font-gilroy)]">No related stories available.</p>) : (
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">{related.map((a) => (<button key={a.id} onClick={() => onArticleChange(a)} className="text-left p-3 rounded-lg border border-gray-100 hover:border-gray-300 hover:shadow-sm transition-all group" style={{ touchAction: 'manipulation' }}>
                         <div className="flex items-center gap-2 mb-1.5"><Badge className={`${CATEGORY_COLOR[a.category] || 'bg-gray-100 text-gray-700'} text-[10px]`}>{a.category}</Badge></div>
-                        <p className="font-[family-name:var(--font-lora)] text-sm font-semibold text-gray-900 line-clamp-2 group-hover:text-red-600 transition-colors">{a.title}</p>
+                        <p className="font-[family-name:var(--font-space-grotesk)] text-sm font-semibold text-gray-900 line-clamp-2 group-hover:text-red-600 transition-colors">{a.title}</p>
                         <div className="flex items-center justify-between mt-1"><p className="text-xs text-gray-400 font-[family-name:var(--font-gilroy)]">{timeAgo(a.publishedAt)}</p><ReadTimeBadge text={a.body} className="text-[10px] text-gray-400" /></div>
                       </button>))}</div>
                     )}
@@ -376,7 +376,7 @@ function FullLeaderboard({ open, onClose, models, arenaModels, activeTab, onTabC
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6">
           <div className="flex items-center gap-2 mb-1">
             <Crown className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500" />
-            <h1 className="font-[family-name:var(--font-lora)] text-xl sm:text-2xl font-bold text-gray-900">AI Model Leaderboard</h1>
+            <h1 className="font-[family-name:var(--font-space-grotesk)] text-xl sm:text-2xl font-bold text-gray-900">AI Model Leaderboard</h1>
           </div>
           {/* Tab Switcher + Methodology */}
           <div className="flex items-center gap-3 mb-1 ml-7 sm:ml-8 flex-wrap">
@@ -401,7 +401,7 @@ function FullLeaderboard({ open, onClose, models, arenaModels, activeTab, onTabC
                 <a key={model.rank} href={model.url} target="_blank" rel="noopener noreferrer" className={`w-full grid grid-cols-12 gap-2 px-4 sm:px-5 py-3 sm:py-3.5 items-center hover:bg-gray-50/80 transition-colors text-left ${model.rank <= 3 ? 'bg-amber-50/30' : ''}`} style={{ touchAction: 'manipulation' }}>
                   <div className="col-span-1 flex items-center">{model.rank <= 3 ? (<span className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold text-white shadow-sm ${model.rank === 1 ? 'bg-amber-400' : model.rank === 2 ? 'bg-gray-400' : 'bg-amber-600'}`}>{model.rank}</span>) : (<span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center text-[10px] sm:text-xs font-bold">{model.rank}</span>)}</div>
                   <div className="col-span-7 sm:col-span-3 min-w-0">
-                    <p className="font-[family-name:var(--font-lora)] text-sm sm:text-base font-bold text-gray-900 truncate">{model.name}</p>
+                    <p className="font-[family-name:var(--font-space-grotesk)] text-sm sm:text-base font-bold text-gray-900 truncate">{model.name}</p>
                     <p className="text-[10px] sm:text-xs text-gray-500 font-[family-name:var(--font-dm-sans)] sm:hidden">{model.organization} &middot; {formatContext(model.context)}</p>
                   </div>
                   <div className="hidden sm:block sm:col-span-2"><p className="text-xs sm:text-sm text-gray-600 font-[family-name:var(--font-dm-sans)] truncate">{model.organization}</p></div>
@@ -431,7 +431,7 @@ function FullLeaderboard({ open, onClose, models, arenaModels, activeTab, onTabC
                 <a key={model.rank} href={model.url} target="_blank" rel="noopener noreferrer" className={`w-full grid grid-cols-12 gap-2 px-4 sm:px-5 py-3 sm:py-3.5 items-center hover:bg-gray-50/80 transition-colors text-left ${model.rank <= 3 ? 'bg-emerald-50/30' : ''}`} style={{ touchAction: 'manipulation' }}>
                   <div className="col-span-1 flex items-center">{model.rank <= 3 ? (<span className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold text-white shadow-sm ${model.rank === 1 ? 'bg-emerald-400' : model.rank === 2 ? 'bg-gray-400' : 'bg-emerald-600'}`}>{model.rank}</span>) : (<span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center text-[10px] sm:text-xs font-bold">{model.rank}</span>)}</div>
                   <div className="col-span-7 sm:col-span-3 min-w-0">
-                    <p className="font-[family-name:var(--font-lora)] text-sm sm:text-base font-bold text-gray-900 truncate">{formatArenaModelName(model.name)}</p>
+                    <p className="font-[family-name:var(--font-space-grotesk)] text-sm sm:text-base font-bold text-gray-900 truncate">{formatArenaModelName(model.name)}</p>
                     <p className="text-[10px] sm:text-xs text-gray-500 font-[family-name:var(--font-dm-sans)] sm:hidden">{model.organization} &middot; {model.arena_score} {formatCI(model.ci_lower, model.ci_upper)}</p>
                   </div>
                   <div className="hidden sm:block sm:col-span-2"><p className="text-xs sm:text-sm text-gray-600 font-[family-name:var(--font-dm-sans)] truncate">{model.organization}</p></div>

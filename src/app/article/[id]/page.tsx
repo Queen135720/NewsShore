@@ -64,7 +64,7 @@ function renderBody(body: string) {
     // Subheading: lines starting with # through ######
     if (/^#{1,6}\s+/.test(cleaned)) {
       return (
-        <h2 key={i} className="font-[family-name:var(--font-lora)] text-lg sm:text-xl font-bold text-gray-900 mt-8 mb-4">
+        <h2 key={i} className="font-[family-name:var(--font-space-grotesk)] text-lg sm:text-xl font-bold text-gray-900 mt-8 mb-4">
           {inlineFormat(cleaned.replace(/^#{1,6}\s+/, ''))}
         </h2>
       );
@@ -174,7 +174,7 @@ export default function ArticlePage() {
             <ArrowLeft className="w-4 h-4" /><span>Back to News</span>
           </Link>
           <div className="flex-1" />
-          <Link href="/" className="font-[family-name:var(--font-lora)] font-bold text-[#0f1b3d] text-lg hidden sm:block">NewsShore</Link>
+          <Link href="/" className="font-[family-name:var(--font-space-grotesk)] font-bold text-[#0f1b3d] text-lg hidden sm:block">NewsShore</Link>
           <div className="flex-1 sm:flex-none" />
           <button onClick={() => { navigator.clipboard.writeText(window.location.href); toast.success('Link copied!'); }}
             className="text-gray-400 hover:text-red-600 transition-colors p-2" aria-label="Share">
@@ -195,7 +195,7 @@ export default function ArticlePage() {
               </Link>
               <ReliabilityBadge r={article.reliability} />
             </div>
-            <h1 className="font-[family-name:var(--font-lora)] text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-white leading-tight">{article.title}</h1>
+            <h1 className="font-[family-name:var(--font-space-grotesk)]] text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-white leading-tight">{article.title}</h1>
           </div>
         </div>
 
@@ -237,7 +237,7 @@ export default function ArticlePage() {
           {/* Glossary */}
           {article.glossary?.length > 0 && (
             <div className="rounded-lg p-4 sm:p-5 mt-6 bg-gray-50 border border-gray-100">
-              <h3 className="text-red-600 font-bold font-[family-name:var(--font-lora)] text-base sm:text-lg mb-3">Understand This Story</h3>
+              <h3 className="text-red-600 font-bold font-[family-name:var(--font-space-grotesk)] text-base sm:text-lg mb-3">Understand This Story</h3>
               <div className="space-y-3">
                 {article.glossary.map((item: { term: string; definition: string }, i: number) => (
                   <div key={i}>
@@ -253,12 +253,12 @@ export default function ArticlePage() {
           {related.length > 0 && (
             <div className="mt-10">
               <Separator className="mb-8" />
-              <h3 className="font-[family-name:var(--font-lora)] text-lg font-bold text-gray-900 mb-4">Related Stories</h3>
+              <h3 className="font-[family-name:var(--font-space-grotesk)] text-lg font-bold text-gray-900 mb-4">Related Stories</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {related.map(a => (
                   <Link key={a.id} href={`/article/${a.id}`} className="text-left p-3 rounded-lg border border-gray-100 hover:border-gray-300 hover:shadow-sm transition-all group">
                     <Badge className={`${CATEGORY_COLOR[a.category] || 'bg-gray-100 text-gray-700'} text-[10px] mb-1.5`}>{a.category}</Badge>
-                    <p className="font-[family-name:var(--font-lora)] text-sm font-semibold text-gray-900 line-clamp-2 group-hover:text-red-600 transition-colors">{a.title}</p>
+                    <p className="font-[family-name:var(--font-space-grotesk)] text-sm font-semibold text-gray-900 line-clamp-2 group-hover:text-red-600 transition-colors">{a.title}</p>
                     <p className="text-xs text-gray-400 mt-1">{timeAgo(a.publishedAt)}</p>
                   </Link>
                 ))}

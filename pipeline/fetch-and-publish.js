@@ -612,18 +612,6 @@ async function saveArticle(item, rewritten, usedKeys) {
 }
 // ---- 6. MAIN ----
 async function run() {
-
-   } catch (err) {
-      console.error(`Skipping "${item.title}" — ${err.message}`);
-      await supabase.from('processed_urls').insert({ source_url: item.link, status: 'failed' });
-      failed++;
-      // If every provider was down for this article, abort the batch —
-      // remaining articles would fail identically and burn more quota
-      if (providerDown.gemini && providerDown.glm && providerDown.groq && providerDown.mistral && providerDown.openrouter) {
-        console.log('All providers exhausted — ending this run early. They will recover before the next one.');
-        break;
-      }
-    }
   console.log('Checking sources for new articles...');
   const newItems = await fetchNewItems();
   console.log(`Found ${newItems.length} new item(s).`);
@@ -651,11 +639,18 @@ async function run() {
       const ok = await saveArticle(item, rewritten, usedKeys);
       if (ok) saved++; else failed++;
     } catch (err) {
-      console.error(`Skipping "${item.title}" — all AI providers failed: ${err.message}`);
+      console.error(`Skipping "${item.title}" — ${err.message}`);
       await supabase.from('processed_urls').insert({ source_url: item.link, status: 'failed' });
       failed++;
+
+      // If every provider was down for this article, abort the batch —
+      // remaining articles would fail identically and burn more quota
+      if (providerDown.gemini && providerDown.glm && providerDown.groq && providerDown.mistral && providerDown.openrouter) {
+        console.log('All providers exhausted — ending this run early. Providers recover before the next run.');
+        break;
+      }
     }
-    await new Promise(r => setTimeout(r, 2000)); // 2s gap — kinder to free-tier rate limits
+    await new Promise(r => setTimeout(r, 5000)); // 5s gap — gentler on free-tier rate limits
   }
 
   console.log(`Run complete. Saved: ${saved}, Rejected: ${rejected}, Failed: ${failed}`);

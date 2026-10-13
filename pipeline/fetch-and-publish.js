@@ -561,7 +561,7 @@ async function saveArticle(item, rewritten, usedKeys) {
   const region = (typeof rewritten.region === 'string' && rewritten.region.trim().length > 0) ? rewritten.region.trim() : item.region;
 
   // Fuzzy duplicate check: skip if a similar story was saved in the last 3 days
-  const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
+  const threeDaysAgo = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString();
   const { data: recent } = await supabase
     .from('articles')
     .select('id, title')
@@ -613,7 +613,7 @@ async function run() {
 
   const usedKeys = await loadUsedImageKeys();
 
-  const MAX_PER_RUN = 12;
+  const MAX_PER_RUN = 10;
   const batch = newItems.slice(0, MAX_PER_RUN);
   if (newItems.length > MAX_PER_RUN) {
     console.log(`Processing ${MAX_PER_RUN} of ${newItems.length} — the rest will be picked up on the next run.`);

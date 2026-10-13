@@ -476,6 +476,22 @@ function extractSourceImage(item) {
   return null;
 }
 
+// Turn any image URL into a dedup key (Unsplash photo ID, or the URL itself)
+function imageKey(url) {
+  const m = (url || '').match(/photo-([\w-]+)/);
+  return m ? m[1] : url;
+}
+
+// Seed dedup with the last 300 images used in articles
+async function loadUsedImageKeys() {
+  const { data } = await supabase
+    .from('articles')
+    .select('image_url')
+    .order('created_at', { ascending: false })
+    .limit(300);
+  return new Set((data ?? []).map((r) => imageKey(r.image_url)).filter(Boolean));
+}
+
 // ---- Fuzzy duplicate detection: same story → same meaningful-word signature ----
 const STOP_WORDS = new Set(['the','a','an','of','for','and','or','to','in','on','with','new','its','is','are','as','at','by','from','this','that','unveils','rolls','out','launches','announces','reveals','partners','gets','says','will']);
 

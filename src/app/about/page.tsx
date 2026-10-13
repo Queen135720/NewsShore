@@ -31,7 +31,7 @@ export default function AboutPage() {
           <div className="flex items-center gap-3 mb-6">
             <img src="/logo-full-transparent.png" alt="NewsShore" className="h-7 sm:h-9 w-auto object-contain" />
           </div>
-          <h1 className="font-[family-name:var(--font-lora)] text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-4">About NewsShore</h1>
+          <h1 className="font-[family-name:var(--font-space-grotesk)] text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-4">About NewsShore</h1>
           <p className="text-base sm:text-lg text-gray-600 leading-relaxed mb-8">
             NewsShore is your trusted, independent source for AI and technology news. We deliver in-depth coverage of the AI industry, technology giants, startup funding, research breakthroughs, and global developments shaping the future — all with a commitment to accuracy, transparency, and accessibility.
           </p>
@@ -39,23 +39,23 @@ export default function AboutPage() {
           <div className="space-y-8">
             <div className="flex items-start gap-4">
               <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0"><ShieldCheck className="w-5 h-5 text-emerald-600" /></div>
-              <div><h3 className="font-[family-name:var(--font-lora)] text-lg font-bold text-gray-900 mb-1">Reliability Tags</h3><p className="text-sm sm:text-base text-gray-600 leading-relaxed">Every article is labeled as either &ldquo;Independently verified&rdquo; or &ldquo;Company claim&rdquo; so you can assess credibility at a glance. We go beyond press releases to verify claims through independent sources, public filings, and expert analysis.</p></div>
+              <div><h3 className="font-[family-name:var(--font-space-grotesk)] text-lg font-bold text-gray-900 mb-1">Reliability Tags</h3><p className="text-sm sm:text-base text-gray-600 leading-relaxed">Every article is labeled as either &ldquo;Independently verified&rdquo; or &ldquo;Company claim&rdquo; so you can assess credibility at a glance. We go beyond press releases to verify claims through independent sources, public filings, and expert analysis.</p></div>
             </div>
             <div className="flex items-start gap-4">
               <div className="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red-600"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></svg></div>
-              <div><h3 className="font-[family-name:var(--font-lora)] text-lg font-bold text-gray-900 mb-1">Glossary Boxes</h3><p className="text-sm sm:text-base text-gray-600 leading-relaxed">Complex terms are explained in plain language with our &ldquo;Understand This Story&rdquo; feature. Each article includes a curated glossary of key terms, written in clear, jargon-free language.</p></div>
+              <div><h3 className="font-[family-name:var(--font-space-grotesk)] text-lg font-bold text-gray-900 mb-1">Glossary Boxes</h3><p className="text-sm sm:text-base text-gray-600 leading-relaxed">Complex terms are explained in plain language with our &ldquo;Understand This Story&rdquo; feature. Each article includes a curated glossary of key terms, written in clear, jargon-free language.</p></div>
             </div>
             <div className="flex items-start gap-4">
               <div className="w-10 h-10 rounded-lg bg-violet-50 flex items-center justify-center shrink-0"><TrendingUp className="w-5 h-5 text-violet-600" /></div>
-              <div><h3 className="font-[family-name:var(--font-lora)] text-lg font-bold text-gray-900 mb-1">Related Stories</h3><p className="text-sm sm:text-base text-gray-600 leading-relaxed">Explore related coverage across categories with in-page tabs, without losing your place.</p></div>
+              <div><h3 className="font-[family-name:var(--font-space-grotesk)] text-lg font-bold text-gray-900 mb-1">Related Stories</h3><p className="text-sm sm:text-base text-gray-600 leading-relaxed">Explore related coverage across categories with in-page tabs, without losing your place.</p></div>
             </div>
             <div className="flex items-start gap-4">
               <div className="w-10 h-10 rounded-lg bg-cyan-50 flex items-center justify-center shrink-0"><Globe className="w-5 h-5 text-cyan-600" /></div>
-              <div><h3 className="font-[family-name:var(--font-lora)] text-lg font-bold text-gray-900 mb-1">Global Coverage</h3><p className="text-sm sm:text-base text-gray-600 leading-relaxed">We track developments across every major market — from Silicon Valley to Shenzhen, from London to Lagos.</p></div>
+              <div><h3 className="font-[family-name:var(--font-space-grotesk)] text-lg font-bold text-gray-900 mb-1">Global Coverage</h3><p className="text-sm sm:text-base text-gray-600 leading-relaxed">We track developments across every major market — from Silicon Valley to Shenzhen, from London to Lagos.</p></div>
             </div>
             <div className="flex items-start gap-4">
               <div className="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center shrink-0"><Trophy className="w-5 h-5 text-amber-600" /></div>
-              <div><h3 className="font-[family-name:var(--font-lora)] text-lg font-bold text-gray-900 mb-1">AI Model Intelligence Leaderboard</h3><p className="text-sm sm:text-base text-gray-600 leading-relaxed">Our AI Model Leaderboard ranks 300+ models using the LLM Stats Score from llm-stats.com — a composite metric from public benchmarks and live API metrics. Updated daily.</p></div>
+              <div><h3 className="font-[family-name:var(--font-space-grotesk)] text-lg font-bold text-gray-900 mb-1">AI Model Intelligence Leaderboard</h3><p className="text-sm sm:text-base text-gray-600 leading-relaxed">Our AI Model Leaderboard ranks 300+ models using the LLM Stats Score from llm-stats.com — a composite metric from public benchmarks and live API metrics. Updated daily.</p></div>
             </div>
           </div>
 

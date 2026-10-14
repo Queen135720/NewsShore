@@ -22,27 +22,27 @@ await check('GLM',
 await check('NVIDIA GLM',
   'https://integrate.api.nvidia.com/v1/chat/completions',
   { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.NVIDIA_API_KEY}` },
-  { model: 'zai/glm-5.3', messages: [{ role: 'user', content: 'Reply with exactly: OK' }] });
+  { model: 'z-ai/glm-5.3', messages: [{ role: 'user', content: 'Reply with exactly: OK' }] });
 
-await check('NVIDIA Llama',
+await check('NVIDIA DeepSeek',
   'https://integrate.api.nvidia.com/v1/chat/completions',
   { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.NVIDIA_API_KEY}` },
-  { model: 'meta/llama-3.3-70b-instruct', messages: [{ role: 'user', content: 'Reply with exactly: OK' }] });
+  { model: 'deepseek-ai/deepseek-v4.1-flash', messages: [{ role: 'user', content: 'Reply with exactly: OK' }] });
 
 await check('Groq',
   'https://api.groq.com/openai/v1/chat/completions',
   { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.GROQ_API_KEY}` },
   { model: 'openai/gpt-oss-120b', messages: [{ role: 'user', content: 'Reply with exactly: OK' }] });
 
+await check('Groq20B',
+  'https://api.groq.com/openai/v1/chat/completions',
+  { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.GROQ_API_KEY}` },
+  { model: 'openai/gpt-oss-20b', messages: [{ role: 'user', content: 'Reply with exactly: OK' }] });
+
 await check('Mistral',
   'https://api.mistral.ai/v1/chat/completions',
   { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.MISTRAL_API_KEY}` },
   { model: 'mistral-small-latest', messages: [{ role: 'user', content: 'Reply with exactly: OK' }] });
-
-await check('OpenRouter',
-  'https://openrouter.ai/api/v1/chat/completions',
-  { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}` },
-  { model: 'qwen/qwen3-235b-a22b:free', messages: [{ role: 'user', content: 'Reply with exactly: OK' }] });
 
 await check('Gemini',
   `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,

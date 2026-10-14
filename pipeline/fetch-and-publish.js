@@ -318,7 +318,7 @@ async function callGLM(prompt) {
   const res = await retryFetch('https://open.bigmodel.cn/api/paas/v4/chat/completions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.GLM_API_KEY}` },
-    body: JSON.stringify({ model: 'glm-5.3', messages: [{ role: 'user', content: prompt }] }),
+    body: JSON.stringify({ model: 'glm-4.7-flash', messages: [{ role: 'user', content: prompt }] }),
   });
   if (!res.ok) {
     const errBody = await res.text();
@@ -326,6 +326,29 @@ async function callGLM(prompt) {
   }
   const data = await res.json();
   return safeParseJSON(data.choices[0].message.content);
+}
+
+async function callNvidia(prompt) {
+  if (!process.env.NVIDIA_API_KEY) throw new Error('NVIDIA_API_KEY not set');
+  const res = await retryFetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${process.env.NVIDIA_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model: 'z-ai/glm-5.3', // or any model from build.nvidia.com's catalog
+      messages: [{ role: 'user', content: prompt }],
+    }),
+  });
+  if (!res.ok) {
+    const errBody = await res.text();
+    throw new Error(`NVIDIA error: ${res.status} — ${errBody.substring(0, 200)}`);
+  }
+  const data = await res.json();
+  const content = data?.choices?.[0]?.message?.content;
+  if (!content) throw new Error('NVIDIA returned an empty response');
+  return safeParseJSON(content);
 }
 
 async function callGroq(prompt) {

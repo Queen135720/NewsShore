@@ -19,6 +19,16 @@ await check('GLM',
   { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.GLM_API_KEY}` },
   { model: 'glm-4.7-flash', messages: [{ role: 'user', content: 'Reply with exactly: OK' }] });
 
+await check('NVIDIA GLM',
+  'https://integrate.api.nvidia.com/v1/chat/completions',
+  { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.NVIDIA_API_KEY}` },
+  { model: 'zai/glm-5.3', messages: [{ role: 'user', content: 'Reply with exactly: OK' }] });
+
+await check('NVIDIA Llama',
+  'https://integrate.api.nvidia.com/v1/chat/completions',
+  { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.NVIDIA_API_KEY}` },
+  { model: 'meta/llama-3.3-70b-instruct', messages: [{ role: 'user', content: 'Reply with exactly: OK' }] });
+
 await check('Groq',
   'https://api.groq.com/openai/v1/chat/completions',
   { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.GROQ_API_KEY}` },

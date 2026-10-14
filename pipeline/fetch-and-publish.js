@@ -205,6 +205,7 @@ CATEGORY RULES:
 - "Global Tech" — stories primarily about one country's or region's tech scene, ecosystem, or tech policy. The country's tech scene must be the subject — not general news that merely happened in that country
 When unsure between two categories, choose the one a reader would most expect the story to appear under on a tech news site.
 - Gadget accessory reviews (cables, chargers, controllers, earbuds) are NOT tech news — reject them unless the accessory represents a genuinely new technology.
+- A story about a company raising money (funding rounds, IPOs, valuations) is "Startups & Funding". A story about a product's price dropping or a sale event is NOT news — reject it.
 
 IMPORTANT RULES:
 - Do not begin a Summary with "This article".

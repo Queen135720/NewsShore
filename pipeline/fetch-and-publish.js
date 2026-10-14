@@ -241,6 +241,13 @@ Source content: ${sourceContent}`;
       else console.warn(`Groq failed, falling back: ${err.message}`);
     }
   }
+  if (!providerDown.groq20b) {
+    try { return await callGroq20B(prompt); }
+    catch (err) {
+      if (/429|413/i.test(err.message)) { providerDown.groq20b = true; console.warn('Groq20B throttled — skipping rest of this run'); }
+      else console.warn(`Groq20B failed, falling back: ${err.message}`);
+    }
+  }
   if (!providerDown.mistral) {
     try { return await callMistral(prompt); }
     catch (err) {
@@ -340,6 +347,29 @@ async function callGroq(prompt) {
   }
   const data = await res.json();
   return safeParseJSON(data.choices[0].message.content);
+}
+
+async function callGroq20B(prompt) {
+  if (!process.env.GROQ_API_KEY) throw new Error('GROQ_API_KEY not set');
+  const res = await retryFetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model: 'openai/gpt-oss-20b',
+      messages: [{ role: 'user', content: prompt }],
+    }),
+  });
+  if (!res.ok) {
+    const errBody = await res.text();
+    throw new Error(`Groq20B error: ${res.status} — ${errBody.substring(0, 200)}`);
+  }
+  const data = await res.json();
+  const content = data?.choices?.[0]?.message?.content;
+  if (!content) throw new Error('Groq20B returned an empty response');
+  return safeParseJSON(content);
 }
 
 async function callMistral(prompt) {

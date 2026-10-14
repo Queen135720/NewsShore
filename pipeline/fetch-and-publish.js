@@ -140,7 +140,7 @@ async function fetchNewItems() {
 
           // Skip promos, roundups, and non-news filler
           const t = (item.title || '').toLowerCase();
-          if (/wallpaper|giveaway|contest|save on your pass|discount code|cyber monday|black friday|newsletter|podcast episode|techcrunch disrupt/.test(t)) continue;
+          if (/wallpaper|giveaway|contest|save on your pass|discount code|cyber monday|black friday|newsletter|podcast episode|techcrunch disrupt|GTA|grand theft|switch 2|xbox|playstation|nintendo|witcher|% off|drops to|lowest price|gift card|deal days|save up to/i.test(t)) continue;
 
           seenThisRun.add(item.link);
           allItems.push({ ...item, sourceName: source.name, category: source.category, region: source.region });
@@ -251,7 +251,7 @@ Source content: ${sourceContent}`;
   if (!providerDown.openrouter) {
     try { return await callOpenRouter(prompt); }
     catch (err) {
-      if (/429|rate|unavailable for free|403|empty response/i.test(err.message)) { providerDown.openrouter = true; console.warn('OpenRouter throttled — skipping rest of this run'); }
+      if (/429|rate|unavailable for free|deprecated|403/i.test(err.message)) { providerDown.openrouter = true; console.warn('OpenRouter throttled — skipping rest of this run'); }
       else console.warn(`OpenRouter failed, falling back: ${err.message}`);
     }
   }

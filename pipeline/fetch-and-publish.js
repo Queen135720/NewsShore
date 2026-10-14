@@ -223,14 +223,14 @@ Source site: ${item.sourceName} (suggested category: "${item.category}", suggest
 Source content: ${sourceContent}`;
 
     // All providers already down this run → fail fast, don't hammer
-  if (providerDown.gemini && providerDown.glm && providerDown.groq && providerDown.mistral && providerDown.openrouter) {
+  if (providerDown.gemini && providerDown.glm && providerDown.groq && providerDown.groq20b && providerDown.mistral && providerDown.nvidia && providerDown.nvidia2) {
     throw new Error('All providers throttled — pausing this run');
   }
 
   if (!providerDown.glm) {
     try { return await callGLM(prompt); }
     catch (err) {
-      if (/429|rate|unavailable for free|403/i.test(err.message)) { providerDown.glm = true; console.warn('GLM throttled — skipping rest of this run'); }
+      if (/429|timeout|abort/i.test(err.message)) { providerDown.glm = true; console.warn('GLM throttled/hung — skipping rest of this run'); }
       else console.warn(`GLM failed, falling back: ${err.message}`);
     }
   }
@@ -287,10 +287,10 @@ Source content: ${sourceContent}`;
 }
 
 async function retryFetch(url, options) {
-  const res = await fetch(url, options);
+  let res = await fetch(url, { ...options, signal: AbortSignal.timeout(60000) });
   if (res.status === 429) {
-    await new Promise(r => setTimeout(r, 2500)); // 2.5s — with the circuit breaker, a long wait is wasted time
-    return fetch(url, options);
+    await new Promise(r => setTimeout(r, 2500));
+    res = await fetch(url, { ...options, signal: AbortSignal.timeout(60000) });
   }
   return res;
 }

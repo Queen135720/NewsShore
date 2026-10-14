@@ -11,7 +11,7 @@
 import Parser from 'rss-parser';
 import { createClient } from '@supabase/supabase-js';
 
-const providerDown = { glm: false, groq: false, mistral: false, openrouter: false, gemini: false, deepseek: false };
+const providerDown = { gemini: false, glm: false, groq: false, groq20b: false, mistral: false, openrouter: false, nvidia: false, nvidia2: false, deepseek: false };
 
 const parser = new Parser({
   timeout: 10000,
@@ -234,6 +234,20 @@ Source content: ${sourceContent}`;
       else console.warn(`GLM failed, falling back: ${err.message}`);
     }
   }
+  if (!providerDown.nvidia) {
+    try { return await callNvidia(prompt); }
+    catch (err) {
+      if (/429|rate/i.test(err.message)) { providerDown.nvidia = true; console.warn('NVIDIA GLM throttled — skipping rest of this run'); }
+      else console.warn(`NVIDIA failed, falling back: ${err.message}`);
+    }
+  }
+  if (!providerDown.nvidia2) {
+    try { return await callNvidia2(prompt); }
+    catch (err) {
+      if (/429|rate/i.test(err.message)) { providerDown.nvidia2 = true; console.warn('NVIDIA Llama throttled — skipping rest of this run'); }
+      else console.warn(`NVIDIA2 failed, falling back: ${err.message}`);
+    }
+  }
   if (!providerDown.groq) {
     try { return await callGroq(prompt); }
     catch (err) {
@@ -337,7 +351,7 @@ async function callNvidia(prompt) {
       Authorization: `Bearer ${process.env.NVIDIA_API_KEY}`,
     },
     body: JSON.stringify({
-      model: 'z-ai/glm-5.3', // or any model from build.nvidia.com's catalog
+      model: 'zai/glm-5.3',   // ← slot 1: your pick
       messages: [{ role: 'user', content: prompt }],
     }),
   });
@@ -348,6 +362,29 @@ async function callNvidia(prompt) {
   const data = await res.json();
   const content = data?.choices?.[0]?.message?.content;
   if (!content) throw new Error('NVIDIA returned an empty response');
+  return safeParseJSON(content);
+}
+
+async function callNvidia2(prompt) {
+  if (!process.env.NVIDIA_API_KEY) throw new Error('NVIDIA_API_KEY not set');
+  const res = await retryFetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${process.env.NVIDIA_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model: 'meta/llama-3.3-70b-instruct',   // ← slot 2: a different model family for diversity
+      messages: [{ role: 'user', content: prompt }],
+    }),
+  });
+  if (!res.ok) {
+    const errBody = await res.text();
+    throw new Error(`NVIDIA2 error: ${res.status} — ${errBody.substring(0, 200)}`);
+  }
+  const data = await res.json();
+  const content = data?.choices?.[0]?.message?.content;
+  if (!content) throw new Error('NVIDIA2 returned an empty response');
   return safeParseJSON(content);
 }
 
@@ -721,7 +758,7 @@ async function run() {
 
       // If every provider was down for this article, abort the batch —
       // remaining articles would fail identically and burn more quota
-      if (providerDown.gemini && providerDown.glm && providerDown.groq && providerDown.mistral && providerDown.openrouter) {
+      if (providerDown.gemini && providerDown.glm && providerDown.groq && providerDown.groq20b && providerDown.mistral && providerDown.openrouter && providerDown.nvidia && providerDown.nvidia2) {
         console.log('All providers exhausted — ending this run early. Providers recover before the next run.');
         break;
       }

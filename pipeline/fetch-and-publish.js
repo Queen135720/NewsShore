@@ -176,6 +176,11 @@ Reject ALL of these even if a tech company or tech person is mentioned:
 - Sports, entertainment, celebrity news, lifestyle
 - Deals/discounts/sales on products (price drops, coupon codes, shopping events like Prime Day, "all-time low price")
 - Events, conferences, ticket sales, promotional content
+- Gaming content: video game releases, game, classic games, game release dates/rumors, game console/PC gaming coverage, gaming controller and accessory reviews (e.g., "coming to PC", Switch/PlayStation/Xbox game news, gaming peripheral reviews)
+- Audio accessory minutiae: earbud/headphone firmware updates, minor accessory refreshes
+- Phone Accessories: USB Cord, Speakers, Home Speakers, Home theater
+- TV/streaming device updates: smart TV software, streaming box firmware, TV platform redesigns
+- Product price announcements and discount posts (including "now available to preorder at $X" when the story is about the price, not the product)
 If the tech angle is not the CENTRAL subject of the story, respond ONLY with:
 {"reject": true, "reason": "one short sentence"}
 
@@ -199,6 +204,7 @@ CATEGORY RULES:
 - "Deals" — mergers, acquisitions, major corporate partnerships between tech companies
 - "Global Tech" — stories primarily about one country's or region's tech scene, ecosystem, or tech policy. The country's tech scene must be the subject — not general news that merely happened in that country
 When unsure between two categories, choose the one a reader would most expect the story to appear under on a tech news site.
+- Gadget accessory reviews (cables, chargers, controllers, earbuds) are NOT tech news — reject them unless the accessory represents a genuinely new technology.
 
 IMPORTANT RULES:
 - Do not begin a Summary with "This article".
@@ -574,6 +580,22 @@ async function saveArticle(item, rewritten, usedKeys) {
   for (const r of recent ?? []) {
     if (isLikelyDuplicate(rewritten.headline, r.title)) {
       console.log(`Skipping duplicate: "${rewritten.headline}" ~ already saved as "${r.title}"`);
+      await supabase.from('processed_urls').insert({ source_url: item.link, status: 'rejected' });
+      return false;
+    }
+  }
+
+    // Same publisher + same image = re-served/reposted article — always a duplicate
+  const sourceImg = extractSourceImage(item);
+  if (sourceImg) {
+    const { data: imgDup } = await supabase
+      .from('articles')
+      .select('id, title')
+      .eq('source_name', item.sourceName)
+      .eq('image_url', sourceImg)
+      .limit(1);
+    if (imgDup && imgDup.length > 0) {
+      console.log(`Skipping repost (same image): "${rewritten.headline}" ~ already saved as "${imgDup[0].title}"`);
       await supabase.from('processed_urls').insert({ source_url: item.link, status: 'rejected' });
       return false;
     }

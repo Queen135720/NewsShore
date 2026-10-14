@@ -11,7 +11,7 @@
 import Parser from 'rss-parser';
 import { createClient } from '@supabase/supabase-js';
 
-const providerDown = { gemini: false, glm: false, groq: false, groq20b: false, mistral: false, openrouter: false, nvidia: false, nvidia2: false, deepseek: false };
+const providerDown = { gemini: false, glm: false, groq: false, groq20b: false, mistral: false, nvidia: false, nvidia2: false, deepseek: false };
 
 const parser = new Parser({
   timeout: 10000,
@@ -237,14 +237,14 @@ Source content: ${sourceContent}`;
   if (!providerDown.nvidia) {
     try { return await callNvidia(prompt); }
     catch (err) {
-      if (/429|rate/i.test(err.message)) { providerDown.nvidia = true; console.warn('NVIDIA GLM throttled — skipping rest of this run'); }
+      if (/429|rate|404|410|not found|end of life/i.test(err.message)) { providerDown.nvidia = true; console.warn('NVIDIA GLM throttled — skipping rest of this run'); }
       else console.warn(`NVIDIA failed, falling back: ${err.message}`);
     }
   }
   if (!providerDown.nvidia2) {
     try { return await callNvidia2(prompt); }
     catch (err) {
-      if (/429|rate/i.test(err.message)) { providerDown.nvidia2 = true; console.warn('NVIDIA Llama throttled — skipping rest of this run'); }
+      if (/429|rate|404|410|not found|end of life/i.test(err.message)) { providerDown.nvidia2 = true; console.warn('NVIDIA Llama throttled — skipping rest of this run'); }
       else console.warn(`NVIDIA2 failed, falling back: ${err.message}`);
     }
   }
@@ -267,13 +267,6 @@ Source content: ${sourceContent}`;
     catch (err) {
       if (/429|rate|unavailable for free|403/i.test(err.message)) { providerDown.mistral = true; console.warn('Mistral throttled — skipping rest of this run'); }
       else console.warn(`Mistral failed, falling back: ${err.message}`);
-    }
-  }
-  if (!providerDown.openrouter) {
-    try { return await callOpenRouter(prompt); }
-    catch (err) {
-      if (/429|rate|unavailable for free|deprecated|403/i.test(err.message)) { providerDown.openrouter = true; console.warn('OpenRouter throttled — skipping rest of this run'); }
-      else console.warn(`OpenRouter failed, falling back: ${err.message}`);
     }
   }
   if (!providerDown.gemini) {
@@ -351,7 +344,7 @@ async function callNvidia(prompt) {
       Authorization: `Bearer ${process.env.NVIDIA_API_KEY}`,
     },
     body: JSON.stringify({
-      model: 'zai/glm-5.3',   // ← slot 1: your pick
+      model: 'z-ai/glm-5.3',  // ← slot 1: your pick
       messages: [{ role: 'user', content: prompt }],
     }),
   });
@@ -374,7 +367,7 @@ async function callNvidia2(prompt) {
       Authorization: `Bearer ${process.env.NVIDIA_API_KEY}`,
     },
     body: JSON.stringify({
-      model: 'meta/llama-3.3-70b-instruct',   // ← slot 2: a different model family for diversity
+      model: 'deepseek-ai/deepseek-v4.1-flash',   // ← slot 2: a different model family for diversity
       messages: [{ role: 'user', content: prompt }],
     }),
   });
@@ -452,30 +445,6 @@ async function callMistral(prompt) {
   }
   const data = await res.json();
   return safeParseJSON(data.choices[0].message.content);
-}
-
-async function callOpenRouter(prompt) {
-  if (!process.env.OPENROUTER_API_KEY) throw new Error('OPENROUTER_API_KEY not set');
-  const res = await retryFetch('https://openrouter.ai/api/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: 'qwen/qwen3.7-plus',
-      messages: [{ role: 'user', content: prompt }],
-    }),
-  });
-  if (!res.ok) {
-    const errBody = await res.text();
-    throw new Error(`OpenRouter error: ${res.status} — ${errBody.substring(0, 200)}`);
-  }
-  const data = await res.json();
-  // Free models sometimes return 200 with no choices — treat as a clean failure
-  const content = data?.choices?.[0]?.message?.content;
-  if (!content) throw new Error('OpenRouter returned an empty response (free model capacity)');
-  return safeParseJSON(content);
 }
 
 async function callGemini(prompt) {
@@ -586,6 +555,28 @@ async function loadUsedImageKeys() {
     .order('created_at', { ascending: false })
     .limit(300);
   return new Set((data ?? []).map((r) => imageKey(r.image_url)).filter(Boolean));
+}
+
+async function searchUnsplash(query, usedKeys) {
+  const url =
+    'https://api.unsplash.com/search/photos?query=' +
+    encodeURIComponent(query) +
+    '&per_page=30&orientation=landscape&content_filter=high';
+  const res = await fetch(url, {
+    headers: { Authorization: `Client-ID ${process.env.UNSPLASH_ACCESS_KEY}` },
+  });
+  if (!res.ok) return [];
+  const { results = [] } = await res.json();
+  return results
+    .filter((r) => !r.premium)
+    .filter((r) => r.width >= 1600 && r.height >= 900)
+    .filter((r) => !usedKeys.has(imageKey(r.urls.raw)))
+    .map((r) => ({
+      url: `${r.urls.raw}&w=1600&q=80&fm=jpg`,
+      key: imageKey(r.urls.raw),
+      creditName: r.user?.name ?? 'Unsplash photographer',
+      creditUrl: r.user?.links?.html ?? 'https://unsplash.com',
+    }));
 }
 
 // ---- Fuzzy duplicate detection: same story → same meaningful-word signature ----
@@ -758,7 +749,7 @@ async function run() {
 
       // If every provider was down for this article, abort the batch —
       // remaining articles would fail identically and burn more quota
-      if (providerDown.gemini && providerDown.glm && providerDown.groq && providerDown.groq20b && providerDown.mistral && providerDown.openrouter && providerDown.nvidia && providerDown.nvidia2) {
+      if (providerDown.gemini && providerDown.glm && providerDown.groq && providerDown.groq20b && providerDown.mistral && providerDown.nvidia && providerDown.nvidia2) {
         console.log('All providers exhausted — ending this run early. Providers recover before the next run.');
         break;
       }

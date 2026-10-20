@@ -140,7 +140,7 @@ async function fetchNewItems() {
 
           // Skip promos, roundups, and non-news filler
           const t = (item.title || '').toLowerCase();
-          if (/wallpaper|giveaway|contest|save on your pass|discount code|cyber monday|black friday|newsletter|podcast episode|techcrunch disrupt|GTA|grand theft|switch 2|xbox|playstation|nintendo|witcher|% off|drops to|lowest price|gift card|deal days|save up to/i.test(t)) continue;
+          if (/wallpaper|giveaway|contest|save on your pass|discount code|cyber monday|black friday|newsletter|podcast episode|techcrunch disrupt|GTA|grand theft|switch 2|xbox|playstation|nintendo|witcher|steam deck|epic games|fortnite|valorant|gaming|game pad|gamepad|controller review|8bitdo|directv|multiview|smart TV|home speakers|smart speaker|soundbar|home theater|home theatre|bluetooth speaker|wireless speaker|speaker (review|launch|deal)|sony.*(microphone|speaker)|repair cost|repairability comparison/i.test(t)) continue;
 
           seenThisRun.add(item.link);
           allItems.push({ ...item, sourceName: source.name, category: source.category, region: source.region });

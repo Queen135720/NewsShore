@@ -50,8 +50,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head><meta name="google-adsense-account" content="ca-pub-4244668596253800"></head>
-      <body className={`${spaceGrotesk.variable} ${gilroy.variable} antialiased bg-background text-foreground`}>
+      <head><meta name="google-adsense-account" content="ca-pub-4244668596253800"></head><body className={`${spaceGrotesk.variable} ${gilroy.variable} antialiased bg-background text-foreground`}>
         {children}
         <Toaster position="top-right" richColors closeButton /></body>
     </html>

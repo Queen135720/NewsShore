@@ -17,7 +17,7 @@ async function check(name, url, headers, body) {
 await check('GLM',
   'https://open.bigmodel.cn/api/paas/v4/chat/completions',
   { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.GLM_API_KEY}` },
-  { model: 'glm-4.7-flash', messages: [{ role: 'user', content: 'Reply with exactly: OK' }] });
+  { model: 'glm-5.3', messages: [{ role: 'user', content: 'Reply with exactly: OK' }] });
 
 await check('NVIDIA GLM',
   'https://integrate.api.nvidia.com/v1/chat/completions',

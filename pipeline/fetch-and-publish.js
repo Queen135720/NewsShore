@@ -180,6 +180,7 @@ Reject ALL of these even if a tech company or tech person is mentioned:
 - Audio accessory minutiae: earbud/headphone firmware updates, minor accessory refreshes
 - Phone Accessories: USB Cord, Speakers, Home Speakers, Home theater
 - TV/streaming device updates: smart TV software, streaming box firmware, TV platform redesigns
+- Individual HR matters (one executive suspended, one person fired, internal disputes)
 - Product price announcements and discount posts (including "now available to preorder at $X" when the story is about the price, not the product)
 If the tech angle is not the CENTRAL subject of the story, respond ONLY with:
 {"reject": true, "reason": "one short sentence"}

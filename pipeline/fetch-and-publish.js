@@ -140,7 +140,7 @@ async function fetchNewItems() {
 
           // Skip promos, roundups, and non-news filler
           const t = (item.title || '').toLowerCase();
-          if (/wallpaper|giveaway|contest|save on your pass|discount code|cyber monday|black friday|newsletter|podcast episode|techcrunch disrupt|GTA|grand theft|switch 2|xbox|playstation|nintendo|witcher|steam deck|epic games|fortnite|valorant|gaming|game pad|gamepad|controller review|8bitdo|directv|multiview|smart TV|home speakers|smart speaker|soundbar|home theater|home theatre|bluetooth speaker|wireless speaker|speaker (review|launch|deal)|sony.*(microphone|speaker)|repair cost|repairability comparison/i.test(t)) continue;
+          if (/wallpaper|giveaway|contest|save on your pass|discount code|cyber monday|black friday|newsletter|podcast episode|techcrunch disrupt|GTA|grand theft|switch 2|xbox|playstation|nintendo|witcher|steam deck|epic games|fortnite|valorant|gaming|game pad|gamepad|controller review|8bitdo|directv|multiview|smart TV|apple tv|google tv|home speakers|smart speaker|soundbar|home theater|home theatre|bluetooth speaker|wireless speaker|speaker (review|launch|deal)|sony.*(microphone|speaker)|repair cost|repairability comparison/i.test(t)) continue;
 
           seenThisRun.add(item.link);
           allItems.push({ ...item, sourceName: source.name, category: source.category, region: source.region });
@@ -178,9 +178,12 @@ Reject ALL of these even if a tech company or tech person is mentioned:
 - Events, conferences, ticket sales, promotional content
 - Gaming content: video game releases, game, classic games, game release dates/rumors, game console/PC gaming coverage, gaming controller and accessory reviews (e.g., "coming to PC", Switch/PlayStation/Xbox game news, gaming peripheral reviews)
 - Audio accessory minutiae: earbud/headphone firmware updates, minor accessory refreshes
-- Phone Accessories: USB Cord, Speakers, Home Speakers, Home theater
-- TV/streaming device updates: smart TV software, streaming box firmware, TV platform redesigns
+- Phone Accessories: USB Cord, Speakers, Home Speakers, Home theater- Audio hardware: speakers, soundbars, home theater, microphones, headphones beyond major flagship launches
+- TV and streaming platform features (smart tv, apple tv, multiview, channel guides, streaming apps on TVs)
+- Company PR statements about ongoing business relationships (e.g., "CEO says contracts continue")
+- Repair cost comparisons between devices
 - Individual HR matters (one executive suspended, one person fired, internal disputes)
+- Court cases are tech news ONLY when they directly concern a tech company's products, data practices, or AI technology (e.g., states suing OpenAI over children's data = keep as AI News; a parking dispute involving a tech CEO = reject)
 - Product price announcements and discount posts (including "now available to preorder at $X" when the story is about the price, not the product)
 If the tech angle is not the CENTRAL subject of the story, respond ONLY with:
 {"reject": true, "reason": "one short sentence"}

@@ -325,7 +325,7 @@ async function callGLM(prompt) {
   const res = await retryFetch('https://open.bigmodel.cn/api/paas/v4/chat/completions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.GLM_API_KEY}` },
-    body: JSON.stringify({ model: 'glm-4.7-flash', messages: [{ role: 'user', content: prompt }] }),
+    body: JSON.stringify({ model: 'glm-5.3', messages: [{ role: 'user', content: prompt }] }),
   });
   if (!res.ok) {
     const errBody = await res.text();

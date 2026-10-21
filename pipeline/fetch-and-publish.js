@@ -245,6 +245,18 @@ Source content: ${sourceContent}`;
       else console.warn(`Groq failed, falling back: ${err.message}`);
     }
   }
+    // Cloudflare Workers AI — new free provider, tried FIRST
+  if (!providerDown.Cloudflare && process.env.CLOUDFLARE_API_TOKEN && process.env.CF_ACCOUNT_ID) {
+    try { return await callCloudflare(prompt); }
+    catch (err) {
+      if (/429|rate|quota|timeout|abort|degraded|401|402|403|404|410/i.test(err.message)) {
+        providerDown.Cloudflare = true;
+        console.log('Cloudflare throttled — skipping rest of this run');
+      } else {
+        console.log('Cloudflare failed, falling back: ' + err.message);
+      }
+    }
+  }
   if (!providerDown.groq20b) {
     try { return await callGroq20B(prompt); }
     catch (err) {
@@ -267,7 +279,7 @@ Source content: ${sourceContent}`;
     }
   }
   if (!providerDown.gemini) {
-    try { return await callGemini(prompt); }
+    try { return await callGeminiFirst(prompt); }
     catch (err) {
       if (/429|rate|unavailable for free|403/i.test(err.message)) { providerDown.gemini = true; console.warn('Gemini quota dead — skipping rest of this run'); }
       else console.warn(`Gemini failed, falling back: ${err.message}`);
@@ -325,7 +337,6 @@ async function callGLM(prompt) {
   return safeParseJSON(data.choices[0].message.content);
 }
 
-
 async function callGroq(prompt) {
   if (!process.env.GROQ_API_KEY) throw new Error('GROQ_API_KEY not set');
   const res = await retryFetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -380,6 +391,9 @@ async function callGeminiFirst(prompt) {
       console.log('Cloudflare failed, falling back: ' + err.message);
     }
   }
+    // 3) Original Gemini, untouched
+  return await callGemini(prompt);
+}
 
 async function callGroq20B(prompt) {
   if (!process.env.GROQ_API_KEY) throw new Error('GROQ_API_KEY not set');

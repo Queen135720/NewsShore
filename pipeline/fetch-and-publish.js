@@ -370,12 +370,16 @@ async function callCloudflare(prompt) {
     body: JSON.stringify({
       model: '@cf/openai/gpt-oss-120b',
       messages: [{ role: 'user', content: prompt }],
-      max_tokens: 2000
+      max_tokens: 6000,
+      reasoning_effort: 'low'
     })
   });
   const data = await res.json();
   if (!data.choices || !data.choices[0]) throw new Error('No choices in Cloudflare response');
-  return data.choices[0].message.content;
+  const content = (data.choices[0].message.content || '').trim();
+  console.log(`Cloudflare responded (${content.length} chars)`);
+  if (!content) throw new Error('Cloudflare returned empty content');
+  return content;
 }
 
 async function callGeminiFirst(prompt) {

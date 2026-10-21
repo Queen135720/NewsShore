@@ -136,7 +136,7 @@ async function fetchNewItems() {
 
           // Skip old items — only ingest news from the last 10 days
           const itemDate = item.isoDate ? new Date(item.isoDate).getTime() : 0;
-          if (itemDate && Date.now() - itemDate > 10 * 24 * 60 * 60 * 1000) continue;
+          if (itemDate && Date.now() - itemDate > 1 * 24 * 60 * 60 * 1000) continue;
 
           // Skip promos, roundups, and non-news filler
           const t = (item.title || '').toLowerCase();

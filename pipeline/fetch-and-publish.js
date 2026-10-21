@@ -227,7 +227,7 @@ Source site: ${item.sourceName} (suggested category: "${item.category}", suggest
 Source content: ${sourceContent}`;
 
     // All providers already down this run → fail fast, don't hammer
-  if (providerDown.gemini && providerDown.glm && providerDown.groq && providerDown.groq20b && providerDown.mistral && providerDown.nvidia && providerDown.nvidia2) {
+  if (providerDown.gemini && providerDown.glm && providerDown.groq && providerDown.cloudflare && providerDown.groq20b && providerDown.nvidia && providerDown.nvidia2) {
     throw new Error('All providers throttled — pausing this run');
   }
 

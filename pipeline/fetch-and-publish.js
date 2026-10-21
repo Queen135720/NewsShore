@@ -11,7 +11,7 @@
 import Parser from 'rss-parser';
 import { createClient } from '@supabase/supabase-js';
 
-const providerDown = { gemini: false, glm: false, groq: false, groq20b: false, mistral: false, nvidia: false, nvidia2: false, deepseek: false };
+const providerDown = { glm: false, groq: false, cloudflare: false, groq20b: false, nvidia: false, nvidia2: false, gemini: false,};
 
 const parser = new Parser({
   timeout: 10000,
@@ -238,20 +238,6 @@ Source content: ${sourceContent}`;
       else console.warn(`GLM failed, falling back: ${err.message}`);
     }
   }
-  if (!providerDown.nvidia) {
-    try { return await callNvidia(prompt); }
-    catch (err) {
-      if (/429|rate|404|410|not found|end of life/i.test(err.message)) { providerDown.nvidia = true; console.warn('NVIDIA GLM throttled — skipping rest of this run'); }
-      else console.warn(`NVIDIA failed, falling back: ${err.message}`);
-    }
-  }
-  if (!providerDown.nvidia2) {
-    try { return await callNvidia2(prompt); }
-    catch (err) {
-      if (/429|rate|404|410|not found|end of life/i.test(err.message)) { providerDown.nvidia2 = true; console.warn('NVIDIA Llama throttled — skipping rest of this run'); }
-      else console.warn(`NVIDIA2 failed, falling back: ${err.message}`);
-    }
-  }
   if (!providerDown.groq) {
     try { return await callGroq(prompt); }
     catch (err) {
@@ -266,11 +252,18 @@ Source content: ${sourceContent}`;
       else console.warn(`Groq20B failed, falling back: ${err.message}`);
     }
   }
-  if (!providerDown.mistral) {
-    try { return await callMistral(prompt); }
+  if (!providerDown.nvidia) {
+    try { return await callNvidia(prompt); }
     catch (err) {
-      if (/429|rate|unavailable for free|403/i.test(err.message)) { providerDown.mistral = true; console.warn('Mistral throttled — skipping rest of this run'); }
-      else console.warn(`Mistral failed, falling back: ${err.message}`);
+      if (/429|rate|404|410|not found|end of life/i.test(err.message)) { providerDown.nvidia = true; console.warn('NVIDIA GLM throttled — skipping rest of this run'); }
+      else console.warn(`NVIDIA failed, falling back: ${err.message}`);
+    }
+  }
+  if (!providerDown.nvidia2) {
+    try { return await callNvidia2(prompt); }
+    catch (err) {
+      if (/429|rate|404|410|not found|end of life/i.test(err.message)) { providerDown.nvidia2 = true; console.warn('NVIDIA Llama throttled — skipping rest of this run'); }
+      else console.warn(`NVIDIA2 failed, falling back: ${err.message}`);
     }
   }
   if (!providerDown.gemini) {
@@ -278,13 +271,6 @@ Source content: ${sourceContent}`;
     catch (err) {
       if (/429|rate|unavailable for free|403/i.test(err.message)) { providerDown.gemini = true; console.warn('Gemini quota dead — skipping rest of this run'); }
       else console.warn(`Gemini failed, falling back: ${err.message}`);
-    }
-  }
-  if (!providerDown.deepseek) {
-    try { return await callDeepSeek(prompt); }
-    catch (err) {
-      if (/429|rate|unavailable for free|403/i.test(err.message)) { providerDown.deepseek = true; console.warn('DeepSeek balance empty — skipping rest of this run'); }
-      else console.warn(`DeepSeek failed: ${err.message}`);
     }
   }
   throw new Error('All 6 AI providers failed');
@@ -339,51 +325,6 @@ async function callGLM(prompt) {
   return safeParseJSON(data.choices[0].message.content);
 }
 
-async function callNvidia(prompt) {
-  if (!process.env.NVIDIA_API_KEY) throw new Error('NVIDIA_API_KEY not set');
-  const res = await retryFetch('https://integrate.api.nvidia.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${process.env.NVIDIA_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: 'z-ai/glm-5.3',  // ← slot 1: your pick
-      messages: [{ role: 'user', content: prompt }],
-    }),
-  });
-  if (!res.ok) {
-    const errBody = await res.text();
-    throw new Error(`NVIDIA error: ${res.status} — ${errBody.substring(0, 200)}`);
-  }
-  const data = await res.json();
-  const content = data?.choices?.[0]?.message?.content;
-  if (!content) throw new Error('NVIDIA returned an empty response');
-  return safeParseJSON(content);
-}
-
-async function callNvidia2(prompt) {
-  if (!process.env.NVIDIA_API_KEY) throw new Error('NVIDIA_API_KEY not set');
-  const res = await retryFetch('https://integrate.api.nvidia.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${process.env.NVIDIA_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: 'deepseek-ai/deepseek-v4.1-flash',   // ← slot 2: a different model family for diversity
-      messages: [{ role: 'user', content: prompt }],
-    }),
-  });
-  if (!res.ok) {
-    const errBody = await res.text();
-    throw new Error(`NVIDIA2 error: ${res.status} — ${errBody.substring(0, 200)}`);
-  }
-  const data = await res.json();
-  const content = data?.choices?.[0]?.message?.content;
-  if (!content) throw new Error('NVIDIA2 returned an empty response');
-  return safeParseJSON(content);
-}
 
 async function callGroq(prompt) {
   if (!process.env.GROQ_API_KEY) throw new Error('GROQ_API_KEY not set');
@@ -405,6 +346,40 @@ async function callGroq(prompt) {
   const data = await res.json();
   return safeParseJSON(data.choices[0].message.content);
 }
+
+// ---------- NEW FREE PROVIDERS (Cloudflare + Cerebras, Oct 2026) ----------
+
+async function callCloudflare(prompt) {
+  const res = await retryFetch(`https://api.cloudflare.com/client/v4/accounts/${process.env.CF_ACCOUNT_ID}/ai/v1/chat/completions`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${process.env.CLOUDFLARE_API_TOKEN}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      model: '@cf/openai/gpt-oss-120b',
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 2000
+    })
+  });
+  const data = await res.json();
+  if (!data.choices || !data.choices[0]) throw new Error('No choices in Cloudflare response');
+  return data.choices[0].message.content;
+}
+
+async function callGeminiFirst(prompt) {
+  // 1) Cloudflare Workers AI — free 10,000 neurons/day, no card
+  if (!providerDown.Cloudflare && process.env.CLOUDFLARE_API_TOKEN && process.env.CF_ACCOUNT_ID) {
+    try {
+      return await callCloudflare(prompt);
+    } catch (err) {
+      if (/429|rate|quota|timeout|abort|degraded|401|402|403|404|410|insufficient|balance|credit|expired/i.test(err.message)) {
+        providerDown.Cloudflare = true;
+        console.log('Cloudflare throttled — skipping rest of this run');
+      }
+      console.log('Cloudflare failed, falling back: ' + err.message);
+    }
+  }
 
 async function callGroq20B(prompt) {
   if (!process.env.GROQ_API_KEY) throw new Error('GROQ_API_KEY not set');
@@ -429,26 +404,68 @@ async function callGroq20B(prompt) {
   return safeParseJSON(content);
 }
 
-async function callMistral(prompt) {
-  if (!process.env.MISTRAL_API_KEY) throw new Error('MISTRAL_API_KEY not set');
-  const res = await retryFetch('https://api.mistral.ai/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${process.env.MISTRAL_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: 'mistral-small-latest',
-      messages: [{ role: 'user', content: prompt }],
-      response_format: { type: 'json_object' }, // forces valid JSON — much more reliable
-    }),
-  });
-  if (!res.ok) {
-    const errBody = await res.text();
-    throw new Error(`Mistral error: ${res.status} — ${errBody.substring(0, 200)}`);
+async function callNVIDIA(prompt) {
+  if (providerDown.NVIDIA) throw new Error('NVIDIA already failed this run');
+  try {
+    const res = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.NVIDIA_API_KEY}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'meta/muse-glimmer-30b',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.7,
+        max_tokens: 2000
+      }),
+      signal: AbortSignal.timeout(25000)
+    });
+    if (!res.ok) {
+      const t = await res.text();
+      throw new Error(`NVIDIA ${res.status} — ${t.slice(0, 200)}`);
+    }
+    const data = await res.json();
+    if (!data.choices || !data.choices[0]) throw new Error('No choices in NVIDIA response');
+    return data.choices[0].message.content;
+  } catch (err) {
+    providerDown.NVIDIA = true;
+    console.log('NVIDIA throttled/hung — skipping rest of this run');
+    throw err;
   }
-  const data = await res.json();
-  return safeParseJSON(data.choices[0].message.content);
+}
+
+async function callNVIDIA2(prompt) {
+  if (providerDown.NVIDIA2) throw new Error('NVIDIA2 already failed this run');
+  try {
+    const res = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.NVIDIA_API_KEY}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'nvidia/nemotron-3-ultra-550b-a55b',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.7,
+        max_tokens: 2000
+      }),
+      signal: AbortSignal.timeout(25000)
+    });
+    if (!res.ok) {
+      const t = await res.text();
+      throw new Error(`NVIDIA2 ${res.status} — ${t.slice(0, 200)}`);
+    }
+    const data = await res.json();
+    if (!data.choices || !data.choices[0]) throw new Error('No choices in NVIDIA2 response');
+    return data.choices[0].message.content;
+  } catch (err) {
+    providerDown.NVIDIA2 = true;
+    console.log('NVIDIA2 throttled/hung — skipping rest of this run');
+    throw err;
+  }
 }
 
 async function callGemini(prompt) {
@@ -471,21 +488,6 @@ async function callGemini(prompt) {
   const data = await res.json();
   const text = data.candidates[0].content.parts[0].text;
   return safeParseJSON(text); // ★ was a double-return with dead code — fixed
-}
-
-async function callDeepSeek(prompt) {
-  if (!process.env.DEEPSEEK_API_KEY) throw new Error('DEEPSEEK_API_KEY not set');
-  const res = await retryFetch('https://api.deepseek.com/chat/completions', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.DEEPSEEK_API_KEY}` },
-    body: JSON.stringify({ model: 'deepseek-chat', messages: [{ role: 'user', content: prompt }] }),
-  });
-  if (!res.ok) {
-    const errBody = await res.text();
-    throw new Error(`DeepSeek error: ${res.status} — ${errBody.substring(0, 200)}`);
-  }
-  const data = await res.json();
-  return safeParseJSON(data.choices[0].message.content);
 }
 
 // ---- 4. FETCH IMAGE FROM UNSPLASH ----
@@ -753,7 +755,7 @@ async function run() {
 
       // If every provider was down for this article, abort the batch —
       // remaining articles would fail identically and burn more quota
-      if (providerDown.gemini && providerDown.glm && providerDown.groq && providerDown.groq20b && providerDown.mistral && providerDown.nvidia && providerDown.nvidia2) {
+      if (providerDown.glm && providerDown.groq && providerDown.cloudflare && providerDown.groq20b && providerDown.nvidia && providerDown.nvidia2 && providerDown.gemini) {
         console.log('All providers exhausted — ending this run early. Providers recover before the next run.');
         break;
       }

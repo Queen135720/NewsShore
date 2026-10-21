@@ -368,16 +368,20 @@ async function callCloudflare(prompt) {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      model: '@cf/openai/gpt-oss-120b',
+      model: '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
       messages: [{ role: 'user', content: prompt }],
-      max_tokens: 6000,
-      reasoning_effort: 'low'
+      max_tokens: 4000
     })
   });
   const data = await res.json();
-  if (!data.choices || !data.choices[0]) throw new Error('No choices in Cloudflare response');
-  const content = (data.choices[0].message.content || '').trim();
+  if (!data.choices || !data.choices[0]) throw new Error('No choices in Cloudflare response' + (data.errors ? ': ' + JSON.stringify(data.errors).slice(0, 150) : ''));
+  let content = (data.choices[0].message.content || '').trim();
   console.log(`Cloudflare responded (${content.length} chars)`);
+  console.log(`Cloudflare preview: ${content.slice(0, 150).replace(/\s+/g, ' ')}`);
+  // strip thinking-model wrappers (harmless if not present)
+  content = content.replace(/<think>[\s\S]*?<\/think>/gi, '');
+  if (content.includes('<|message|>')) content = content.slice(content.lastIndexOf('<|message|>') + '<|message|>'.length);
+  content = content.replace(/<\|start\|>|<\|end\|>|<\|channel\|>\s*final/g, '').trim();
   if (!content) throw new Error('Cloudflare returned empty content');
   return content;
 }

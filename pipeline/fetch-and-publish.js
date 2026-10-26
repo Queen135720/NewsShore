@@ -359,31 +359,40 @@ async function callGroq(prompt) {
 // ---------- NEW FREE PROVIDERS (Cloudflare + Cerebras, Oct 2026) ----------
 
 async function callCloudflare(prompt) {
-  const res = await retryFetch(`https://api.cloudflare.com/client/v4/accounts/${process.env.CF_ACCOUNT_ID}/ai/v1/chat/completions`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${process.env.CLOUDFLARE_API_TOKEN}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      model: '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
-      messages: [{ role: 'user', content: prompt }],
-      max_tokens: 4000
-    })
-  });
-  const data = await res.json();
-  if (!data.choices || !data.choices[0]) throw new Error('No choices in Cloudflare response' + (data.errors ? ': ' + JSON.stringify(data.errors).slice(0, 150) : ''));
-  let content = (data.choices[0].message.content || '').trim();
-  console.log(`Cloudflare responded (${content.length} chars)`);
-  console.log(`Cloudflare preview: ${content.slice(0, 150).replace(/\s+/g, ' ')}`);
-  // strip thinking-model wrappers (harmless if not present)
-  content = content.replace(/<think>[\s\S]*?<\/think>/gi, '');
-  if (content.includes('<|message|>')) content = content.slice(content.lastIndexOf('<|message|>') + '<|message|>'.length);
-  content = content.replace(/<\|start\|>|<\|end\|>|<\|channel\|>\s*final/g, '').trim();
-  if (!content) throw new Error('Cloudflare returned empty content');
-  return content;
+  if (providerDown.Cloudflare) throw new Error('Cloudflare already failed this run');
+  try {
+    const res = await retryFetch(`https://api.cloudflare.com/client/v4/accounts/${process.env.CF_ACCOUNT_ID}/ai/v1/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.CLOUDFLARE_API_TOKEN}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 4000
+      })
+    });
+    const data = await res.json();
+    if (!data.choices || !data.choices[0]) {
+      const em = data.errors ? JSON.stringify(data.errors) : 'No choices in response';
+      throw new Error('Cloudflare: ' + em.slice(0, 200));
+    }
+    let content = (data.choices[0].message.content || '').trim();
+    console.log(`Cloudflare responded (${content.length} chars)`);
+    content = content.replace(/<think>[\s\S]*?<\/think>/gi, '');
+    if (content.includes('<|message|>')) content = content.slice(content.lastIndexOf('<|message|>') + 11);
+    content = content.replace(/<\|start\|>|<\|end\|>|<\|channel\|>\s*final/g, '').trim();
+    if (!content) throw new Error('Cloudflare returned empty content');
+    return content;
+  } catch (err) {
+    if (/429|rate|quota|allocation|neurons|timeout|abort|401|403/i.test(err.message)) {
+      providerDown.Cloudflare = true;
+      console.log('Cloudflare throttled — skipping rest of this run');
+    }
+    throw err;
+  }
 }
-
 async function callGeminiFirst(prompt) {
   // 1) Cloudflare Workers AI — free 10,000 neurons/day, no card
   if (!providerDown.Cloudflare && process.env.CLOUDFLARE_API_TOKEN && process.env.CF_ACCOUNT_ID) {
@@ -402,29 +411,31 @@ async function callGeminiFirst(prompt) {
 }
 
 async function callGroq20B(prompt) {
-  if (!process.env.GROQ_API_KEY) throw new Error('GROQ_API_KEY not set');
   const res = await retryFetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+      'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
+      'Content-Type': 'application/json'
     },
     body: JSON.stringify({
       model: 'openai/gpt-oss-20b',
       messages: [{ role: 'user', content: prompt }],
-    }),
+      max_tokens: 4000,
+      reasoning_effort: 'low'
+    })
   });
-  if (!res.ok) {
-    const errBody = await res.text();
-    throw new Error(`Groq20B error: ${res.status} — ${errBody.substring(0, 200)}`);
-  }
   const data = await res.json();
-  const content = data?.choices?.[0]?.message?.content;
-  if (!content) throw new Error('Groq20B returned an empty response');
-  return safeParseJSON(content);
+  if (!data.choices || !data.choices[0]) throw new Error('No choices in Groq20B response');
+  let content = (data.choices[0].message.content || '').trim();
+  console.log(`Groq20B responded (${content.length} chars)`);
+  content = content.replace(/<think>[\s\S]*?<\/think>/gi, '');
+  if (content.includes('<|message|>')) content = content.slice(content.lastIndexOf('<|message|>') + 11);
+  content = content.replace(/<\|start\|>|<\|end\|>|<\|channel\|>\s*final/g, '').trim();
+  if (!content) throw new Error('Groq20B returned empty content');
+  return content;
 }
 
-async function callNVIDIA(prompt) {
+async function callNvidia(prompt) {
   if (providerDown.NVIDIA) throw new Error('NVIDIA already failed this run');
   try {
     const res = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
@@ -456,7 +467,7 @@ async function callNVIDIA(prompt) {
   }
 }
 
-async function callNVIDIA2(prompt) {
+async function callNvidia2(prompt) {
   if (providerDown.NVIDIA2) throw new Error('NVIDIA2 already failed this run');
   try {
     const res = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {

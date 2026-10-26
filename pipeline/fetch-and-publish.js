@@ -62,7 +62,6 @@ const SOURCES = [
 
   // ---- Mobile & Social ----
   { name: 'Apple Insider', url: 'https://appleinsider.com/rss/news/', category: 'Mobile & Social', region: 'Global' },
-  { name: '9to5Mac', url: 'https://9to5mac.com/feed/', category: 'Mobile & Social', region: 'US' },
   { name: '9to5Google', url: 'https://9to5google.com/feed/', category: 'Mobile & Social', region: 'US' },
   { name: 'Android Authority', url: 'https://www.androidauthority.com/feed/', category: 'Mobile & Social', region: 'US' },
   { name: 'Android Police', url: 'https://www.androidpolice.com/feed/', category: 'Mobile & Social', region: 'US' },

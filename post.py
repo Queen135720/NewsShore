@@ -5,11 +5,18 @@ import requests
 from supabase import create_client
 
 SB = create_client(os.environ["SUPABASE_URL"], os.environ["SUPABASE_SERVICE_KEY"])
-TG_TOKEN   = os.environ["TELEGRAM_BOT_TOKEN"]
-TG_CHANNEL = os.environ["TELEGRAM_CHANNEL"]
-OWNER_ID   = os.environ["OWNER_CHAT_ID"]
-FB_PAGE, FB_TOKEN = os.environ["FACEBOOK_PAGE_ID"], os.environ["FACEBOOK_PAGE_TOKEN"]
-FB_VER, SITE = "v22.0", os.environ["SITE_URL"]          # bump FB_VER when Meta deprecates
+TG_TOKEN   = os.environ.get("TELEGRAM_BOT_TOKEN")
+TG_CHANNEL = os.environ.get("TELEGRAM_CHANNEL")
+OWNER_ID   = os.environ.get("OWNER_CHAT_ID")
+FB_PAGE    = os.environ.get("FACEBOOK_PAGE_ID")
+FB_TOKEN   = os.environ.get("FACEBOOK_PAGE_TOKEN")
+SITE       = os.environ.get("SITE_URL", "https://newsshore.vercel.app")
+
+CONFIGURED = {  # only platforms with all their keys are active this run
+    "telegram": bool(TG_TOKEN and TG_CHANNEL),
+    "whatsapp": bool(TG_TOKEN and OWNER_ID),
+    "facebook": bool(FB_PAGE and FB_TOKEN),
+}
 
 DAILY_CAPS   = {"whatsapp": 2, "facebook": 4, "telegram": 6}
 MAX_ATTEMPTS = 3
@@ -193,6 +200,11 @@ def main():
             }).eq("id", p["id"]).execute()
             print(f"FAILED #{p['id']} ({p['platform']}): {e}")
     sys.exit(1 if failures else 0)
+    
+    for plat, ok in CONFIGURED.items():
+        if not ok:
+            print(f"[setup] {plat} not configured yet (missing secrets) — skipping")
+    queue = [p for p in queue if CONFIGURED.get(p["platform"], False)]
 
 if __name__ == "__main__":
     main()

@@ -63,7 +63,6 @@ const SOURCES = [
   // ---- Mobile & Social ----
   { name: 'Apple Insider', url: 'https://appleinsider.com/rss/news/', category: 'Mobile & Social', region: 'Global' },
   { name: '9to5Google', url: 'https://9to5google.com/feed/', category: 'Mobile & Social', region: 'US' },
-  { name: 'Android Authority', url: 'https://www.androidauthority.com/feed/', category: 'Mobile & Social', region: 'US' },
   { name: 'Android Police', url: 'https://www.androidpolice.com/feed/', category: 'Mobile & Social', region: 'US' },
   { name: 'TechCrunch Apps', url: 'https://techcrunch.com/category/apps/feed/', category: 'Mobile & Social', region: 'Global' },
   { name: 'TechCrunch Social', url: 'https://techcrunch.com/category/social/feed/', category: 'Mobile & Social', region: 'Global' },

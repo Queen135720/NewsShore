@@ -356,6 +356,49 @@ async function callGroq(prompt) {
   return safeParseJSON(data.choices[0].message.content);
 }
 
+// ---------- JSON repair for small models ----------
+
+function repairArticleJSON(raw) {
+  let t = raw;
+  const fence = t.indexOf('```');
+  if (fence !== -1) {
+    const after = t.slice(fence + 3);
+    const end = after.indexOf('```');
+    t = end === -1 ? after : after.slice(0, end);
+  }
+  const first = t.indexOf('{');
+  const last = t.lastIndexOf('}');
+  if (first === -1 || last === -1 || last <= first) throw new Error('No JSON object in response');
+  const candidate = t.slice(first, last + 1);
+  try { return JSON.parse(candidate); } catch {}
+  try { return JSON.parse(candidate.replace(/,\s*([}\]])/g, '$1')); } catch {}
+  try {
+    return JSON.parse(candidate
+      .replace(/[\u201c\u201d]/g, '"')
+      .replace(/,\s*([}\]])/g, '$1'));
+  } catch {}
+  try {
+    return JSON.parse(candidate
+      .replace(/[\u201c\u201d]/g, '"')
+      .replace(/\r?\n/g, '\\n')
+      .replace(/\t/g, '\\t')
+      .replace(/,\s*([}\]])/g, '$1'));
+  } catch {}
+  throw new Error('Unparseable article JSON (starts: ' + candidate.slice(0, 120) + ')');
+}
+
+function normalizeArticleFields(obj) {
+  if (obj.reject || obj.rejected || obj.skip) return obj;
+  const body = obj.body || obj.article || obj.content || obj.text;
+  const title = obj.title || obj.headline;
+  if (!title || !String(title).trim()) throw new Error('JSON has no title');
+  if (!body || !String(body).trim()) throw new Error('JSON has no article body');
+  const out = { ...obj };
+  out.title = String(title).trim();
+  out.body = String(body).trim();
+  return out;
+}
+
 // ---------- NEW FREE PROVIDERS (Cloudflare + Cerebras, Oct 2026) ----------
 
 async function callCloudflare(prompt) {
@@ -375,7 +418,7 @@ async function callCloudflare(prompt) {
     });
     const data = await res.json();
     if (!data.choices || !data.choices[0]) {
-      const em = data.errors ? JSON.stringify(data.errors) : 'No choices in response';
+      const em = data.errors ? JSON.stringify(data.errors) : JSON.stringify(data);
       throw new Error('Cloudflare: ' + em.slice(0, 200));
     }
     let content = (data.choices[0].message.content || '').trim();
@@ -383,8 +426,9 @@ async function callCloudflare(prompt) {
     content = content.replace(/<think>[\s\S]*?<\/think>/gi, '');
     if (content.includes('<|message|>')) content = content.slice(content.lastIndexOf('<|message|>') + 11);
     content = content.replace(/<\|start\|>|<\|end\|>|<\|channel\|>\s*final/g, '').trim();
-    if (!content) throw new Error('Cloudflare returned empty content');
-    return content;
+    const obj = normalizeArticleFields(repairArticleJSON(content));
+    console.log('Cloudflare JSON OK');
+    return JSON.stringify(obj);
   } catch (err) {
     if (/429|rate|quota|allocation|neurons|timeout|abort|401|403/i.test(err.message)) {
       providerDown.Cloudflare = true;
@@ -393,6 +437,7 @@ async function callCloudflare(prompt) {
     throw err;
   }
 }
+
 async function callGeminiFirst(prompt) {
   // 1) Cloudflare Workers AI — free 10,000 neurons/day, no card
   if (!providerDown.Cloudflare && process.env.CLOUDFLARE_API_TOKEN && process.env.CF_ACCOUNT_ID) {
@@ -411,28 +456,40 @@ async function callGeminiFirst(prompt) {
 }
 
 async function callGroq20B(prompt) {
-  const res = await retryFetch('https://api.groq.com/openai/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      model: 'openai/gpt-oss-20b',
-      messages: [{ role: 'user', content: prompt }],
-      max_tokens: 4000,
-      reasoning_effort: 'low'
-    })
-  });
-  const data = await res.json();
-  if (!data.choices || !data.choices[0]) throw new Error('No choices in Groq20B response');
-  let content = (data.choices[0].message.content || '').trim();
-  console.log(`Groq20B responded (${content.length} chars)`);
-  content = content.replace(/<think>[\s\S]*?<\/think>/gi, '');
-  if (content.includes('<|message|>')) content = content.slice(content.lastIndexOf('<|message|>') + 11);
-  content = content.replace(/<\|start\|>|<\|end\|>|<\|channel\|>\s*final/g, '').trim();
-  if (!content) throw new Error('Groq20B returned empty content');
-  return content;
+  if (providerDown.Groq20B) throw new Error('Groq20B already failed this run');
+  try {
+    const res = await retryFetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'openai/gpt-oss-20b',
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 4000,
+        reasoning_effort: 'low'
+      })
+    });
+    const data = await res.json();
+    if (!data.choices || !data.choices[0]) {
+      throw new Error('Groq20B: ' + JSON.stringify(data).slice(0, 200));
+    }
+    let content = (data.choices[0].message.content || '').trim();
+    console.log(`Groq20B responded (${content.length} chars)`);
+    content = content.replace(/<think>[\s\S]*?<\/think>/gi, '');
+    if (content.includes('<|message|>')) content = content.slice(content.lastIndexOf('<|message|>') + 11);
+    content = content.replace(/<\|start\|>|<\|end\|>|<\|channel\|>\s*final/g, '').trim();
+    const obj = normalizeArticleFields(repairArticleJSON(content));
+    console.log('Groq20B JSON OK');
+    return JSON.stringify(obj);
+  } catch (err) {
+    if (/429|rate|quota|timeout|abort|401|403/i.test(err.message)) {
+      providerDown.Groq20B = true;
+      console.log('Groq20B throttled — skipping rest of this run');
+    }
+    throw err;
+  }
 }
 
 async function callNvidia(prompt) {

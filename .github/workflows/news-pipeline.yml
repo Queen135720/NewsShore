@@ -2,20 +2,24 @@ name: News Pipeline
 
 on:
   schedule:
-    - cron: '13,43 * * * *'    # every 30 min, offset avoids GitHub's :00/:30 congestion
-  workflow_dispatch: {}         # manual "Run workflow" button
+    - cron: '13,43 * * * *'
+  workflow_dispatch: {}
 
 concurrency:
   group: news-pipeline
-  cancel-in-progress: false     # slow run -> next one waits instead of overlapping
+  cancel-in-progress: false
 
 jobs:
   run-pipeline:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
 
     steps:
       - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
       - uses: actions/setup-python@v5
         with:
@@ -24,22 +28,29 @@ jobs:
 
       - run: pip install -r requirements.txt
 
-      # ---- A: fetch -> rewrite -> save (your existing 2.1-2.3 scripts) ----
-      # keep whatever env names your pipeline.py already expects; these are the likely ones
+      # ---- A: YOUR fetch -> rewrite -> save (JavaScript, untouched) ----
       - name: Fetch -> rewrite -> save
         env:
+          GEMINI_API_KEY:       ${{ secrets.GEMINI_API_KEY }}
           ZAI_API_KEY:          ${{ secrets.ZAI_API_KEY }}
           SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-        run: python pipeline.py
+        run: node fetch-and-publish.js     # <-- YOUR filename here
 
-      # ---- B: NEW — route each article to ONE platform + post with image ----
+      # ---- B: mirror images into the bucket (idempotent, see below) ----
+      - name: Mirror images
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: python mirror_images.py
+
+      # ---- C: route each article to ONE platform + post with image ----
       - name: Route + post to socials
         env:
           ZAI_API_KEY:          ${{ secrets.ZAI_API_KEY }}
-          GROQ_API_KEY:         ${{ secrets.GROQ_API_KEY }}      # optional fallback
-          GEMINI_API_KEY:       ${{ secrets.GEMINI_API_KEY }}    # optional fallback
-          LLM_MODEL:            glm-4.5-flash                    # plain env, not a secret
+          GROQ_API_KEY:         ${{ secrets.GROQ_API_KEY }}
+          GEMINI_API_KEY:       ${{ secrets.GEMINI_API_KEY }}
+          LLM_MODEL:            glm-4.5-flash
           SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           TELEGRAM_BOT_TOKEN:   ${{ secrets.TELEGRAM_BOT_TOKEN }}
@@ -50,7 +61,7 @@ jobs:
           SITE_URL:             ${{ secrets.SITE_URL }}
         run: python post.py
 
-      # ---- C: DM yourself if anything above failed ----
+      # ---- D: DM yourself if anything above failed ----
       - name: Alert on failure
         if: failure()
         env:

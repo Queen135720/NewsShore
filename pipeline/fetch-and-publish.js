@@ -47,7 +47,6 @@ const SOURCES = [
   { name: 'The Verge', url: 'https://www.theverge.com/rss/index.xml', category: 'Tech News', region: 'Global' },
   { name: 'Ars Technica', url: 'https://feeds.arstechnica.com/arstechnica/index', category: 'Tech News', region: 'Global' },
   { name: 'Ars Technica AI', url: 'https://arstechnica.com/ai/feed/', category: 'Tech News', region: 'US' }, // ⚠ verify — kept (was mislabeled "Robotics"; it's their AI feed — the LLM will file these as AI News)
-  { name: 'Engadget', url: 'https://www.engadget.com/rss.xml', category: 'Tech News', region: 'Global' },
   { name: 'CNET', url: 'https://www.cnet.com/rss/news/', category: 'Tech News', region: 'Global' },
   { name: 'TechCrunch Robotics', url: 'https://techcrunch.com/category/robotics/feed/', category: 'Tech News', region: 'Global' },
   { name: 'TechCrunch Space', url: 'https://techcrunch.com/category/space/feed/', category: 'Tech News', region: 'Global' },

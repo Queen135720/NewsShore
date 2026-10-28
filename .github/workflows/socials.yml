@@ -1,0 +1,48 @@
+name: Socials Pipeline
+
+on:
+  schedule:
+    - cron: '17,47 * * * *'    # every 30 min — posts what the 10-min pipeline saved
+  workflow_dispatch: {}
+
+concurrency:
+  group: socials-pipeline
+  cancel-in-progress: false
+
+jobs:
+  post-to-socials:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Route + post (reads Supabase only — no fetch, no AI)
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          TELEGRAM_BOT_TOKEN:   ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHANNEL:     ${{ secrets.TELEGRAM_CHANNEL }}
+          OWNER_CHAT_ID:        ${{ secrets.OWNER_CHAT_ID }}
+          FACEBOOK_PAGE_ID:     ${{ secrets.FACEBOOK_PAGE_ID }}
+          FACEBOOK_PAGE_TOKEN:  ${{ secrets.FACEBOOK_PAGE_TOKEN }}
+          SITE_URL:             ${{ secrets.SITE_URL }}
+        run: python pipeline/post.py
+
+      - name: Alert on failure
+        if: failure()
+        env:
+          TG_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TG_CHAT:  ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${TG_TOKEN}/sendMessage" \
+            -d chat_id="${TG_CHAT}" \
+            -d text="⚠️ NewsShore socials pipeline failed: https://github.com/${GITHUB_REPOSITORY}/actions" \
+            || true

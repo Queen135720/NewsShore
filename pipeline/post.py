@@ -79,10 +79,12 @@ def posts_today(platform):
 
 def route(unrouted):
     counts = {p: posts_today(p) for p in DAILY_CAPS}
+    waiting = 0
     for a in unrouted:
         platform = pick_platform(a)
         if platform != "none" and not CONFIGURED.get(platform):
-            platform = "none"     # secrets not set yet — website only for now
+            waiting += 1
+            continue          # platform not set up yet — routes after you add its secrets
         if platform != "none" and counts[platform] >= DAILY_CAPS[platform]:
             platform = "none"     # daily cap hit — website only
         if platform != "none":
@@ -92,7 +94,7 @@ def route(unrouted):
             "platform": platform,
             "status": "pending" if platform != "none" else "skipped",
         }, on_conflict="article_id").execute()
-    print(f"[route] {len(unrouted)} article(s) routed")
+    print(f"[route] {len(unrouted) - waiting} decided, {waiting} waiting for platforms you haven't configured yet")
 
 # ---------- senders ----------
 def tg_api(method, payload):

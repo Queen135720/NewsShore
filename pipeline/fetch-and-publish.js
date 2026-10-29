@@ -386,11 +386,21 @@ function repairArticleJSON(raw) {
 }
 
 function normalizeArticleFields(obj) {
-  if (obj.reject || obj.rejected || obj.skip) return obj;
-  const body = obj.body || obj.article || obj.content || obj.text;
+  // unwrap nested shapes some models produce: {"article": {...}} / {"data": {...}}
+  for (const key of ['article', 'data', 'result', 'output']) {
+    if (obj[key] && typeof obj[key] === 'object' && !Array.isArray(obj[key])) {
+      for (const [k, v] of Object.entries(obj[key])) if (!(k in obj)) obj[k] = v;
+    }
+  }
+  // normalize rejection spellings so the pipeline's rejection counter sees them
+  if (obj.rejected || obj.skip || obj.not_tech || obj.irrelevant) obj.reject = true;
+  if (obj.reject) return obj;
+  let body = obj.body || obj.article || obj.content || obj.text || obj.article_body || obj.articleBody;
+  if (Array.isArray(body)) body = body.filter(p => typeof p === 'string' && p.trim()).join('\n\n');
   const title = obj.title || obj.headline;
-  if (!title || !String(title).trim()) throw new Error('JSON has no title');
-  if (!body || !String(body).trim()) throw new Error('JSON has no article body');
+  if (!title || !String(title).trim()) throw new Error('JSON has no title (fields: ' + Object.keys(obj).join(',') + ')');
+  if (!body || !String(body).trim()) throw new Error('JSON has no body (fields: ' + Object.keys(obj).join(',') + ')');
+  if (String(body).trim().length < 200) throw new Error('body too short (' + String(body).trim().length + ' chars): "' + String(body).trim().slice(0, 100) + '"');
   const out = { ...obj };
   out.title = String(title).trim();
   out.body = String(body).trim();
@@ -421,6 +431,7 @@ async function callCloudflare(prompt) {
     }
     let content = (data.choices[0].message.content || '').trim();
     console.log(`Cloudflare responded (${content.length} chars)`);
+    console.log('Cloudflare raw: ' + content.slice(0, 220).replace(/\s+/g, ' '));
     content = content.replace(/<think>[\s\S]*?<\/think>/gi, '');
     if (content.includes('<|message|>')) content = content.slice(content.lastIndexOf('<|message|>') + 11);
     content = content.replace(/<\|start\|>|<\|end\|>|<\|channel\|>\s*final/g, '').trim();
@@ -475,6 +486,7 @@ async function callGroq20B(prompt) {
     }
     let content = (data.choices[0].message.content || '').trim();
     console.log(`Groq20B responded (${content.length} chars)`);
+    console.log('Groq20B raw: ' + content.slice(0, 220).replace(/\s+/g, ' '));
     content = content.replace(/<think>[\s\S]*?<\/think>/gi, '');
     if (content.includes('<|message|>')) content = content.slice(content.lastIndexOf('<|message|>') + 11);
     content = content.replace(/<\|start\|>|<\|end\|>|<\|channel\|>\s*final/g, '').trim();
@@ -501,12 +513,12 @@ async function callNvidia(prompt) {
         'Accept': 'application/json'
       },
       body: JSON.stringify({
-        model: 'meta/muse-glimmer-30b',
+        model: 'z-ai/glm-5.3',
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.7,
         max_tokens: 2000
       }),
-      signal: AbortSignal.timeout(25000)
+      signal: AbortSignal.timeout(60000)
     });
     if (!res.ok) {
       const t = await res.text();
@@ -514,7 +526,12 @@ async function callNvidia(prompt) {
     }
     const data = await res.json();
     if (!data.choices || !data.choices[0]) throw new Error('No choices in NVIDIA response');
-    return data.choices[0].message.content;
+    let content = (data.choices[0].message.content || '').trim();
+    console.log(`NVIDIA responded (${content.length} chars)`);
+    content = content.replace(/<think>[\s\S]*?<\/think>/gi, '');
+    const obj = normalizeArticleFields(repairArticleJSON(content));
+    console.log('NVIDIA JSON OK');
+    return JSON.stringify(obj);
   } catch (err) {
     providerDown.NVIDIA = true;
     console.log('NVIDIA throttled/hung — skipping rest of this run');
@@ -533,12 +550,12 @@ async function callNvidia2(prompt) {
         'Accept': 'application/json'
       },
       body: JSON.stringify({
-        model: 'nvidia/nemotron-3-ultra-550b-a55b',
+        model: 'deepseek-ai/deepseek-v4.1-flash',
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.7,
         max_tokens: 2000
       }),
-      signal: AbortSignal.timeout(25000)
+      signal: AbortSignal.timeout(60000)
     });
     if (!res.ok) {
       const t = await res.text();
@@ -546,7 +563,12 @@ async function callNvidia2(prompt) {
     }
     const data = await res.json();
     if (!data.choices || !data.choices[0]) throw new Error('No choices in NVIDIA2 response');
-    return data.choices[0].message.content;
+    let content = (data.choices[0].message.content || '').trim();
+    console.log(`NVIDIA2 responded (${content.length} chars)`);
+    content = content.replace(/<think>[\s\S]*?<\/think>/gi, '');
+    const obj = normalizeArticleFields(repairArticleJSON(content));
+    console.log('NVIDIA2 JSON OK');
+    return JSON.stringify(obj);
   } catch (err) {
     providerDown.NVIDIA2 = true;
     console.log('NVIDIA2 throttled/hung — skipping rest of this run');

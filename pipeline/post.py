@@ -7,6 +7,8 @@ import os, sys
 from datetime import datetime, timezone
 import requests
 from supabase import create_client
+import re
+from datetime import datetime, timezone, timedelta
 
 SB = create_client(os.environ["SUPABASE_URL"], os.environ["SUPABASE_SERVICE_KEY"])
 
@@ -24,7 +26,7 @@ CONFIGURED = {   # platforms missing secrets are skipped, never crash the run
     "facebook": bool(FB_PAGE and FB_TOKEN),
 }
 
-DAILY_CAPS   = {"whatsapp": 2, "facebook": 4, "telegram": 6}
+DAILY_CAPS   = {"whatsapp": 10, "facebook": 20, "telegram": 40}
 MAX_ATTEMPTS = 3
 
 # ---------- routing rules — this is the whole "editor", edit freely ----------
@@ -41,6 +43,19 @@ ROUTE_RULES = {
     "Startups & Funding": "facebook",
     "Global Tech":        "whatsapp",   # refined by region below
 }
+
+STOP = {"the","a","an","of","for","and","or","to","in","on","with","new","its","is",
+        "are","as","at","by","from","this","that","will","says","said"}
+
+def title_words(t):
+    return {w for w in re.sub(r"[^a-z0-9\s]", " ", (t or "").lower()).split()
+            if len(w) > 1 and w not in STOP}
+
+def similar(a, b):
+    if not a or not b:
+        return False
+    shared = a & b
+    return len(shared) >= 2 and len(shared) / max(len(a), len(b)) >= 0.3
 
 def pick_platform(a):
     cat = (a.get("category") or "").strip()
@@ -79,23 +94,32 @@ def posts_today(platform):
 
 def route(unrouted):
     counts = {p: posts_today(p) for p in DAILY_CAPS}
-    waiting = 0
+    since24 = (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat()
+    done = (SB.table("social_posts").select("articles(title)")
+            .neq("platform", "none").gte("created_at", since24).execute().data)
+    seen = [title_words(r["articles"]["title"]) for r in done if r.get("articles")]
+    waiting = dups = 0
     for a in unrouted:
+        tw = title_words(a["title"])
+        if any(similar(tw, prev) for prev in seen):
+            dups += 1
+            SB.table("social_posts").upsert({"article_id": a["id"], "platform": "none",
+                "status": "skipped"}, on_conflict="article_id").execute()
+            print(f"[route] duplicate stays website-only: {a['title'][:60]}")
+            continue
         platform = pick_platform(a)
         if platform != "none" and not CONFIGURED.get(platform):
             waiting += 1
-            continue          # platform not set up yet — routes after you add its secrets
+            continue
         if platform != "none" and counts[platform] >= DAILY_CAPS[platform]:
-            platform = "none"     # daily cap hit — website only
+            platform = "none"
         if platform != "none":
             counts[platform] += 1
-        SB.table("social_posts").upsert({
-            "article_id": a["id"],
-            "platform": platform,
-            "status": "pending" if platform != "none" else "skipped",
-        }, on_conflict="article_id").execute()
-    print(f"[route] {len(unrouted) - waiting} decided, {waiting} waiting for platforms you haven't configured yet")
-
+            seen.append(tw)
+        SB.table("social_posts").upsert({"article_id": a["id"], "platform": platform,
+            "status": "pending" if platform != "none" else "skipped"},
+            on_conflict="article_id").execute()
+    print(f"[route] {len(unrouted) - waiting - dups} decided, {waiting} waiting, {dups} duplicate(s) skipped")
 # ---------- senders ----------
 def tg_api(method, payload):
     r = requests.post(f"https://api.telegram.org/bot{TG_TOKEN}/{method}", json=payload, timeout=60)
@@ -163,7 +187,11 @@ def main():
              .in_("status", ["pending", "failed"]).lt("attempts", MAX_ATTEMPTS)
              .order("id").limit(10).execute().data)
     failures = 0
-    for p in queue:
+    per_run = {}
+    for p in queue:                                        # queue: change .limit(10) to .limit(15)
+        if per_run.get(p["platform"], 0) >= 3:             # max 3 posts per platform per run
+            continue                                       # stays pending for the next run
+        per_run[p["platform"]] = per_run.get(p["platform"], 0) + 1
         try:
             ext_id = SENDERS[p["platform"]](p)
             SB.table("social_posts").update({

@@ -99,7 +99,8 @@ def route(unrouted):
 # ---------- senders ----------
 def tg_api(method, payload):
     r = requests.post(f"https://api.telegram.org/bot{TG_TOKEN}/{method}", json=payload, timeout=60)
-    r.raise_for_status()
+    if not r.ok:
+        raise RuntimeError(f"TG {method} -> {r.status_code}: {r.text[:300]}")
     return r.json()["result"]
 
 def article_url(a):
@@ -116,18 +117,26 @@ def send_telegram(p):
     return tg_api("sendMessage", {"chat_id": TG_CHANNEL, "text": caption,
         "link_preview_options": {"url": article_url(a), "prefer_small_media": True}})["message_id"]
 
+def fb_call(path, payload):
+    r = requests.post(f"https://graph.facebook.com/{FB_VER}/{FB_PAGE}/{path}",
+                      json=payload, timeout=60)
+    if not r.ok:
+        raise RuntimeError(f"FB {path} -> {r.status_code}: {r.text[:400]}")
+    return r.json()
+
 def send_facebook(p):
     a, caption = p["articles"], build_caption(p["articles"], article_url(p["articles"]))
     if a.get("image_url"):
-        r = requests.post(f"https://graph.facebook.com/{FB_VER}/{FB_PAGE}/photos",
-            json={"url": a["image_url"], "caption": caption[:2200],
-                  "access_token": FB_TOKEN}, timeout=60)
-    else:
-        r = requests.post(f"https://graph.facebook.com/{FB_VER}/{FB_PAGE}/feed",
-            json={"message": caption, "link": article_url(a),
-                  "access_token": FB_TOKEN}, timeout=60)
-    r.raise_for_status()
-    return r.json().get("post_id") or r.json()["id"]
+        try:
+            data = fb_call("photos", {"url": a["image_url"], "caption": caption[:2200],
+                                      "access_token": FB_TOKEN})
+            return data.get("post_id") or data["id"]
+        except RuntimeError as e:
+            print(f"[fb] photo failed ({e}); image was {a['image_url']}")
+            print("[fb] retrying as a link post")
+    data = fb_call("feed", {"message": caption, "link": article_url(a),
+                            "access_token": FB_TOKEN})
+    return data.get("post_id") or data["id"]
 
 def send_whatsapp(p):
     a, caption = p["articles"], build_caption(p["articles"], article_url(p["articles"]))

@@ -67,14 +67,11 @@ def pick_platform(a):
 REL_LABEL = {"verified": "✅ Verified report", "claimed": "⚠️ Company claim"}
 
 def build_caption(a, url):
-    parts = [a["title"], "", (a.get("summary") or "").strip()]
-    if a.get("image_credit_name"):
-        parts += ["", f"📷 {a['image_credit_name']}"]
-    parts += ["", REL_LABEL.get(a.get("reliability"), a.get("reliability") or ""),
-              f"🔗 Full story + glossary: {url}"]
+    parts = [a["title"], "", (a.get("summary") or "").strip(),
+             "", f"Get full story 👉 {url}"]
     text = "\n".join(parts).strip()
     if len(text) > 1000:            # Telegram photo-caption limit is 1024
-        text = f"{a['title']}\n\n{REL_LABEL.get(a.get('reliability'), '')}\n🔗 {url}"
+        text = f"{a['title']}\n\nGet full story 👉 {url}"
     return text
 
 # ---------- routing ----------

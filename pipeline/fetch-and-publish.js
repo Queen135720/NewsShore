@@ -757,10 +757,34 @@ async function fetchImage(rewritten, category, usedKeys) {
 
 async function saveArticle(item, rewritten, usedKeys) {
   // Guard: skip empty/broken rewrites
-  if (!rewritten?.headline?.trim() || !rewritten?.body?.trim() || !rewritten?.summary?.trim()) {
-    console.log('Skipping empty article:', item.title ?? item.link);
+    // ---- Universal guard: accepts every provider's field names ----
+  const r = rewritten || {};
+
+  // 1) AI rejections — count them properly instead of "empty"
+  if (r.reject || r.rejected || r.skip) {
+    console.log('Rejected by AI:', item.title ?? item.link, '—', String(r.reason || '').slice(0, 90));
     return false;
   }
+
+  // 2) Accept any spelling of the three required fields
+  const headline = String(r.headline || r.title || r.head || '').trim();
+  const body = String(r.body || r.article || r.content || r.text || '').trim();
+  let summary = String(r.summary || r.excerpt || r.description || r.subtitle || '').trim();
+  if (!summary && body) summary = body.replace(/\s+/g, ' ').slice(0, 280);
+
+  if (!headline || !body) {
+    console.log('Skipping empty article:', item.title ?? item.link,
+      !headline && !body ? '— missing headline AND body'
+        : !headline ? '— missing headline' : '— missing body');
+    return false;
+  }
+
+  // 3) Write the standard names back so everything below works unchanged
+  rewritten.headline = headline;
+  rewritten.title = headline;
+  rewritten.body = body;
+  rewritten.article = body;
+  rewritten.summary = summary;
 
   // Category/region: trust the LLM's read of the story, fall back to the source's values
   const VALID_CATEGORIES = ['AI News', 'Mobile & Social', 'Tech News', 'Tech Giants', 'Startups & Funding', 'Research', 'Deals', 'Global Tech'];

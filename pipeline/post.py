@@ -66,13 +66,40 @@ def pick_platform(a):
 
 REL_LABEL = {"verified": "✅ Verified report", "claimed": "⚠️ Company claim"}
 
+# ---------- url + caption helpers ----------
+def slugify(title):
+    s = re.sub(r"[^a-z0-9\s-]", "", (title or "").lower())
+    s = re.sub(r"[\s-]+", "-", s).strip("-")
+    return (s[:80] or "article").rstrip("-")
+
+def body_excerpt(body):
+    """Always the first 70% of the body, cut at a word boundary."""
+    if not body:
+        return ""
+    cut = int(len(body) * 0.7)
+    if cut >= len(body):
+        return body.strip()
+    space = body.rfind(" ", 0, cut)
+    if space > cut // 2:
+        cut = space
+    return body[:cut].strip() + "…"
+
 def build_caption(a, url):
-    parts = [a["title"], "", (a.get("summary") or "").strip(),
-             "", f"Get full story 👉 {url}"]
-    text = "\n".join(parts).strip()
-    if len(text) > 1000:            # Telegram photo-caption limit is 1024
-        text = f"{a['title']}\n\nGet full story 👉 {url}"
-    return text
+    return f"{a['title'].upper()}\n\n{body_excerpt(a.get('body'))}\n\nGet full story 👉 {url}"
+
+def split_chunks(text, first_limit=1024, limit=4096):
+    """Split long text: chunk 1 fits a Telegram photo caption, the rest fit
+    Telegram text messages. Cuts at word/newline boundaries, never mid-word."""
+    chunks, rest, cap = [], text.strip(), first_limit
+    while rest:
+        piece = rest[:cap]
+        cut = max(rest.rfind("\n", 0, cap), rest.rfind(" ", 0, cap))
+        if cut > cap // 2:
+            piece = rest[:cut]
+        chunks.append(piece.strip())
+        rest = rest[len(piece):].lstrip()
+        cap = limit
+    return [c for c in chunks if c]
 
 # ---------- routing ----------
 def articles_without_routing():
@@ -125,31 +152,41 @@ def tg_api(method, payload):
     return r.json()["result"]
 
 def article_url(a):
-    return a.get("public_url") or SITE
+    """Unique permanent link for this article — generated once, stored in the
+    DB (articles.public_url) so the website serves exactly the URLs already
+    posted to socials."""
+    if a.get("public_url"):
+        return a["public_url"]
+    url = f"{SITE.rstrip('/')}/article/{slugify(a['title'])}-{str(a['id'])[:8]}"
+    SB.table("articles").update({"public_url": url}).eq("id", a["id"]).execute()
+    return url
 
 def send_telegram(p):
-    a, caption = p["articles"], build_caption(p["articles"], article_url(p["articles"]))
+    a = p["articles"]
+    caption = build_caption(a, article_url(a))
     if a.get("image_url"):
         try:
-            return tg_api("sendPhoto", {"chat_id": TG_CHANNEL, "photo": a["image_url"],
-                                        "caption": caption})["message_id"]
+            chunks = split_chunks(caption)
+            msg_id = tg_api("sendPhoto", {"chat_id": TG_CHANNEL, "photo": a["image_url"],
+                                          "caption": chunks[0]})["message_id"]
+            try:
+                for chunk in chunks[1:]:
+                    tg_api("sendMessage", {"chat_id": TG_CHANNEL, "text": chunk})
+            except Exception as e:
+                print(f"[tg] continuation failed ({e}) — post stays marked as sent")
+            return msg_id
         except Exception as e:
             print(f"[tg] photo failed ({e}) — posting as text")
-    return tg_api("sendMessage", {"chat_id": TG_CHANNEL, "text": caption,
-        "link_preview_options": {"url": article_url(a), "prefer_small_media": True}})["message_id"]
-
-def fb_call(path, payload):
-    r = requests.post(f"https://graph.facebook.com/{FB_VER}/{FB_PAGE}/{path}",
-                      json=payload, timeout=60)
-    if not r.ok:
-        raise RuntimeError(f"FB {path} -> {r.status_code}: {r.text[:400]}")
-    return r.json()
+    for chunk in split_chunks(caption, first_limit=4096):
+        tg_api("sendMessage", {"chat_id": TG_CHANNEL, "text": chunk})
+    return None
 
 def send_facebook(p):
-    a, caption = p["articles"], build_caption(p["articles"], article_url(p["articles"]))
+    a = p["articles"]
+    caption = build_caption(a, article_url(a))
     if a.get("image_url"):
         try:
-            data = fb_call("photos", {"url": a["image_url"], "caption": caption[:2200],
+            data = fb_call("photos", {"url": a["image_url"], "caption": caption[:5000],
                                       "access_token": FB_TOKEN})
             return data.get("post_id") or data["id"]
         except RuntimeError as e:
@@ -160,17 +197,20 @@ def send_facebook(p):
     return data.get("post_id") or data["id"]
 
 def send_whatsapp(p):
-    a, caption = p["articles"], build_caption(p["articles"], article_url(p["articles"]))
+    a = p["articles"]
+    caption = build_caption(a, article_url(a))
     if a.get("image_url"):
         try:
             tg_api("sendPhoto", {"chat_id": OWNER_ID, "photo": a["image_url"],
-                                 "caption": a["title"]})
+                                 "caption": a["title"].upper()})
         except Exception:
             pass
-    tg_api("sendMessage", {"chat_id": OWNER_ID, "text":
-        "📲 WhatsApp post ready — image above, paste this caption:\n\n" + caption})
+    for chunk in split_chunks(
+            "📲 WhatsApp post ready — image above, paste this:\n\n" + caption,
+            first_limit=4096):
+        tg_api("sendMessage", {"chat_id": OWNER_ID, "text": chunk})
     return None
-
+    
 SENDERS = {"telegram": send_telegram, "facebook": send_facebook, "whatsapp": send_whatsapp}
 
 def main():

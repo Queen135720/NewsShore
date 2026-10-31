@@ -425,6 +425,82 @@ function normalizeArticleFields(obj) {
 
 // ---------- NEW FREE PROVIDERS (Cloudflare + Cerebras, Oct 2026) ----------
 
+// ---------- Cross-feed duplicate shield ----------
+
+const DUP_DIFF_WORDS = new Set(['update','updates','delay','delays','delayed','recall','recalls','postpone','postpones','suspend','suspends','cancel','cancels','versus']);
+const DUP_PROD_WORDS = new Set(['pro','air','max','mini','plus','ultra','lite','fold','flip','duo']);
+const DUP_STOP_WORDS = new Set(['the','and','for','with','from','this','that','have','will','your','what','when','into','than','then','they','them','been','more','most','some','just','also','like','make','made','take','about','after','says','said','over','amid','could','would','should','their','there','these','those','where','which','while','being','every','among','across','since','until','still','again','once','here','other']);
+
+function dupTokens(t) {
+  return String(t || '')
+    .toLowerCase()
+    .replace(/[''’]/g, '')
+    .replace(/[^a-z0-9\s-]/g, ' ')
+    .split(/\s+/)
+    .filter(w => w.length > 2 && !DUP_STOP_WORDS.has(w));
+}
+
+function storyDuplicateScore(a, b) {
+  const ta = dupTokens(a), tb = dupTokens(b);
+  if (ta.length < 2 || tb.length < 2) return 0;
+  const sa = new Set(ta), sb = new Set(tb);
+  let shared = 0;
+  for (const w of sa) if (sb.has(w)) shared++;
+  if (shared < 2) return 0;
+
+  // follow-up protection: one is an update/delay story, the other is not
+  const dA = ta.some(w => DUP_DIFF_WORDS.has(w));
+  const dB = tb.some(w => DUP_DIFF_WORDS.has(w));
+  if (dA !== dB) return 0;
+
+  // product-variant protection: "MacBook Pro" vs "MacBook Air"
+  const pa = ta.filter(w => DUP_PROD_WORDS.has(w)).sort().join(',');
+  const pb = tb.filter(w => DUP_PROD_WORDS.has(w)).sort().join(',');
+  if (pa && pb && pa !== pb) return 0;
+
+  // different numbers = different stories ("iPhone 16" vs "iPhone 17")
+  const na = (String(a).match(/\d+/g) || []).sort().join();
+  const nb = (String(b).match(/\d+/g) || []).sort().join();
+  if (na && nb && na !== nb) return 0;
+
+  const jac = shared / (sa.size + sb.size - shared);
+
+  // shared consecutive-phrase bonus ("robotic animals", "startup rune")
+  let phrase = 0;
+  for (let i = 0; i < ta.length - 1; i++) {
+    const j = tb.indexOf(ta[i]);
+    if (j !== -1 && tb[j + 1] === ta[i + 1]) phrase++;
+  }
+
+  // proper-noun bonus (same capitalized names in both)
+  const capsA = String(a).match(/\b[A-Z][a-zA-Z]{3,}\b/g) || [];
+  const capsB = new Set(String(b).match(/\b[A-Z][a-zA-Z]{3,}\b/g) || []);
+  const propHits = capsA.filter(w => capsB.has(w)).length;
+
+  return Math.min(1, jac + phrase * 0.12 + propHits * 0.11);
+}
+
+async function isDuplicateStory(titles) {
+  try {
+    const since = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000);
+    const recents = await prisma.article.findMany({
+      where: { createdAt: { gte: since } },
+      select: { title: true }
+    });
+    let best = null;
+    for (const rec of recents) {
+      for (const t of titles) {
+        const s = storyDuplicateScore(t, rec.title);
+        if (s >= 0.5 && (!best || s > best.sim)) best = { match: rec.title, sim: s };
+      }
+    }
+    return best;
+  } catch (e) {
+    console.log('Dup shield error (ignored): ' + e.message);
+    return null;
+  }
+}
+
 async function callCloudflare(prompt) {
   if (providerDown.Cloudflare) throw new Error('Cloudflare already failed this run');
   try {
@@ -773,10 +849,8 @@ async function fetchImage(rewritten, category, usedKeys) {
 
 async function saveArticle(item, rewritten, usedKeys) {
   // Guard: skip empty/broken rewrites
-   // ---- Universal guard: accepts every provider's field names ----
+    // ---- Universal guard + duplicate gate (v2) ----
   let r = rewritten || {};
-
-  // Rescue: if a provider returned a raw JSON string, parse it right here
   if (typeof r === 'string') {
     try {
       r = normalizeArticleFields(repairArticleJSON(r));
@@ -784,13 +858,11 @@ async function saveArticle(item, rewritten, usedKeys) {
     } catch (e) { r = {}; }
   }
 
-  // 1) AI rejections — count them properly instead of "empty"
   if (r.reject || r.rejected || r.skip) {
     console.log('Rejected by AI:', item.title ?? item.link, '—', String(r.reason || '').slice(0, 90));
     return false;
   }
 
-  // 2) Accept any spelling of the required fields
   const headline = String(r.headline || r.title || r.head || '').trim();
   const body = String(r.body || r.article || r.content || r.text || '').trim();
   let summary = String(r.summary || r.excerpt || r.description || r.subtitle || '').trim();
@@ -798,30 +870,19 @@ async function saveArticle(item, rewritten, usedKeys) {
 
   if (!headline || !body) {
     console.log('Skipping empty article:', item.title ?? item.link,
-      !headline && !body ? '— missing headline AND body'
-        : !headline ? '— missing headline' : '— missing body');
+      !headline && !body ? '— missing headline AND body' : !headline ? '— missing headline' : '— missing body');
     return false;
   }
 
-  // 3) Rebuild with every standard name (works whether a string or object arrived)
   rewritten = { ...r, headline, title: headline, body, article: body, summary };
 
-  // ---- Cross-feed repost shield (fixes the Robot Report problem) ----
-  try {
-    const sinceShield = new Date(Date.now() - 48 * 60 * 60 * 1000);
-    const recentArts = await prisma.article.findMany({
-      where: { createdAt: { gte: sinceShield } },
-      select: { title: true }
-    });
-    for (const ra of recentArts) {
-      if (isLikelyDuplicate(item.title, ra.title)) {
-        console.log(`Skipping cross-feed repost: "${item.title}" ~ already saved as "${ra.title}"`);
-        return false;
-      }
-    }
-  } catch (e) {
-    console.log('Repost shield error (ignored): ' + e.message);
+  // ---- duplicate gate AFTER the rewrite (catches paraphrases) ----
+  const dupHit = await isDuplicateStory([item.title, headline]);
+  if (dupHit) {
+    console.log(`Skipping duplicate story: "${headline}" ~ already saved as "${dupHit.match}" (sim ${dupHit.sim.toFixed(2)})`);
+    return false;
   }
+  
   // Category/region: trust the LLM's read of the story, fall back to the source's values
   const VALID_CATEGORIES = ['AI News', 'Mobile & Social', 'Tech News', 'Tech Giants', 'Startups & Funding', 'Research', 'Deals', 'Global Tech'];
   const category = VALID_CATEGORIES.includes(rewritten.category) ? rewritten.category : item.category;
@@ -905,6 +966,12 @@ async function run() {
   let saved = 0, rejected = 0, failed = 0;
   for (const item of batch) {
     try {
+          // ---- duplicate gate BEFORE spending AI tokens ----
+      const dupHit = await isDuplicateStory([item.title]);
+      if (dupHit) {
+      console.log(`Skipping duplicate story: "${item.title}" ~ already saved as "${dupHit.match}" (sim ${dupHit.sim.toFixed(2)})`);
+      continue;
+    }
       const rewritten = await rewriteArticle(item);
 
       if (rewritten?.reject) {

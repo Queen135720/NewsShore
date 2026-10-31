@@ -355,6 +355,16 @@ async function callGroq(prompt) {
 }
 
 // ---------- JSON repair for small models ----------
+function looseGrab(text, names) {
+  const un = s => s.replace(/\\n/g, '\n').replace(/\\t/g, ' ').replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+  for (const n of names) {
+    let m = text.match(new RegExp('"' + n + '"\\s*:\\s*"((?:[^"\\\\]|\\\\.)*)"'));
+    if (!m || !m[1].trim()) m = text.match(new RegExp('"' + n + '"\\s*:\\s*"([\\s\\S]*?)"\\s*,\\s*"'));
+    if (!m || !m[1].trim()) m = text.match(new RegExp('"' + n + '"\\s*:\\s*"([\\s\\S]*?)"\\s*[}\\]]'));
+    if (m && m[1].trim()) return un(m[1]);
+  }
+  return undefined;
+}
 
 function repairArticleJSON(raw) {
   let t = raw;
@@ -757,8 +767,16 @@ async function fetchImage(rewritten, category, usedKeys) {
 
 async function saveArticle(item, rewritten, usedKeys) {
   // Guard: skip empty/broken rewrites
-    // ---- Universal guard: accepts every provider's field names ----
-  const r = rewritten || {};
+   // ---- Universal guard: accepts every provider's field names ----
+  let r = rewritten || {};
+
+  // Rescue: if a provider returned a raw JSON string, parse it right here
+  if (typeof r === 'string') {
+    try {
+      r = normalizeArticleFields(repairArticleJSON(r));
+      console.log('Guard rescued a raw JSON string');
+    } catch (e) { r = {}; }
+  }
 
   // 1) AI rejections — count them properly instead of "empty"
   if (r.reject || r.rejected || r.skip) {
@@ -766,7 +784,7 @@ async function saveArticle(item, rewritten, usedKeys) {
     return false;
   }
 
-  // 2) Accept any spelling of the three required fields
+  // 2) Accept any spelling of the required fields
   const headline = String(r.headline || r.title || r.head || '').trim();
   const body = String(r.body || r.article || r.content || r.text || '').trim();
   let summary = String(r.summary || r.excerpt || r.description || r.subtitle || '').trim();
@@ -779,13 +797,25 @@ async function saveArticle(item, rewritten, usedKeys) {
     return false;
   }
 
-  // 3) Write the standard names back so everything below works unchanged
-  rewritten.headline = headline;
-  rewritten.title = headline;
-  rewritten.body = body;
-  rewritten.article = body;
-  rewritten.summary = summary;
+  // 3) Rebuild with every standard name (works whether a string or object arrived)
+  rewritten = { ...r, headline, title: headline, body, article: body, summary };
 
+  // ---- Cross-feed repost shield (fixes the Robot Report problem) ----
+  try {
+    const sinceShield = new Date(Date.now() - 48 * 60 * 60 * 1000);
+    const recentArts = await prisma.article.findMany({
+      where: { createdAt: { gte: sinceShield } },
+      select: { title: true }
+    });
+    for (const ra of recentArts) {
+      if (isLikelyDuplicate(item.title, ra.title)) {
+        console.log(`Skipping cross-feed repost: "${item.title}" ~ already saved as "${ra.title}"`);
+        return false;
+      }
+    }
+  } catch (e) {
+    console.log('Repost shield error (ignored): ' + e.message);
+  }
   // Category/region: trust the LLM's read of the story, fall back to the source's values
   const VALID_CATEGORIES = ['AI News', 'Mobile & Social', 'Tech News', 'Tech Giants', 'Startups & Funding', 'Research', 'Deals', 'Global Tech'];
   const category = VALID_CATEGORIES.includes(rewritten.category) ? rewritten.category : item.category;

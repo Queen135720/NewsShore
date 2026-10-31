@@ -392,6 +392,12 @@ function repairArticleJSON(raw) {
       .replace(/\t/g, '\\t')
       .replace(/,\s*([}\]])/g, '$1'));
   } catch {}
+  const lgHeadline = looseGrab(candidate, ['headline', 'title', 'head']);
+  const lgBody = looseGrab(candidate, ['body', 'article', 'content', 'text']);
+  if (lgHeadline && lgBody) {
+    console.log('JSON repaired by loose field extraction');
+    return { headline: lgHeadline, body: lgBody, summary: looseGrab(candidate, ['summary', 'excerpt', 'description']) || '' };
+  }
   throw new Error('Unparseable article JSON (starts: ' + candidate.slice(0, 120) + ')');
 }
 

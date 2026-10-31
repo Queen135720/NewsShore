@@ -181,6 +181,13 @@ def send_telegram(p):
         tg_api("sendMessage", {"chat_id": TG_CHANNEL, "text": chunk})
     return None
 
+def fb_call(path, payload):
+    r = requests.post(f"https://graph.facebook.com/{FB_VER}/{FB_PAGE}/{path}",
+                      json=payload, timeout=60)
+    if not r.ok:
+        raise RuntimeError(f"FB {path} -> {r.status_code}: {r.text[:400]}")
+    return r.json()
+
 def send_facebook(p):
     a = p["articles"]
     caption = build_caption(a, article_url(a))

@@ -1,7 +1,8 @@
 # post.py — NewsShore social distributor. ZERO AI calls.
 # fetch-and-publish.js owns fetch/rewrite/save. This script only:
 #   1. picks ONE platform per article (category rules + daily caps)
-#   2. posts it as-is: title + summary + the article's own image + link
+#   2. cleans it into a human-looking post (markdown stripped, pure regex)
+#   3. posts it: title + short teaser + the article's own image + link
 
 import os, sys
 from datetime import datetime, timezone
@@ -66,26 +67,118 @@ def pick_platform(a):
 
 REL_LABEL = {"verified": "✅ Verified report", "claimed": "⚠️ Company claim"}
 
-# ---------- url + caption helpers ----------
+# ---------- url helpers ----------
 def slugify(title):
     s = re.sub(r"[^a-z0-9\s-]", "", (title or "").lower())
     s = re.sub(r"[\s-]+", "-", s).strip("-")
     return (s[:80] or "article").rstrip("-")
 
-def body_excerpt(body):
-    """Always the first 70% of the body, cut at a word boundary."""
-    if not body:
-        return ""
-    cut = int(len(body) * 0.7)
-    if cut >= len(body):
-        return body.strip()
-    space = body.rfind(" ", 0, cut)
-    if space > cut // 2:
-        cut = space
-    return body[:cut].strip() + "…"
+# ---------- text cleanup: kill the "AI look" (pure regex, still zero AI) ------
+# Bodies in Supabase are markdown (## headers, **bold**, bullets) — printed
+# literally on Telegram they scream "AI". This layer turns them back into
+# plain human-looking prose before anything goes out.
+CHAR_FIX = {
+    "\u2011": "-", "\u2012": "-", "\u2013": "-", "\u2014": "-", "\u2212": "-",
+    "\u2018": "'", "\u2019": "'", "\u201c": '"', "\u201d": '"',
+    "\u2026": "...", "\u00a0": " ",
+    "\u200b": "", "\u200c": "", "\u200d": "", "\ufeff": "",
+}
+SCAFFOLD = re.compile(
+    r"^(what|why|how)\s+[^.]{0,60}\?$"
+    r"|.{0,40}\b(overview|background|introduction|details?|summary|conclusion|"
+    r"final\s+thoughts|bottom\s+line|takeaways?|implications?|analysis|outlook)\b",
+    re.I)
+MD_LINK = re.compile(r"\[([^\]]+)\]\([^)]*\)")
+TELL_PREFIX = re.compile(
+    r"^(this\s+(article|piece|post|story|report)\s+"
+    r"(discusses|covers|explores|examines|delves\s+into|highlights|"
+    r"looks\s+at|breaks\s+down|explains))\b[.,:;\-\u2014]*\s*", re.I)
+
+def clean_chars(s):
+    for bad, good in CHAR_FIX.items():
+        s = s.replace(bad, good)
+    return s
+
+def strip_md(line):
+    """Remove inline markdown markers, keep the words."""
+    line = MD_LINK.sub(r"\1", line)
+    line = re.sub(r"\*\*(.+?)\*\*", r"\1", line)
+    line = re.sub(r"__(.+?)__", r"\1", line)
+    line = re.sub(r"(?<!\w)\*([^*\n]+?)\*(?!\w)", r"\1", line)
+    line = re.sub(r"~~(.+?)~~", r"\1", line)
+    return line.replace("`", "").strip()
+
+def humanize(text):
+    """Markdown-free, scaffold-free, human-sounding paragraphs.
+    Drops '##' headers, bold-only pseudo-headers and 'Overview'-style
+    section titles; flattens bullets into plain sentences."""
+    text = clean_chars((text or "").replace("\r\n", "\n"))
+    text = TELL_PREFIX.sub("", text, count=1)
+    paras, para = [], []
+    def close():
+        if para:
+            s = re.sub(r"\s+", " ", " ".join(para)).strip()
+            if s:
+                paras.append(s)
+            para.clear()
+    for raw in text.split("\n"):
+        line = raw.strip()
+        if not line:
+            close()
+            continue
+        if line.startswith("|") or re.match(r"^[-=_*]{3,}$", line):
+            continue                                   # tables / divider lines
+        if re.match(r"^#{1,6}(\s|$)", line):
+            close(); continue                           # markdown header -> gone
+        m = re.match(r"^[-*\u2022]\s+(.*)$", line) or re.match(r"^\d+[.)]\s+(.*)$", line)
+        if m:                                            # bullet -> plain sentence
+            piece = strip_md(m.group(1))
+            if piece:
+                if piece[0].islower():
+                    piece = piece[0].upper() + piece[1:]
+                if piece[-1] not in ".!?":
+                    piece += "."
+                para.append(piece)
+            continue
+        piece = strip_md(line.lstrip("> "))
+        if not piece:
+            continue
+        bold_only = re.match(r"^\*{1,2}[^*]{0,100}\*{1,2}:?$", line)
+        if bold_only and ("." not in piece or piece.endswith(":") or SCAFFOLD.match(piece)):
+            close(); continue                           # bold pseudo-header -> gone
+        if len(piece) <= 90 and "." not in piece and SCAFFOLD.match(piece):
+            close(); continue                           # 'Overview' title line -> gone
+        para.append(piece)
+    close()
+    return re.sub(r"\n{3,}", "\n\n", "\n\n".join(paras)).strip()
+
+def clip_sentences(text, cap):
+    """Cut at the last full sentence that fits — never mid-sentence."""
+    if len(text) <= cap:
+        return text
+    best = 0
+    for m in re.finditer(r"[.!?][\"']?(\s|$)", text):
+        if m.end() > cap:
+            break
+        best = m.end()
+    if best:
+        return text[:best].strip()
+    space = text.rfind(" ", 0, cap)
+    return (text[:space] if space > cap // 2 else text[:cap]).strip()
+
+TEXT_CAP = 600   # chars of story text per post — tune freely
 
 def build_caption(a, url):
-    return f"{a['title'].upper()}\n\n{body_excerpt(a.get('body'))}\n\nGet full story 👉 {url}"
+    title = re.sub(r"\s+", " ", strip_md(clean_chars(a.get("title") or ""))).strip().upper()
+    src = (a.get("summary") or "").strip()
+    if len(src) < 60:                    # weak/missing summary -> article body
+        src = (a.get("body") or "").strip()
+    text = humanize(src)
+    if not text:
+        text = "Full story on the site."
+    text = text[:1].upper() + text[1:]
+    text = clip_sentences(text, TEXT_CAP)
+    return f"{title}\n\n{text}\n\nGet full story 👉 {url}"
 
 def split_chunks(text, first_limit=1024, limit=4096):
     """Split long text: chunk 1 fits a Telegram photo caption, the rest fit
@@ -217,7 +310,7 @@ def send_whatsapp(p):
             first_limit=4096):
         tg_api("sendMessage", {"chat_id": OWNER_ID, "text": chunk})
     return None
-    
+
 SENDERS = {"telegram": send_telegram, "facebook": send_facebook, "whatsapp": send_whatsapp}
 
 def main():

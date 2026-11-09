@@ -38,14 +38,14 @@ AFRICA = {"nigeria", "south africa", "ghana", "kenya", "africa",
           "egypt", "morocco", "uganda", "tanzania"}
 
 ROUTE_RULES = {
-    "AI News":            "telegram",
-    "Research":           "telegram",
-    "Tech Giants":        "telegram",
-    "Mobile & Social":    "facebook",
-    "Tech News":          "facebook",
+    "AI News":            "telegram", "facebook", "whatsapp"
+    "Research":           "telegram", "facebook",
+    "Tech Giants":        "telegram"," facebook", "whatsapp"
+    "Mobile & Social":    "telegram",
+    "Tech News":          "facebook", "telegram",
     "Deals":              "facebook",
     "Startups & Funding": "facebook",
-    "Global Tech":        "whatsapp",   # refined by region below
+    "Global Tech":        "whatsapp", "facebook",  # refined by region below
 }
 
 STOP = {"the","a","an","of","for","and","or","to","in","on","with","new","its","is",

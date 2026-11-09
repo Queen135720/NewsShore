@@ -3,8 +3,9 @@
 #   1. picks ONE platform per article (category rules + daily caps)
 #   2. cleans it into a human-looking post (markdown stripped, pure regex)
 #   3. posts it: title + short teaser + the article's own image + link
+# Platforms: Telegram (bot API), WhatsApp Channels (Whapi.Cloud), Facebook (Graph API)
 
-import os, sys
+import os, sys, time
 from datetime import datetime, timezone
 import requests
 from supabase import create_client
@@ -15,15 +16,17 @@ SB = create_client(os.environ["SUPABASE_URL"], os.environ["SUPABASE_SERVICE_KEY"
 
 TG_TOKEN   = os.environ.get("TELEGRAM_BOT_TOKEN")
 TG_CHANNEL = os.environ.get("TELEGRAM_CHANNEL")
-OWNER_ID   = os.environ.get("OWNER_CHAT_ID")     # your DMs — WhatsApp hand-off
 FB_PAGE    = os.environ.get("FACEBOOK_PAGE_ID")
 FB_TOKEN   = os.environ.get("FACEBOOK_PAGE_TOKEN")
 FB_VER     = "v22.0"
-SITE       = os.environ.get("SITE_URL", "https://newsshore.com")
+WHAPI_TOKEN = os.environ.get("WHAPI_TOKEN")           # Whapi.Cloud gateway token
+WA_CHANNEL  = os.environ.get("WHATSAPP_CHANNEL_ID")   # e.g. 123456789@newsletter
+WHAPI       = "https://gate.whapi.cloud"
+SITE        = os.environ.get("SITE_URL", "https://newsshore.com")
 
 CONFIGURED = {   # platforms missing secrets are skipped, never crash the run
     "telegram": bool(TG_TOKEN and TG_CHANNEL),
-    "whatsapp": bool(TG_TOKEN and OWNER_ID),
+    "whatsapp": bool(WHAPI_TOKEN and WA_CHANNEL),
     "facebook": bool(FB_PAGE and FB_TOKEN),
 }
 
@@ -75,8 +78,8 @@ def slugify(title):
 
 # ---------- text cleanup: kill the "AI look" (pure regex, still zero AI) ------
 # Bodies in Supabase are markdown (## headers, **bold**, bullets) — printed
-# literally on Telegram they scream "AI". This layer turns them back into
-# plain human-looking prose before anything goes out.
+# literally they scream "AI". This layer turns them back into plain
+# human-looking prose before anything goes out.
 CHAR_FIX = {
     "\u2011": "-", "\u2012": "-", "\u2013": "-", "\u2014": "-", "\u2212": "-",
     "\u2018": "'", "\u2019": "'", "\u201c": '"', "\u201d": '"',
@@ -296,20 +299,35 @@ def send_facebook(p):
                             "access_token": FB_TOKEN})
     return data.get("post_id") or data["id"]
 
+def whapi_call(path, payload):
+    r = requests.post(f"{WHAPI}/{path}",
+                      headers={"Authorization": f"Bearer {WHAPI_TOKEN}",
+                               "Accept": "application/json"},
+                      json=payload, timeout=60)
+    if not r.ok:
+        raise RuntimeError(f"WA {path} -> {r.status_code}: {r.text[:300]}")
+    return r.json()
+
 def send_whatsapp(p):
     a = p["articles"]
     caption = build_caption(a, article_url(a))
+    # Whapi's docs name the recipient field `message` on /messages/text but
+    # `to` on /messages/image — we send BOTH keys with the same value;
+    # unknown extras are ignored, so this works either way.
     if a.get("image_url"):
         try:
-            tg_api("sendPhoto", {"chat_id": OWNER_ID, "photo": a["image_url"],
-                                 "caption": a["title"].upper()})
-        except Exception:
-            pass
-    for chunk in split_chunks(
-            "📲 WhatsApp post ready — image above, paste this:\n\n" + caption,
-            first_limit=4096):
-        tg_api("sendMessage", {"chat_id": OWNER_ID, "text": chunk})
-    return None
+            data = whapi_call("messages/image",
+                              {"to": WA_CHANNEL, "message": WA_CHANNEL,
+                               "media": a["image_url"], "caption": caption[:1024]})
+            time.sleep(5)            # spacing — look human, not like a blast tool
+            return data.get("id") or "sent"
+        except RuntimeError as e:
+            print(f"[wa] image failed ({e}) — sending as text")
+    data = whapi_call("messages/text",
+                      {"to": WA_CHANNEL, "message": WA_CHANNEL,
+                       "body": caption[:3500]})
+    time.sleep(5)
+    return data.get("id") or "sent"
 
 SENDERS = {"telegram": send_telegram, "facebook": send_facebook, "whatsapp": send_whatsapp}
 
@@ -332,7 +350,7 @@ def main():
         try:
             ext_id = SENDERS[p["platform"]](p)
             SB.table("social_posts").update({
-                "status": "ready" if p["platform"] == "whatsapp" else "posted",
+                "status": "posted",
                 "external_id": ext_id,
                 "posted_at": datetime.now(timezone.utc).isoformat(),
             }).eq("id", p["id"]).execute()

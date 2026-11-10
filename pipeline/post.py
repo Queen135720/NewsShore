@@ -38,9 +38,9 @@ AFRICA = {"nigeria", "south africa", "ghana", "kenya", "africa",
           "egypt", "morocco", "uganda", "tanzania"}
 
 ROUTE_RULES = {
-    "AI News":            "telegram", "facebook", "whatsapp"
+    "AI News":            "telegram", "facebook", "whatsapp",
     "Research":           "telegram", "facebook",
-    "Tech Giants":        "telegram"," facebook", "whatsapp"
+    "Tech Giants":        "telegram"," facebook", "whatsapp",
     "Mobile & Social":    "telegram",
     "Tech News":          "facebook", "telegram",
     "Deals":              "facebook",

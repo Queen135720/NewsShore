@@ -5,8 +5,8 @@
 #         telegram + facebook + whatsapp at once
 #   2. cleans it into a human-looking post (markdown stripped, pure regex)
 #   3. posts it: title + short teaser + the article's own image + link
-# Only articles saved within PICKUP_WINDOW_H hours are ever routed (latest
-# content only — no old backlog drains).
+# Only articles saved within PICKUP_WINDOW_H hours are ever routed OR posted
+# (latest content only — stale pending rows expire, never backfill).
 
 import os, sys, time
 from datetime import datetime, timezone
@@ -36,6 +36,7 @@ CONFIGURED = {   # platforms missing secrets are skipped, never crash the run
 DAILY_CAPS   = {"whatsapp": 10, "facebook": 20, "telegram": 40}
 MAX_ATTEMPTS = 3
 PICKUP_WINDOW_H = 2     # only articles saved within this many hours get posted
+RUN_CAPS     = {"telegram": 6, "facebook": 4, "whatsapp": 3}   # max posts per platform per run
 
 # ---------- routing rules — this is the whole "editor", edit freely ----------
 # Each category maps to a LIST of platforms: the article goes to ALL of them
@@ -383,30 +384,50 @@ def main():
     unrouted = articles_without_routing()
     if unrouted:
         route(unrouted)
+    # ---- queue: NEWEST articles first; stale pendings are dropped ----
+    # Rows left over from earlier runs (yesterday's backlog) must never jump
+    # ahead of today's content: anything whose article is older than
+    # PICKUP_WINDOW_H is expired (never posted), and the rest post newest-first.
+    cutoff = (datetime.now(timezone.utc) - timedelta(hours=PICKUP_WINDOW_H)).isoformat()
+    fresh_ids = {r["id"] for r in
+                 SB.table("articles").select("id")
+                   .gte("created_at", cutoff).limit(500).execute().data}
     queue = (SB.table("social_posts").select("*, articles(*)")
              .in_("status", ["pending", "failed"]).lt("attempts", MAX_ATTEMPTS)
-             .order("id").limit(15).execute().data)
+             .order("id", desc=True).limit(60).execute().data)
+    live, stale = [], 0
+    for p in queue:
+        if (p.get("articles") or {}).get("id") not in fresh_ids:
+            stale += 1
+            SB.table("social_posts").update({"status": "expired"}).eq("id", p["id"]).execute()
+        else:
+            live.append(p)
+    if stale:
+        print(f"[queue] {stale} stale pending post(s) expired — articles older than {PICKUP_WINDOW_H}h, they will never post")
+    live.sort(key=lambda p: (p.get("articles") or {}).get("created_at") or "",
+              reverse=True)                                # newest article -> posted first
     failures = 0
     per_run = {}
-    for p in queue:
-        if per_run.get(p["platform"], 0) >= 3:             # max 3 posts per platform per run
+    for p in live:
+        plat = p["platform"]
+        if per_run.get(plat, 0) >= RUN_CAPS.get(plat, 3):   # per-run throttle per platform
             continue                                       # stays pending for the next run
-        per_run[p["platform"]] = per_run.get(p["platform"], 0) + 1
+        per_run[plat] = per_run.get(plat, 0) + 1
         try:
-            ext_id = SENDERS[p["platform"]](p)
+            ext_id = SENDERS[plat](p)
             SB.table("social_posts").update({
                 "status": "posted",
                 "external_id": ext_id,
                 "posted_at": datetime.now(timezone.utc).isoformat(),
             }).eq("id", p["id"]).execute()
-            print(f"[post] #{p['id']} -> {p['platform']}: {p['articles']['title'][:60]}")
+            print(f"[post] #{p['id']} -> {plat}: {p['articles']['title'][:60]}")
         except Exception as e:
             failures += 1
             SB.table("social_posts").update({
                 "status": "failed", "error": str(e)[:500],
                 "attempts": (p["attempts"] or 0) + 1,
             }).eq("id", p["id"]).execute()
-            print(f"[FAIL] #{p['id']} ({p['platform']}): {e}")
+            print(f"[FAIL] #{p['id']} ({plat}): {e}")
     sys.exit(1 if failures else 0)   # nonzero exit -> the alert step DMs you
 
 if __name__ == "__main__":

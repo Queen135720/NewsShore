@@ -1,9 +1,12 @@
 # post.py — NewsShore social distributor. ZERO AI calls.
 # fetch-and-publish.js owns fetch/rewrite/save. This script only:
-#   1. picks ONE platform per article (category rules + daily caps)
+#   1. picks the PLATFORM LIST for each article (category rules + daily caps)
+#      -> one social_posts row per (article, platform): a big story can hit
+#         telegram + facebook + whatsapp at once
 #   2. cleans it into a human-looking post (markdown stripped, pure regex)
 #   3. posts it: title + short teaser + the article's own image + link
-# Platforms: Telegram (bot API), WhatsApp Channels (Whapi.Cloud), Facebook (Graph API)
+# Only articles saved within PICKUP_WINDOW_H hours are ever routed (latest
+# content only — no old backlog drains).
 
 import os, sys, time
 from datetime import datetime, timezone
@@ -32,21 +35,29 @@ CONFIGURED = {   # platforms missing secrets are skipped, never crash the run
 
 DAILY_CAPS   = {"whatsapp": 10, "facebook": 20, "telegram": 40}
 MAX_ATTEMPTS = 3
+PICKUP_WINDOW_H = 2     # only articles saved within this many hours get posted
 
 # ---------- routing rules — this is the whole "editor", edit freely ----------
+# Each category maps to a LIST of platforms: the article goes to ALL of them
+# (one social_posts row per platform, each under its own daily cap).
 AFRICA = {"nigeria", "south africa", "ghana", "kenya", "africa",
           "egypt", "morocco", "uganda", "tanzania"}
 
 ROUTE_RULES = {
-    "AI News":            ["telegram", "facebook", "whatsapp",],
-    "Research":           "telegram", "facebook",
-    "Tech Giants":        "telegram"," facebook", "whatsapp",
-    "Mobile & Social":    "telegram",
-    "Tech News":          "facebook", "telegram",
-    "Deals":              "facebook",
-    "Startups & Funding": "facebook",
-    "Global Tech":        "whatsapp", "facebook",  # refined by region below
+    "AI News":            ["telegram", "facebook", "whatsapp"],
+    "Research":           ["telegram", "facebook"],
+    "Tech Giants":        ["telegram", "facebook", "whatsapp"],
+    "Mobile & Social":    ["telegram"],
+    "Tech News":          ["facebook", "telegram"],
+    "Deals":              ["facebook"],
+    "Startups & Funding": ["facebook"],
+    "Global Tech":        ["whatsapp", "facebook"],
 }
+# NOTE: "Global Tech" now goes to WhatsApp regardless of region. To restore
+# the old Africa-only WhatsApp gate, replace pick_platforms' Global Tech
+# branch with:
+#   region = (a.get("region") or "").strip().lower()
+#   return ["whatsapp", "facebook"] if region in AFRICA else ["facebook"]
 
 STOP = {"the","a","an","of","for","and","or","to","in","on","with","new","its","is",
         "are","as","at","by","from","this","that","will","says","said"}
@@ -61,12 +72,11 @@ def similar(a, b):
     shared = a & b
     return len(shared) >= 2 and len(shared) / max(len(a), len(b)) >= 0.3
 
-def pick_platform(a):
+def pick_platforms(a):
     cat = (a.get("category") or "").strip()
     if cat == "Global Tech":
-        region = (a.get("region") or "").strip().lower()
-        return "whatsapp" if region in AFRICA else "facebook"
-    return ROUTE_RULES.get(cat, "none")
+        return ["whatsapp", "facebook"]
+    return ROUTE_RULES.get(cat, [])
 
 REL_LABEL = {"verified": "✅ Verified report", "claimed": "⚠️ Company claim"}
 
@@ -199,12 +209,29 @@ def split_chunks(text, first_limit=1024, limit=4096):
 
 # ---------- routing ----------
 def articles_without_routing():
-    routed = {r["article_id"] for r in SB.table("social_posts").select("article_id").execute().data}
+    """Latest content only: articles saved within PICKUP_WINDOW_H, that are
+    still missing at least one of their target platforms (or not routed at
+    all). Fully routed articles and skipped/duplicate ones never reappear."""
+    rows = SB.table("social_posts").select("article_id,platform").execute().data
+    dead = {r["article_id"] for r in rows if r.get("platform") == "none"}
+    have = {}
+    for r in rows:
+        if r.get("platform") and r["platform"] != "none":
+            have.setdefault(r["article_id"], set()).add(r["platform"])
+    cutoff = (datetime.now(timezone.utc) - timedelta(hours=PICKUP_WINDOW_H)).isoformat()
     recent = (SB.table("articles")
               .select("id,title,summary,reliability,category,region,image_url,"
                       "image_credit_name,public_url")
+              .gte("created_at", cutoff)
               .order("created_at", desc=True).limit(60).execute().data)
-    return [a for a in recent if a["id"] not in routed]
+    out = []
+    for a in recent:
+        if a["id"] in dead:
+            continue
+        targets = pick_platforms(a)
+        if not targets or (set(targets) - have.get(a["id"], set())):
+            out.append(a)
+    return out
 
 def posts_today(platform):
     start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
@@ -215,31 +242,49 @@ def posts_today(platform):
 def route(unrouted):
     counts = {p: posts_today(p) for p in DAILY_CAPS}
     since24 = (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat()
-    done = (SB.table("social_posts").select("articles(title)")
+    done = (SB.table("social_posts").select("article_id,articles(title)")
             .neq("platform", "none").gte("created_at", since24).execute().data)
-    seen = [title_words(r["articles"]["title"]) for r in done if r.get("articles")]
-    waiting = dups = 0
+    seen = [(r["article_id"], title_words(r["articles"]["title"]))
+            for r in done if r.get("articles")]
+    existing = {(r["article_id"], r["platform"]) for r in
+                SB.table("social_posts").select("article_id,platform").execute().data}
+    routed = queued = waiting = dups = 0
     for a in unrouted:
         tw = title_words(a["title"])
-        if any(similar(tw, prev) for prev in seen):
+        # dedup vs OTHER articles only — this article's own earlier rows
+        # (e.g. telegram row from a previous run) must never count as a dup
+        if any(aid != a["id"] and similar(tw, prev) for aid, prev in seen):
             dups += 1
             SB.table("social_posts").upsert({"article_id": a["id"], "platform": "none",
-                "status": "skipped"}, on_conflict="article_id").execute()
+                "status": "skipped"}, on_conflict="article_id,platform").execute()
             print(f"[route] duplicate stays website-only: {a['title'][:60]}")
             continue
-        platform = pick_platform(a)
-        if platform != "none" and not CONFIGURED.get(platform):
-            waiting += 1
+        platforms = pick_platforms(a)
+        if not platforms:
+            SB.table("social_posts").upsert({"article_id": a["id"], "platform": "none",
+                "status": "skipped"}, on_conflict="article_id,platform").execute()
             continue
-        if platform != "none" and counts[platform] >= DAILY_CAPS[platform]:
-            platform = "none"
-        if platform != "none":
-            counts[platform] += 1
-            seen.append(tw)
-        SB.table("social_posts").upsert({"article_id": a["id"], "platform": platform,
-            "status": "pending" if platform != "none" else "skipped"},
-            on_conflict="article_id").execute()
-    print(f"[route] {len(unrouted) - waiting - dups} decided, {waiting} waiting, {dups} duplicate(s) skipped")
+        made = False
+        for plat in platforms:
+            if (a["id"], plat) in existing:
+                continue                    # already routed/posted there earlier
+            if not CONFIGURED.get(plat):
+                waiting += 1
+                continue                    # secret missing -> retried when it returns
+            if counts[plat] >= DAILY_CAPS[plat]:
+                continue                    # daily cap hit -> retried within the window
+            counts[plat] += 1
+            SB.table("social_posts").upsert({"article_id": a["id"], "platform": plat,
+                "status": "pending"}, on_conflict="article_id,platform").execute()
+            existing.add((a["id"], plat))
+            queued += 1
+            made = True
+        if made:
+            routed += 1
+            seen.append((a["id"], tw))
+    print(f"[route] {routed} article(s) routed -> {queued} post(s) queued, "
+          f"{waiting} platform slot(s) waiting, {dups} duplicate(s) skipped")
+
 # ---------- senders ----------
 def tg_api(method, payload):
     r = requests.post(f"https://api.telegram.org/bot{TG_TOKEN}/{method}", json=payload, timeout=60)
@@ -340,10 +385,10 @@ def main():
         route(unrouted)
     queue = (SB.table("social_posts").select("*, articles(*)")
              .in_("status", ["pending", "failed"]).lt("attempts", MAX_ATTEMPTS)
-             .order("id").limit(10).execute().data)
+             .order("id").limit(15).execute().data)
     failures = 0
     per_run = {}
-    for p in queue:                                        # queue: change .limit(10) to .limit(15)
+    for p in queue:
         if per_run.get(p["platform"], 0) >= 3:             # max 3 posts per platform per run
             continue                                       # stays pending for the next run
         per_run[p["platform"]] = per_run.get(p["platform"], 0) + 1

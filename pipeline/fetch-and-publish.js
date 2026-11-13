@@ -11,7 +11,7 @@
 import Parser from 'rss-parser';
 import { createClient } from '@supabase/supabase-js';
 
-const providerDown = { glm: false, groq: false, cloudflare: false, groq20b: false, Bazaar: false, nvidia: false, nvidia2: false, gemini: false,};
+const providerDown = { glm: false, groq: false, cloudflare: false, groq20b: false, Bazaar: false, eden: false, chutes: false, novita: false, apinex: false, nvidia: false, nvidia2: false, gemini: false,};
 
 const parser = new Parser({
   timeout: 10000,
@@ -396,6 +396,116 @@ async function callBazaar(prompt) {
     throw err;
   }
 }
+
+// ==== NEW PROVIDERS: Eden AI, Chutes, Novita, APINEX ====
+const EDEN_MODEL   = "gemma-7b-it-lora";            // from Eden catalog, $0 filter
+const CHUTES_MODEL = "Qwen/Qwen3.8-27B-TEE-pareton";      // from chutes.ai model list
+const NOVITA_MODEL = "apodex/apodex-1.1-mini";      // e.g. qwen2.5-7b-instruct (a $0 one)
+const APINEX_MODEL = "free/deepseek-v4.1-flash";      // from apinex.bond free category
+
+// Shared caller for OpenAI-compatible providers (Chutes, Novita, APINEX)
+async function callOpenAIStyle(label, url, apiKey, model, prompt, timeoutMs) {
+  if (providerDown[label]) return null;
+  if (!apiKey) { console.log(`[${label}] no API key set`); return null; }
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs || 45000);
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey },
+      body: JSON.stringify({
+        model: model,
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: 6000,
+        temperature: 0.3,
+      }),
+      signal: ctrl.signal,
+    });
+    const body = await res.text();
+    if (!res.ok) {
+      console.log(`[${label}] HTTP ${res.status}: ${body.slice(0, 300)}`);
+      const long = [401, 402, 403, 404].includes(res.status); // wrong key/model = 6h nap
+      providerDown[label] = true;
+      setTimeout(() => { providerDown[label] = false; }, long ? 6 * 3600000 : 15 * 60000);
+      return null;
+    }
+    const data = JSON.parse(body);
+    const text = data?.choices?.[0]?.message?.content || data?.choices?.[0]?.text || null;
+    if (!text || !String(text).trim()) { console.log(`[${label}] empty reply`); return null; }
+    console.log(`[${label}] OK ${String(text).length} chars`);
+    return text;
+  } catch (e) {
+    console.log(`[${label}] failed: ${e.message}`);
+    providerDown[label] = true;
+    setTimeout(() => { providerDown[label] = false; }, 30 * 60000);
+    return null;
+  } finally { clearTimeout(timer); }
+}
+
+async function callEden(prompt) {
+  if (providerDown.eden) return null;
+  if (!process.env.EDEN_API_KEY) { console.log("[eden] no API key set"); return null; }
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 60000); // gemma-4 thinks before answering
+  try {
+    const res = await fetch("https://api.eden.ai/v2/text/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + process.env.EDEN_API_KEY },
+      body: JSON.stringify({
+        providers: "google",
+        model: EDEN_MODEL,
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: 6000,   // reasoning model: too low = empty reply (the old Cloudflare bug)
+        temperature: 0.3,
+      }),
+      signal: ctrl.signal,
+    });
+    const body = await res.text();
+    if (!res.ok) {
+      console.log(`[eden] HTTP ${res.status}: ${body.slice(0, 300)}`);
+      providerDown.eden = true;
+      setTimeout(() => { providerDown.eden = false; }, 30 * 60000);
+      return null;
+    }
+    const data = JSON.parse(body);
+    let text = data?.generated_text || null;                 // direct shape
+    if (!text && data && typeof data === "object") {          // keyed-by-provider shape
+      for (const k of Object.keys(data)) {
+        const v = data[k];
+        if (typeof v?.generated_text === "string") { text = v.generated_text; break; }
+        if (v?.choices?.[0]?.message?.content) { text = v.choices[0].message.content; break; }
+      }
+    }
+    if (!text || !text.trim()) { console.log(`[eden] empty reply: ${body.slice(0, 200)}`); return null; }
+    console.log(`[eden] OK ${text.length} chars`);
+    return text;
+  } catch (e) {
+    console.log(`[eden] failed: ${e.message}`);
+    providerDown.eden = true;
+    setTimeout(() => { providerDown.eden = false; }, 30 * 60000);
+    return null;
+  } finally { clearTimeout(timer); }
+}
+
+async function callNovita(prompt) {
+  return callOpenAIStyle("novita", "https://api.novita.ai/v3/openai/chat/completions",
+    process.env.NOVITA_API_KEY, NOVITA_MODEL, prompt, 45000);
+}
+
+async function callApinex(prompt) {
+  return callOpenAIStyle("apinex", "https://apinex.bond/v1/chat/completions",
+    process.env.APINEX_API_KEY, APINEX_MODEL, prompt, 45000);
+}
+
+async function callChutes(prompt) {
+  return callOpenAIStyle("chutes", "https://llm.chutes.ai/v1/chat/completions",
+    process.env.CHUTES_API_KEY, CHUTES_MODEL, prompt, 60000); // 60s: cold starts
+}
+
+let r = await callEden(prompt);   if (r) return r;
+r = await callApinex(prompt);     if (r) return r;
+r = await callChutes(prompt);     if (r) return r;
+r = await callNovita(prompt);     if (r) return r;
 
 // ---------- JSON repair for small models ----------
 function looseGrab(text, names) {

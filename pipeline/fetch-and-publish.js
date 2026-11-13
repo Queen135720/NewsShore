@@ -438,8 +438,11 @@ async function callOpenAIStyle(label, url, apiKey, model, prompt, timeoutMs) {
     const data = JSON.parse(body);
     const text = data?.choices?.[0]?.message?.content || data?.choices?.[0]?.text || null;
     if (!text || !String(text).trim()) { console.log(`[${label}] empty reply`); return null; }
-    console.log(`[${label}] OK ${String(text).length} chars`);
-    return text;
+    let obj;
+    try { obj = normalizeArticleFields(repairArticleJSON(String(text))); }
+    catch (e) { console.log(`[${label}] replied but not valid article JSON — skipping to next provider`); return null; }
+    console.log(`[${label}] JSON OK`);
+    return JSON.stringify(obj);
   } catch (e) {
     console.log(`[${label}] failed: ${e.message}`);
     providerDown[label] = true;
@@ -483,8 +486,11 @@ async function callEden(prompt) {
       }
     }
     if (!text || !text.trim()) { console.log(`[eden] empty reply: ${body.slice(0, 200)}`); return null; }
-    console.log(`[eden] OK ${text.length} chars`);
-    return text;
+    let obj;
+    try { obj = normalizeArticleFields(repairArticleJSON(text)); }
+    catch (e) { console.log(`[eden] replied but not valid article JSON — skipping to next provider`); return null; }
+    console.log(`[eden] JSON OK`);
+    return JSON.stringify(obj);
   } catch (e) {
     console.log(`[eden] failed: ${e.message}`);
     providerDown.eden = true;

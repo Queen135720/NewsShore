@@ -4,7 +4,7 @@
 #      -> one social_posts row per (article, platform): a big story can hit
 #         telegram + facebook + whatsapp at once
 #   2. cleans it into a human-looking post (markdown stripped, pure regex)
-#   3. posts it: title + short teaser + the article's own image + link
+#   3. posts it: sentence-case headline + ~70% of the article body + image + link
 #   4. HARD duplicate guard: a (article, platform) pair that already went out
 #      in the last 48h can never be sent again, no matter what routing did
 # Only articles saved within PICKUP_WINDOW_H hours are ever routed (latest
@@ -25,21 +25,39 @@ OWNER_ID   = os.environ.get("OWNER_CHAT_ID")     # DMs: failure alert with error
 FB_PAGE    = os.environ.get("FACEBOOK_PAGE_ID")
 FB_TOKEN   = os.environ.get("FACEBOOK_PAGE_TOKEN")
 FB_VER     = "v22.0"
-WHAPI_TOKEN = os.environ.get("WHAPI_TOKEN")           # Whapi.Cloud gateway token
-WA_CHANNEL  = os.environ.get("WHATSAPP_CHANNEL_ID")   # e.g. 123456789@newsletter
-WHAPI       = "https://gate.whapi.cloud"
-SITE        = os.environ.get("SITE_URL", "https://newsshore.com")
+SITE       = os.environ.get("SITE_URL", "https://newsshore.com")
 
+# ---- WhatsApp gateway: self-hosted Evolution API (free) or Whapi.Cloud ----
+# WA_PROVIDER picks the gateway explicitly; by default it is "evolution" as
+# soon as EVOLUTION_URL is set, and falls back to "whapi" (legacy) otherwise.
+#   Evolution needs: EVOLUTION_URL (http://your-vps-ip:8080),
+#   EVOLUTION_API_KEY (= AUTHENTICATION_API_KEY in the server's .env),
+#   EVOLUTION_INSTANCE (the instance name you create there).
+# Both providers use WHATSAPP_CHANNEL_ID — the channel JID, e.g.
+# 123456789@newsletter, taken from the channel invite link
+# (https://whatsapp.com/channel/<id>  ->  "<id>@newsletter").
+WA_CHANNEL   = os.environ.get("WHATSAPP_CHANNEL_ID")
+WHAPI_TOKEN  = os.environ.get("WHAPI_TOKEN")      # legacy Whapi.Cloud token
+WHAPI        = "https://gate.whapi.cloud"
+EVO_URL      = os.environ.get("EVOLUTION_URL", "").rstrip("/")
+EVO_KEY      = os.environ.get("EVOLUTION_API_KEY")
+EVO_INSTANCE = os.environ.get("EVOLUTION_INSTANCE")
+WA_PROVIDER  = (os.environ.get("WA_PROVIDER") or
+                ("evolution" if EVO_URL else "whapi" if WHAPI_TOKEN else "")).lower()
+
+WA_CONFIG_OK = (bool(WA_CHANNEL) and
+                (all([EVO_URL, EVO_KEY, EVO_INSTANCE])
+                 if WA_PROVIDER == "evolution" else bool(WHAPI_TOKEN)))
 CONFIGURED = {   # platforms missing secrets are skipped, never crash the run
     "telegram": bool(TG_TOKEN and TG_CHANNEL),
-    "whatsapp": bool(WHAPI_TOKEN and WA_CHANNEL),
+    "whatsapp": WA_CONFIG_OK,
     "facebook": bool(FB_PAGE and FB_TOKEN),
 }
 
-DAILY_CAPS   = {"whatsapp": 30, "facebook": 50, "telegram": 70}
+DAILY_CAPS   = {"whatsapp": 10, "facebook": 20, "telegram": 40}
 MAX_ATTEMPTS = 3
 PICKUP_WINDOW_H = 2     # only articles saved within this many hours get posted
-RUN_CAPS     = {"telegram": 6, "facebook": 5, "whatsapp": 3}   # max posts per platform per run
+RUN_CAPS     = {"telegram": 6, "facebook": 4, "whatsapp": 3}   # max posts per platform per run
 
 # Errors that mean "this platform's SECRET/CONFIG is broken" (not the article
 # being bad): dead token, wrong channel ID, unlinked number, trial limit.
@@ -48,7 +66,8 @@ RUN_CAPS     = {"telegram": 6, "facebook": 5, "whatsapp": 3}   # max posts per p
 CONFIG_ERR = re.compile(
     r"-> 4(01|02|03|04)\b"
     r"|Error validating access token|session has been invalidated"
-    r"|Channel not found|Need channel authorization|Trial version limit", re.I)
+    r"|Channel not found|Need channel authorization|Trial version limit"
+    r"|Instance not found|not connected|invalid api", re.I)
 
 # ---------- routing rules — this is the whole "editor", edit freely ----------
 # Each category maps to a LIST of platforms: the article goes to ALL of them
@@ -192,19 +211,75 @@ def clip_sentences(text, cap):
     space = text.rfind(" ", 0, cap)
     return (text[:space] if space > cap // 2 else text[:cap]).strip()
 
-TEXT_CAP = 600   # chars of story text per post — tune freely
+# ---------- sentence-case headlines ------------------------------------------
+# Words allowed to go lowercase inside a headline. Anything NOT in this list
+# keeps its own casing, so proper nouns, acronyms and product names
+# (Uber, ElevenLabs, XR, GPS, Pixel Watch, llama.cpp) survive untouched:
+#   "Uber Data Breach Exposes Driver Licenses"  -> "Uber data breach exposes driver licenses"
+#   "Pixel Watch Gets Media Controls Redesign"  -> "Pixel Watch gets media controls redesign"
+# Caps stay reserved for genuine names/acronyms — never the whole headline.
+COMMON = frozenset("""
+a an the and or but nor yet so of to in on at by for with from as into onto
+about over under after before between among across against amid during since
+until via per up down out off than then some any all both each other another
+such own same too very just now here there when where why how what which who
+whom whose while whether if because although though instead also more most
+less least few many much every either neither again once not no its his her
+their our your my this that these those is are was were be been being has
+have had do does did says said say gets get got goes go makes make made takes
+take took comes come came sees see saw seen uses use used calls call called
+launches launch launched unveils unveiled releases release released
+announces announce announced reveals reveal revealed shows show shown brings
+brought adds added plans plan eyes set sets wins won beats hit hits run runs
+opens open opened tops leads lead led sparks drops dropped cuts joins joined
+builds built ships shipped rolls new old big small first second third last
+next early late full free high low top end start week year day days month
+time users user people world global local online data app apps web home tech
+digital future report reports check checks faulty cause caused server servers
+system systems access grant grants driver licenses exposes gift guide dads
+dad mom moms parents meeting notes dictation agent agents balances
+personality lets shop wallet fresh media controls redesign collection smart
+devices boost incentives spectrum regulator experience shine glasses
+subscription based cross platform
+through you breach breaches navigation screenless device outage outages
+""".split())
+
+def sentence_case(t):
+    """Headline casing: keep the first word as written, lowercase only
+    COMMON words, and preserve acronyms (AI, XR), digit tokens (v1.0.0, 2026)
+    and anything that already looks like a name/product (ElevenLabs, llama.cpp)."""
+    if not t:
+        return t
+    if t.isupper() and len(t) > 15:           # whole-title shoutcase -> soften
+        t = t.title()
+    out = []
+    for i, w in enumerate(t.split(" ")):
+        core = w.strip("()[]{}<>\"'“”‘’.,;:!?—–-")
+        keep = (i == 0                                # first word: as written
+                or not core                           # bare punctuation
+                or (core.isupper() and len(core) > 1)  # acronym: AI, XR, GPS
+                or any(c.isdigit() for c in core)      # 2026, v1.0.0
+                or w[0].islower()                     # already lowercase
+                or core.lower() not in COMMON)        # name/product/brand
+        out.append(w if keep else w.lower())
+    return " ".join(out)
+
+BODY_SHARE    = 0.70   # share of the article body that goes into a social post
+BODY_HARD_CAP = 4500   # ceiling sized so the FB photo-caption slice keeps the link line
 
 def build_caption(a, url):
-    title = re.sub(r"\s+", " ", strip_md(clean_chars(a.get("title") or ""))).strip().upper()
-    src = (a.get("summary") or "").strip()
-    if len(src) < 60:                    # weak/missing summary -> article body
-        src = (a.get("body") or "").strip()
-    text = humanize(src)
-    if not text:
-        text = "Full story on the site."
-    text = text[:1].upper() + text[1:]
-    text = clip_sentences(text, TEXT_CAP)
-    return f"{title}\n\n{text}\n\nGet full story 👉 {url}"
+    title = sentence_case(re.sub(r"\s+", " ",
+                      strip_md(clean_chars(a.get("title") or ""))).strip())
+    # The BODY is the post text — the summary is only a last-resort fallback.
+    body = humanize((a.get("body") or "").strip())
+    if len(body) < 60:
+        body = humanize((a.get("summary") or "").strip())
+    if len(body) < 60:
+        body = "Full story on the site."
+    body = body[:1].upper() + body[1:]
+    # ~70% of the body, always ending on a full sentence, never mid-word.
+    body = clip_sentences(body, min(BODY_HARD_CAP, max(200, int(len(body) * BODY_SHARE))))
+    return f"{title}\n\n{body}\n\nGet the full article 👉 {url}"
 
 def split_chunks(text, first_limit=1024, limit=4096):
     """Split long text: chunk 1 fits a Telegram photo caption, the rest fit
@@ -331,13 +406,15 @@ def tg_api(method, payload):
     return r.json()["result"]
 
 def article_url(a):
-    """Unique permanent link for this article — generated once, stored in the
-    DB (articles.public_url) so the website serves exactly the URLs already
-    posted to socials."""
-    if a.get("public_url"):
+    """Canonical article link: /article/<uuid> — the format the website
+    actually serves. Older rows generated slug-style URLs
+    (/article/tech-gift-guide-for-dads-2026-4a3f786d) that don't resolve;
+    each one self-heals in the DB the first time its article posts again."""
+    aid = str(a["id"])
+    if a.get("public_url") and a["public_url"].rstrip("/").endswith("/article/" + aid):
         return a["public_url"]
-    url = f"{SITE.rstrip('/')}/article/{slugify(a['title'])}-{str(a['id'])[:8]}"
-    SB.table("articles").update({"public_url": url}).eq("id", a["id"]).execute()
+    url = f"{SITE.rstrip('/')}/article/{aid}"
+    SB.table("articles").update({"public_url": url}).eq("id", aid).execute()
     return url
 
 def send_telegram(p):
@@ -384,54 +461,94 @@ def send_facebook(p):
                             "access_token": FB_TOKEN})
     return data.get("post_id") or data["id"]
 
-def whapi_call(path, payload):
-    r = requests.post(f"{WHAPI}/{path}",
-                      headers={"Authorization": f"Bearer {WHAPI_TOKEN}",
-                               "Accept": "application/json"},
-                      json=payload, timeout=60)
+def wa_call(path, payload):
+    """POST to whichever WhatsApp gateway is configured. With Evolution the
+    path already carries the instance, e.g. message/sendText/<instance>."""
+    if WA_PROVIDER == "evolution":
+        r = requests.post(f"{EVO_URL}/{path}",
+                          headers={"apikey": EVO_KEY,
+                                   "Content-Type": "application/json"},
+                          json=payload, timeout=60)
+    else:
+        r = requests.post(f"{WHAPI}/{path}",
+                          headers={"Authorization": f"Bearer {WHAPI_TOKEN}",
+                                   "Accept": "application/json"},
+                          json=payload, timeout=60)
     if not r.ok:
         raise RuntimeError(f"WA {path} -> {r.status_code}: {r.text[:300]}")
     return r.json()
 
 def wa_diagnose():
-    """'Channel not found' / 401 on Whapi almost always means
-    WHATSAPP_CHANNEL_ID is wrong, or the gateway number needs re-linking.
-    Dumps what the gateway actually sees so the Action log shows the real
-    channel IDs (format: 120208836317406034@newsletter)."""
+    """Config-error helper. Evolution: prints the instance connection state —
+    it must be 'open'; anything else means the WhatsApp session dropped and
+    needs re-linking (GET /instance/connect/<instance> returns a fresh QR).
+    Whapi: dumps the channel list so the log shows the real channel IDs."""
     try:
-        r = requests.get(f"{WHAPI}/newsletters?count=100",
-                        headers={"Authorization": f"Bearer {WHAPI_TOKEN}"}, timeout=30)
-        if r.ok:
-            chans = (r.json() or {}).get("newsletters") or []
-            for c in chans[:10]:
-                print(f"[wa]   channel: {c.get('id')}  {str(c.get('name') or '')[:40]}")
-            if not chans:
-                print("[wa]   gateway sees NO channels — the linked number is not "
-                      "admin of any (create one, or fix the gateway number)")
+        if WA_PROVIDER == "evolution":
+            r = requests.get(f"{EVO_URL}/instance/connectionStatus/{EVO_INSTANCE}",
+                             headers={"apikey": EVO_KEY}, timeout=30)
+            if r.ok:
+                state = (r.json() or {}).get("state")
+                print(f"[wa]   instance {EVO_INSTANCE!r} state: {state} "
+                      f"(needs 'open' — else re-scan the QR)")
+            else:
+                print(f"[wa]   instance status -> {r.status_code}: {r.text[:200]}")
+            print(f"[wa]   channel target: {WA_CHANNEL}")
         else:
-            print(f"[wa]   channel list -> {r.status_code}: {r.text[:200]}")
+            r = requests.get(f"{WHAPI}/newsletters?count=100",
+                             headers={"Authorization": f"Bearer {WHAPI_TOKEN}"}, timeout=30)
+            if r.ok:
+                chans = (r.json() or {}).get("newsletters") or []
+                for c in chans[:10]:
+                    print(f"[wa]   channel: {c.get('id')}  {str(c.get('name') or '')[:40]}")
+                if not chans:
+                    print("[wa]   gateway sees NO channels — the linked number is not "
+                          "admin of any (create one, or fix the gateway number)")
+            else:
+                print(f"[wa]   channel list -> {r.status_code}: {r.text[:200]}")
     except Exception as e:
         print(f"[wa]   channel list failed: {e}")
 
 def send_whatsapp(p):
     a = p["articles"]
     caption = build_caption(a, article_url(a))
-    # Whapi docs (verified): /messages/image takes to + media + caption,
-    # /messages/text takes to + body. Channel IDs look like
-    # 123456789@newsletter — list yours with GET /newsletters?count=100.
+    if WA_PROVIDER == "evolution":
+        # Evolution API v2: sendText/sendMedia accept the channel JID
+        # (xxx@newsletter) directly in `number`; media posts carry the caption.
+        if a.get("image_url"):
+            try:
+                data = wa_call(f"message/sendMedia/{EVO_INSTANCE}",
+                               {"number": WA_CHANNEL, "mediatype": "image",
+                                "media": a["image_url"],
+                                "caption": caption[:1024]})
+                time.sleep(5)    # spacing — look human, not like a blast tool
+                key = data.get("key") or {}
+                return key.get("id") or data.get("id") or "sent"
+            except RuntimeError as e:
+                if CONFIG_ERR.search(str(e)):
+                    raise          # gateway/instance broken -> text would fail too
+                print(f"[wa] image failed ({e}) — sending as text")
+        data = wa_call(f"message/sendText/{EVO_INSTANCE}",
+                       {"number": WA_CHANNEL, "text": caption[:3500]})
+        time.sleep(5)
+        key = data.get("key") or {}
+        return key.get("id") or data.get("id") or "sent"
+    # ---- legacy Whapi.Cloud ----
+    # /messages/image takes to + media + caption, /messages/text to + body.
+    # Channel IDs look like 123456789@newsletter.
     if a.get("image_url"):
         try:
-            data = whapi_call("messages/image",
-                              {"to": WA_CHANNEL, "media": a["image_url"],
-                               "caption": caption[:1024]})
+            data = wa_call("messages/image",
+                           {"to": WA_CHANNEL, "media": a["image_url"],
+                            "caption": caption[:1024]})
             time.sleep(5)            # spacing — look human, not like a blast tool
             return data.get("id") or "sent"
         except RuntimeError as e:
             if CONFIG_ERR.search(str(e)):
                 raise               # channel broken -> the text post would fail too
             print(f"[wa] image failed ({e}) — sending as text")
-    data = whapi_call("messages/text",
-                      {"to": WA_CHANNEL, "body": caption[:3500]})
+    data = wa_call("messages/text",
+                   {"to": WA_CHANNEL, "body": caption[:3500]})
     time.sleep(5)
     return data.get("id") or "sent"
 

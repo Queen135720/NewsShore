@@ -5,6 +5,8 @@
 #         telegram + facebook + whatsapp at once
 #   2. cleans it into a human-looking post (markdown stripped, pure regex)
 #   3. posts it: title + short teaser + the article's own image + link
+#   4. HARD duplicate guard: a (article, platform) pair that already went out
+#      in the last 48h can never be sent again, no matter what routing did
 # Only articles saved within PICKUP_WINDOW_H hours are ever routed (latest
 # content only — no old backlog drains).
 
@@ -19,6 +21,7 @@ SB = create_client(os.environ["SUPABASE_URL"], os.environ["SUPABASE_SERVICE_KEY"
 
 TG_TOKEN   = os.environ.get("TELEGRAM_BOT_TOKEN")
 TG_CHANNEL = os.environ.get("TELEGRAM_CHANNEL")
+OWNER_ID   = os.environ.get("OWNER_CHAT_ID")     # DMs: failure alert with error text
 FB_PAGE    = os.environ.get("FACEBOOK_PAGE_ID")
 FB_TOKEN   = os.environ.get("FACEBOOK_PAGE_TOKEN")
 FB_VER     = "v22.0"
@@ -222,7 +225,14 @@ def articles_without_routing():
     """Latest content only: articles saved within PICKUP_WINDOW_H, that are
     still missing at least one of their target platforms (or not routed at
     all). Fully routed articles and skipped/duplicate ones never reappear."""
-    rows = SB.table("social_posts").select("article_id,platform").execute().data
+    # BOUNDED by 48h on purpose: Supabase caps any single select at 1000 rows,
+    # so an unbounded scan goes blind once the table grows — that blind spot
+    # is exactly what used to re-route already-posted rows (channel dupes).
+    # Rows are always created minutes after their article, so 48h safely
+    # covers anything the 2h pickup window can still consider.
+    since48 = (datetime.now(timezone.utc) - timedelta(hours=48)).isoformat()
+    rows = (SB.table("social_posts").select("article_id,platform")
+            .gte("created_at", since48).execute().data)
     dead = {r["article_id"] for r in rows if r.get("platform") == "none"}
     have = {}
     for r in rows:
@@ -249,6 +259,16 @@ def posts_today(platform):
              .eq("platform", platform).in_("status", ["pending", "posted", "ready"])
              .gte("created_at", start).execute().count)
 
+def write_row(payload):
+    """Upsert on (article_id, platform). If the DB lacks that unique
+    constraint PostgREST 400s on the on_conflict clause — fall back to a
+    plain insert (the existing-set guard below already proved the pair is
+    new, so an insert cannot duplicate it)."""
+    try:
+        SB.table("social_posts").upsert(payload, on_conflict="article_id,platform").execute()
+    except Exception:
+        SB.table("social_posts").insert(payload).execute()
+
 def route(unrouted):
     counts = {p: posts_today(p) for p in DAILY_CAPS}
     since24 = (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat()
@@ -256,8 +276,12 @@ def route(unrouted):
             .neq("platform", "none").gte("created_at", since24).execute().data)
     seen = [(r["article_id"], title_words(r["articles"]["title"]))
             for r in done if r.get("articles")]
+    # Same 48h bound as articles_without_routing — the 1000-row cap must never
+    # make this set blind to today's rows.
+    since48 = (datetime.now(timezone.utc) - timedelta(hours=48)).isoformat()
     existing = {(r["article_id"], r["platform"]) for r in
-                SB.table("social_posts").select("article_id,platform").execute().data}
+                (SB.table("social_posts").select("article_id,platform")
+                 .gte("created_at", since48).execute().data)}
     routed = queued = waiting = dups = 0
     for a in unrouted:
         tw = title_words(a["title"])
@@ -265,14 +289,14 @@ def route(unrouted):
         # (e.g. telegram row from a previous run) must never count as a dup
         if any(aid != a["id"] and similar(tw, prev) for aid, prev in seen):
             dups += 1
-            SB.table("social_posts").upsert({"article_id": a["id"], "platform": "none",
-                "status": "skipped"}, on_conflict="article_id,platform").execute()
+            write_row({"article_id": a["id"], "platform": "none",
+                       "status": "skipped"})
             print(f"[route] duplicate stays website-only: {a['title'][:60]}")
             continue
         platforms = pick_platforms(a)
         if not platforms:
-            SB.table("social_posts").upsert({"article_id": a["id"], "platform": "none",
-                "status": "skipped"}, on_conflict="article_id,platform").execute()
+            write_row({"article_id": a["id"], "platform": "none",
+                       "status": "skipped"})
             continue
         made = False
         for plat in platforms:
@@ -284,8 +308,8 @@ def route(unrouted):
             if counts[plat] >= DAILY_CAPS[plat]:
                 continue                    # daily cap hit -> retried within the window
             counts[plat] += 1
-            SB.table("social_posts").upsert({"article_id": a["id"], "platform": plat,
-                "status": "pending"}, on_conflict="article_id,platform").execute()
+            write_row({"article_id": a["id"], "platform": plat,
+                       "status": "pending"})
             existing.add((a["id"], plat))
             queued += 1
             made = True
@@ -369,17 +393,37 @@ def whapi_call(path, payload):
         raise RuntimeError(f"WA {path} -> {r.status_code}: {r.text[:300]}")
     return r.json()
 
+def wa_diagnose():
+    """'Channel not found' / 401 on Whapi almost always means
+    WHATSAPP_CHANNEL_ID is wrong, or the gateway number needs re-linking.
+    Dumps what the gateway actually sees so the Action log shows the real
+    channel IDs (format: 120208836317406034@newsletter)."""
+    try:
+        r = requests.get(f"{WHAPI}/newsletters?count=100",
+                        headers={"Authorization": f"Bearer {WHAPI_TOKEN}"}, timeout=30)
+        if r.ok:
+            chans = (r.json() or {}).get("newsletters") or []
+            for c in chans[:10]:
+                print(f"[wa]   channel: {c.get('id')}  {str(c.get('name') or '')[:40]}")
+            if not chans:
+                print("[wa]   gateway sees NO channels — the linked number is not "
+                      "admin of any (create one, or fix the gateway number)")
+        else:
+            print(f"[wa]   channel list -> {r.status_code}: {r.text[:200]}")
+    except Exception as e:
+        print(f"[wa]   channel list failed: {e}")
+
 def send_whatsapp(p):
     a = p["articles"]
     caption = build_caption(a, article_url(a))
-    # Whapi's docs name the recipient field `message` on /messages/text but
-    # `to` on /messages/image — we send BOTH keys with the same value;
-    # unknown extras are ignored, so this works either way.
+    # Whapi docs (verified): /messages/image takes to + media + caption,
+    # /messages/text takes to + body. Channel IDs look like
+    # 123456789@newsletter — list yours with GET /newsletters?count=100.
     if a.get("image_url"):
         try:
             data = whapi_call("messages/image",
-                              {"to": WA_CHANNEL, "message": WA_CHANNEL,
-                               "media": a["image_url"], "caption": caption[:1024]})
+                              {"to": WA_CHANNEL, "media": a["image_url"],
+                               "caption": caption[:1024]})
             time.sleep(5)            # spacing — look human, not like a blast tool
             return data.get("id") or "sent"
         except RuntimeError as e:
@@ -387,8 +431,7 @@ def send_whatsapp(p):
                 raise               # channel broken -> the text post would fail too
             print(f"[wa] image failed ({e}) — sending as text")
     data = whapi_call("messages/text",
-                      {"to": WA_CHANNEL, "message": WA_CHANNEL,
-                       "body": caption[:3500]})
+                      {"to": WA_CHANNEL, "body": caption[:3500]})
     time.sleep(5)
     return data.get("id") or "sent"
 
@@ -423,7 +466,37 @@ def main():
         print(f"[queue] {stale} stale pending post(s) expired — articles older than {PICKUP_WINDOW_H}h, they will never post")
     live.sort(key=lambda p: (p.get("articles") or {}).get("created_at") or "",
               reverse=True)                                # newest article -> posted first
+    # ---- absolute duplicate guard ------------------------------------------
+    # Whatever routing did above, a pair that already went out in the last 48h
+    # can never go out again. posted_at is written ONLY right after a successful
+    # send and routing never touches it — so this check survives status
+    # resets, stray duplicate rows and blind guard queries alike. This is the
+    # line that makes channel duplicates structurally impossible.
+    since48 = (datetime.now(timezone.utc) - timedelta(hours=48)).isoformat()
+    sent_recently = {(r["article_id"], r["platform"]) for r in
+                     (SB.table("social_posts").select("article_id,platform")
+                      .gte("posted_at", since48).execute().data)}
+    pairs_seen, healed = set(), 0
+    guarded = []
+    for p in live:
+        pair = (p["article_id"], p["platform"])
+        if pair in pairs_seen:               # stray duplicate row for a pair queued this run
+            SB.table("social_posts").update({"status": "skipped"}).eq("id", p["id"]).execute()
+            healed += 1
+            print(f"[guard] #{p['id']} ({p['platform']}) duplicate row for an already-queued pair — retired")
+            continue
+        if pair in sent_recently:            # pair already posted within 48h -> never again
+            SB.table("social_posts").update({"status": "skipped"}).eq("id", p["id"]).execute()
+            healed += 1
+            print(f"[guard] #{p['id']} ({p['platform']}) already posted in the last 48h — stray row retired")
+            continue
+        pairs_seen.add(pair)
+        guarded.append(p)
+    if healed:
+        print(f"[guard] {healed} stray/duplicate row(s) retired — no double posting")
+    live = guarded
     failures = 0
+    errors = []
     per_run = {}
     tripped = set()   # platforms whose secrets look broken this run
     for p in live:
@@ -443,6 +516,7 @@ def main():
             print(f"[post] #{p['id']} -> {p['platform']}: {p['articles']['title'][:60]}")
         except Exception as e:
             failures += 1
+            errors.append(str(e)[:300])
             SB.table("social_posts").update({
                 "status": "failed", "error": str(e)[:500],
                 "attempts": (p["attempts"] or 0) + 1,
@@ -452,6 +526,16 @@ def main():
                 tripped.add(plat)
                 print(f"[setup] {plat} looks misconfigured — skipping its remaining posts this run; "
                       f"fix the secret and they retry automatically")
+                if plat == "whatsapp":
+                    wa_diagnose()          # Action log shows the real channel IDs
+    if failures and OWNER_ID and TG_TOKEN:
+        try:                              # DM the owner the actual error text —
+            tg_api("sendMessage", {   # 'failed' in the SQL stays explainable
+                "chat_id": OWNER_ID,
+                "text": f"\u26a0\ufe0f NewsShore: {failures} post(s) failed this run."
+                        f"\n{errors[0][:250] if errors else ''}"})
+        except Exception:
+            pass                           # alerting must never crash the run
     sys.exit(1 if failures else 0)   # nonzero exit -> the alert step DMs you
 
 if __name__ == "__main__":

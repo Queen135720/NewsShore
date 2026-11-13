@@ -5,8 +5,8 @@
 #         telegram + facebook + whatsapp at once
 #   2. cleans it into a human-looking post (markdown stripped, pure regex)
 #   3. posts it: title + short teaser + the article's own image + link
-# Only articles saved within PICKUP_WINDOW_H hours are ever routed OR posted
-# (latest content only — stale pending rows expire, never backfill).
+# Only articles saved within PICKUP_WINDOW_H hours are ever routed (latest
+# content only — no old backlog drains).
 
 import os, sys, time
 from datetime import datetime, timezone
@@ -37,6 +37,15 @@ DAILY_CAPS   = {"whatsapp": 10, "facebook": 20, "telegram": 40}
 MAX_ATTEMPTS = 3
 PICKUP_WINDOW_H = 2     # only articles saved within this many hours get posted
 RUN_CAPS     = {"telegram": 6, "facebook": 4, "whatsapp": 3}   # max posts per platform per run
+
+# Errors that mean "this platform's SECRET/CONFIG is broken" (not the article
+# being bad): dead token, wrong channel ID, unlinked number, trial limit.
+# When one of these hits, the platform is tripped for the rest of the run so
+# its pending rows keep their retry attempts alive while you fix the secret.
+CONFIG_ERR = re.compile(
+    r"-> 4(01|02|03|04)\b"
+    r"|Error validating access token|session has been invalidated"
+    r"|Channel not found|Need channel authorization|Trial version limit", re.I)
 
 # ---------- routing rules — this is the whole "editor", edit freely ----------
 # Each category maps to a LIST of platforms: the article goes to ALL of them
@@ -280,6 +289,10 @@ def route(unrouted):
             existing.add((a["id"], plat))
             queued += 1
             made = True
+        on_now = [p for p in platforms if (a["id"], p) in existing]
+        missing = [p for p in platforms if p not in on_now]
+        extra = f"  (waiting: {', '.join(missing)})" if missing else ""
+        print(f"[route] {a['title'][:55]} -> {', '.join(on_now) or 'none'}{extra}")
         if made:
             routed += 1
             seen.append((a["id"], tw))
@@ -339,6 +352,8 @@ def send_facebook(p):
                                       "access_token": FB_TOKEN})
             return data.get("post_id") or data["id"]
         except RuntimeError as e:
+            if CONFIG_ERR.search(str(e)):
+                raise               # token dead -> the link post would fail too
             print(f"[fb] photo failed ({e}); image was {a['image_url']}")
             print("[fb] retrying as a link post")
     data = fb_call("feed", {"message": caption, "link": article_url(a),
@@ -368,6 +383,8 @@ def send_whatsapp(p):
             time.sleep(5)            # spacing — look human, not like a blast tool
             return data.get("id") or "sent"
         except RuntimeError as e:
+            if CONFIG_ERR.search(str(e)):
+                raise               # channel broken -> the text post would fail too
             print(f"[wa] image failed ({e}) — sending as text")
     data = whapi_call("messages/text",
                       {"to": WA_CHANNEL, "message": WA_CHANNEL,
@@ -408,26 +425,33 @@ def main():
               reverse=True)                                # newest article -> posted first
     failures = 0
     per_run = {}
+    tripped = set()   # platforms whose secrets look broken this run
     for p in live:
         plat = p["platform"]
+        if plat in tripped:
+            continue          # config error -> don't burn more attempts this run
         if per_run.get(plat, 0) >= RUN_CAPS.get(plat, 3):   # per-run throttle per platform
             continue                                       # stays pending for the next run
         per_run[plat] = per_run.get(plat, 0) + 1
         try:
-            ext_id = SENDERS[plat](p)
+            ext_id = SENDERS[p["platform"]](p)
             SB.table("social_posts").update({
                 "status": "posted",
                 "external_id": ext_id,
                 "posted_at": datetime.now(timezone.utc).isoformat(),
             }).eq("id", p["id"]).execute()
-            print(f"[post] #{p['id']} -> {plat}: {p['articles']['title'][:60]}")
+            print(f"[post] #{p['id']} -> {p['platform']}: {p['articles']['title'][:60]}")
         except Exception as e:
             failures += 1
             SB.table("social_posts").update({
                 "status": "failed", "error": str(e)[:500],
                 "attempts": (p["attempts"] or 0) + 1,
             }).eq("id", p["id"]).execute()
-            print(f"[FAIL] #{p['id']} ({plat}): {e}")
+            print(f"[FAIL] #{p['id']} ({p['platform']}): {e}")
+            if CONFIG_ERR.search(str(e)):
+                tripped.add(plat)
+                print(f"[setup] {plat} looks misconfigured — skipping its remaining posts this run; "
+                      f"fix the secret and they retry automatically")
     sys.exit(1 if failures else 0)   # nonzero exit -> the alert step DMs you
 
 if __name__ == "__main__":

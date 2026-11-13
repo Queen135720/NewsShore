@@ -290,6 +290,12 @@ Source content: ${sourceContent}`;
   throw new Error('All 6 AI providers failed');
 }
 
+
+let r = await callEden(prompt);   if (r) return r;
+r = await callApinex(prompt);     if (r) return r;
+r = await callChutes(prompt);     if (r) return r;
+r = await callNovita(prompt);     if (r) return r;
+
 async function retryFetch(url, options) {
   let res = await fetch(url, { ...options, signal: AbortSignal.timeout(60000) });
   if (res.status === 429) {
@@ -502,10 +508,6 @@ async function callChutes(prompt) {
     process.env.CHUTES_API_KEY, CHUTES_MODEL, prompt, 60000); // 60s: cold starts
 }
 
-let r = await callEden(prompt);   if (r) return r;
-r = await callApinex(prompt);     if (r) return r;
-r = await callChutes(prompt);     if (r) return r;
-r = await callNovita(prompt);     if (r) return r;
 
 // ---------- JSON repair for small models ----------
 function looseGrab(text, names) {

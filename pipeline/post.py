@@ -54,7 +54,7 @@ CONFIGURED = {   # platforms missing secrets are skipped, never crash the run
     "facebook": bool(FB_PAGE and FB_TOKEN),
 }
 
-DAILY_CAPS   = {"whatsapp": 10, "facebook": 20, "telegram": 40}
+DAILY_CAPS   = {"whatsapp": 30, "facebook": 50, "telegram": 70}
 MAX_ATTEMPTS = 3
 PICKUP_WINDOW_H = 2     # only articles saved within this many hours get posted
 RUN_CAPS     = {"telegram": 6, "facebook": 4, "whatsapp": 3}   # max posts per platform per run

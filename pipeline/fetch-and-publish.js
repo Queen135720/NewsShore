@@ -11,7 +11,7 @@
 import Parser from 'rss-parser';
 import { createClient } from '@supabase/supabase-js';
 
-const providerDown = { glm: false, groq: false, cloudflare: false, groq20b: false, nvidia: false, nvidia2: false, gemini: false,};
+const providerDown = { glm: false, groq: false, cloudflare: false, groq20b: false, Bazaar: false, nvidia: false, nvidia2: false, gemini: false,};
 
 const parser = new Parser({
   timeout: 10000,
@@ -352,6 +352,30 @@ async function callGroq(prompt) {
   const data = await res.json();
   return safeParseJSON(data.choices[0].message.content);
 }
+
+async function callBazaar(prompt) {
+  if (providerDown.Bazaar) throw new Error('BazaarLink already failed this run');
+  try {
+    const res = await retryFetch('https://api.bazaarlink.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.BAZAARLINK_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'deepseek/deepseek-v4-flash-0731free',
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 4000
+      })
+    });
+    const data = await res.json();
+    if (!data.choices || !data.choices[0]) {
+      throw new Error('BazaarLink: ' + JSON.stringify(data).slice(0, 200));
+    }
+    let content = (data.choices[0].message.content || '').trim();
+    console.log(`BazaarLink responded (${content.length} chars)`);
+    console.log(`BazaarLink raw: ${content.slice(0, 120).replace(/\s+/g, ' ')}`);
+    content = content.replace
 
 // ---------- JSON repair for small models ----------
 function looseGrab(text, names) {

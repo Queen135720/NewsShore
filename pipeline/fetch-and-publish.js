@@ -287,14 +287,14 @@ Source content: ${sourceContent}`;
       else console.warn(`Gemini failed, falling back: ${err.message}`);
     }
   }
+
+  let r = await callEden(prompt);   if (r) return r;
+  r = await callApinex(prompt);     if (r) return r;
+  r = await callChutes(prompt);     if (r) return r;
+  r = await callNovita(prompt);     if (r) return r;
+  
   throw new Error('All 6 AI providers failed');
 }
-
-
-let r = await callEden(prompt);   if (r) return r;
-r = await callApinex(prompt);     if (r) return r;
-r = await callChutes(prompt);     if (r) return r;
-r = await callNovita(prompt);     if (r) return r;
 
 async function retryFetch(url, options) {
   let res = await fetch(url, { ...options, signal: AbortSignal.timeout(60000) });

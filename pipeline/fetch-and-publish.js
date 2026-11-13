@@ -240,6 +240,13 @@ Source content: ${sourceContent}`;
       else console.warn(`Groq failed, falling back: ${err.message}`);
     }
   }
+    // BazaarLink free tier — afternoon rescue
+  if (!providerDown.Bazaar && process.env.BAZAARLINK_API_KEY) {
+    try { return await callBazaar(prompt); }
+    catch (err) {
+      console.log('BazaarLink failed, falling back: ' + err.message);
+    }
+  }
     // Cloudflare Workers AI — new free provider, tried FIRST
   if (!providerDown.Cloudflare && process.env.CLOUDFLARE_API_TOKEN && process.env.CF_ACCOUNT_ID) {
     try { return await callCloudflare(prompt); }
@@ -375,7 +382,20 @@ async function callBazaar(prompt) {
     let content = (data.choices[0].message.content || '').trim();
     console.log(`BazaarLink responded (${content.length} chars)`);
     console.log(`BazaarLink raw: ${content.slice(0, 120).replace(/\s+/g, ' ')}`);
-    content = content.replace
+    content = content.replace(/<think>[\s\S]*?<\/think>/gi, '');
+    if (content.includes('<|message|>')) content = content.slice(content.lastIndexOf('<|message|>') + 11);
+    content = content.replace(/<\|start\|>|<\|end\|>|<\|channel\|>\s*final/g, '').trim();
+    const obj = normalizeArticleFields(repairArticleJSON(content));
+    console.log('BazaarLink JSON OK');
+    return JSON.stringify(obj);
+  } catch (err) {
+    if (/429|rate|quota|unit|limit|concurrent|insufficient|balance|timeout|abort|401|402|403/i.test(err.message)) {
+      providerDown.Bazaar = true;
+      console.log('BazaarLink throttled — skipping rest of this run');
+    }
+    throw err;
+  }
+}
 
 // ---------- JSON repair for small models ----------
 function looseGrab(text, names) {

@@ -404,12 +404,13 @@ async function callBazaar(prompt) {
 }
 
 // ==== NEW PROVIDERS: Eden AI, Chutes, Novita, APINEX ====
-const EDEN_MODEL   = "gemma-7b-it-lora";            // from Eden catalog, $0 filter
+const EDEN_MODEL   = "google/gemma-4-31b-it";       // Eden catalog id ($0) — copy exact from catalog           // from Eden catalog, $0 filter
 const CHUTES_MODEL = "Qwen/Qwen3.8-27B-TEE-pareton";      // from chutes.ai model list
-const NOVITA_MODEL = "apodex/apodex-1.1-mini";      // e.g. qwen2.5-7b-instruct (a $0 one)
+const NOVITA_MODEL = "qwen/qwen-2.5-7b-instruct";   // $0 model — verify exact id on the model page's API example      // e.g. qwen2.5-7b-instruct (a $0 one)
 const APINEX_MODEL = "free/deepseek-v4.1-flash";      // from apinex.bond free category
 
 // Shared caller for OpenAI-compatible providers (Chutes, Novita, APINEX)
+// Shared caller for OpenAI-compatible providers (Eden v3, Chutes, Novita, APINEX)
 async function callOpenAIStyle(label, url, apiKey, model, prompt, timeoutMs) {
   if (providerDown[label]) return null;
   if (!apiKey) { console.log(`[${label}] no API key set`); return null; }
@@ -430,21 +431,25 @@ async function callOpenAIStyle(label, url, apiKey, model, prompt, timeoutMs) {
     const body = await res.text();
     if (!res.ok) {
       console.log(`[${label}] HTTP ${res.status}: ${body.slice(0, 300)}`);
-      const long = [401, 402, 403, 404].includes(res.status); // wrong key/model = 6h nap
+      // 402 = balance/check-in (retry hourly — fixable on their website);
+      // 401/403/404 = wrong key or model (6h nap); else = rate limit (15 min)
+      const napMs = res.status === 402 ? 60 * 60000
+                  : [401, 403, 404].includes(res.status) ? 6 * 3600000 : 15 * 60000;
       providerDown[label] = true;
-      setTimeout(() => { providerDown[label] = false; }, long ? 6 * 3600000 : 15 * 60000);
+      setTimeout(() => { providerDown[label] = false; }, napMs);
       return null;
     }
     const data = JSON.parse(body);
-    const text = data?.choices?.[0]?.message?.content || data?.choices?.[0]?.text || null;
-    if (!text || !String(text).trim()) { console.log(`[${label}] empty reply`); return null; }
+    const text = data?.choices?.[0]?.message?.content || data?.choices?.[0]?.text || data?.generated_text || null;
+    if (!text || !String(text).trim()) { console.log(`[${label}] empty reply: ${body.slice(0, 200)}`); return null; }
     let obj;
     try { obj = normalizeArticleFields(repairArticleJSON(String(text))); }
-    catch (e) { console.log(`[${label}] replied but not valid article JSON — skipping to next provider`); return null; }
+    catch (e) { console.log(`[${label}] replied but not valid article JSON — next provider`); return null; }
     console.log(`[${label}] JSON OK`);
     return JSON.stringify(obj);
   } catch (e) {
-    console.log(`[${label}] failed: ${e.message}`);
+    const cause = e.cause ? ' (cause: ' + (e.cause.message || e.cause.code || e.cause) + ')' : '';
+    console.log(`[${label}] failed: ${e.message}${cause}`);
     providerDown[label] = true;
     setTimeout(() => { providerDown[label] = false; }, 30 * 60000);
     return null;
@@ -452,51 +457,9 @@ async function callOpenAIStyle(label, url, apiKey, model, prompt, timeoutMs) {
 }
 
 async function callEden(prompt) {
-  if (providerDown.eden) return null;
-  if (!process.env.EDEN_API_KEY) { console.log("[eden] no API key set"); return null; }
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), 60000); // gemma-4 thinks before answering
-  try {
-    const res = await fetch("https://api.eden.ai/v2/text/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + process.env.EDEN_API_KEY },
-      body: JSON.stringify({
-        providers: "google",
-        model: EDEN_MODEL,
-        messages: [{ role: "user", content: prompt }],
-        max_tokens: 6000,   // reasoning model: too low = empty reply (the old Cloudflare bug)
-        temperature: 0.3,
-      }),
-      signal: ctrl.signal,
-    });
-    const body = await res.text();
-    if (!res.ok) {
-      console.log(`[eden] HTTP ${res.status}: ${body.slice(0, 300)}`);
-      providerDown.eden = true;
-      setTimeout(() => { providerDown.eden = false; }, 30 * 60000);
-      return null;
-    }
-    const data = JSON.parse(body);
-    let text = data?.generated_text || null;                 // direct shape
-    if (!text && data && typeof data === "object") {          // keyed-by-provider shape
-      for (const k of Object.keys(data)) {
-        const v = data[k];
-        if (typeof v?.generated_text === "string") { text = v.generated_text; break; }
-        if (v?.choices?.[0]?.message?.content) { text = v.choices[0].message.content; break; }
-      }
-    }
-    if (!text || !text.trim()) { console.log(`[eden] empty reply: ${body.slice(0, 200)}`); return null; }
-    let obj;
-    try { obj = normalizeArticleFields(repairArticleJSON(text)); }
-    catch (e) { console.log(`[eden] replied but not valid article JSON — skipping to next provider`); return null; }
-    console.log(`[eden] JSON OK`);
-    return JSON.stringify(obj);
-  } catch (e) {
-    console.log(`[eden] failed: ${e.message}`);
-    providerDown.eden = true;
-    setTimeout(() => { providerDown.eden = false; }, 30 * 60000);
-    return null;
-  } finally { clearTimeout(timer); }
+  // Eden moved their API (Nov 2026): OpenAI-style v3 endpoint on api.edenai.run
+  return callOpenAIStyle("eden", "https://api.edenai.run/v3/chat/completions",
+    process.env.EDEN_API_KEY, EDEN_MODEL, prompt, 60000); // 60s: gemma-4 reasons before answering
 }
 
 async function callNovita(prompt) {
@@ -641,18 +604,43 @@ function storyDuplicateScore(a, b) {
   return Math.min(1, jac + phrase * 0.12 + propHits * 0.11);
 }
 
+async function loadRecentArticleTitles() {
+  // FIX: old version used `prisma`, which doesn't exist in this pipeline.
+  // Now uses the same Supabase client the save path uses (auto-detected),
+  // or the Supabase REST API as fallback.
+  const db = (typeof supabase !== 'undefined' && supabase) ||
+             (typeof supabaseAdmin !== 'undefined' && supabaseAdmin);
+  if (db) {
+    const since = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString();
+    for (const col of ['created_at', 'createdAt']) {
+      const { data, error } = await db.from('articles').select('title').gte(col, since).limit(3000);
+      if (!error) return (data || []).map(r => r.title);
+    }
+    const { data, error } = await db.from('articles').select('title').limit(3000);
+    if (error) throw new Error('articles query failed: ' + (error.message || JSON.stringify(error).slice(0, 120)));
+    return (data || []).map(r => r.title);
+  }
+  const base = (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '').replace(/\/+$/, '');
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY ||
+              process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (base && key) {
+    const res = await fetch(`${base}/rest/v1/articles?select=title&limit=3000`, {
+      headers: { apikey: key, Authorization: 'Bearer ' + key }
+    });
+    if (res.ok) return (await res.json()).map(r => r.title);
+    throw new Error('Supabase REST ' + res.status);
+  }
+  throw new Error('no Supabase client found — check the variable name used where articles are saved');
+}
+
 async function isDuplicateStory(titles) {
   try {
-    const since = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000);
-    const recents = await prisma.article.findMany({
-      where: { createdAt: { gte: since } },
-      select: { title: true }
-    });
+    const recents = await loadRecentArticleTitles();
     let best = null;
-    for (const rec of recents) {
+    for (const recentTitle of recents) {
       for (const t of titles) {
-        const s = storyDuplicateScore(t, rec.title);
-        if (s >= 0.5 && (!best || s > best.sim)) best = { match: rec.title, sim: s };
+        const s = storyDuplicateScore(t, recentTitle);
+        if (s >= 0.5 && (!best || s > best.sim)) best = { match: recentTitle, sim: s };
       }
     }
     return best;
@@ -660,7 +648,7 @@ async function isDuplicateStory(titles) {
     console.log('Dup shield error (ignored): ' + e.message);
     return null;
   }
-}
+}  
 
 async function callCloudflare(prompt) {
   if (providerDown.Cloudflare) throw new Error('Cloudflare already failed this run');
@@ -771,7 +759,7 @@ async function callNvidia(prompt) {
         temperature: 0.7,
         max_tokens: 2000
       }),
-      signal: AbortSignal.timeout(60000)
+      signal: AbortSignal.timeout(25000)
     });
     if (!res.ok) {
       const t = await res.text();
@@ -808,7 +796,7 @@ async function callNvidia2(prompt) {
         temperature: 0.7,
         max_tokens: 2000
       }),
-      signal: AbortSignal.timeout(60000)
+      signal: AbortSignal.timeout(25000)
     });
     if (!res.ok) {
       const t = await res.text();

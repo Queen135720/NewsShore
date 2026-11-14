@@ -290,7 +290,7 @@ Source content: ${sourceContent}`;
 
   let r = await callEden(prompt);   if (r) return r;
   r = await callApinex(prompt);     if (r) return r;
-  r = await callChutes(prompt);     if (r) return r;
+  // const rChu  = await callChutes(prompt); if (rChu)  return rChu;  // disabled: Chutes needs a one-time $5 top-up
   r = await callNovita(prompt);     if (r) return r;
   
   throw new Error('All 6 AI providers failed');

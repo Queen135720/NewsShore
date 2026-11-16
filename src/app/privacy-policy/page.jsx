@@ -11,8 +11,7 @@ export default function PrivacyPolicyPage() {
 
       <h2 style={h2s}>1. Who we are</h2>
       <p style={ps}>
-        NewsShore ("we", "us", or "the publication") is an independent digital technology
-        publication operated by [LEGAL ENTITY NAME], [COUNTRY]. This policy explains what
+        NewsShore is an independent digital technology publication operated by NewShore Team. This policy explains what
         personal information we collect when you visit this website, how we use it, and the
         choices available to you.
       </p>

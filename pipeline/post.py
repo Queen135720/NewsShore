@@ -4,7 +4,7 @@
 #      -> one social_posts row per (article, platform): a big story can hit
 #         telegram + facebook + whatsapp at once
 #   2. cleans it into a human-looking post (markdown stripped, pure regex)
-#   3. posts it: sentence-case headline + ~70% of the article body + image + link
+#   3. posts it: summary lede, blank line, ~70% of the article body, link
 #   4. HARD duplicate guard: a (article, platform) pair that already went out
 #      in the last 48h can never be sent again, no matter what routing did
 # Only articles saved within PICKUP_WINDOW_H hours are ever routed (latest
@@ -57,7 +57,7 @@ CONFIGURED = {   # platforms missing secrets are skipped, never crash the run
 DAILY_CAPS   = {"whatsapp": 30, "facebook": 50, "telegram": 70}
 MAX_ATTEMPTS = 3
 PICKUP_WINDOW_H = 2     # only articles saved within this many hours get posted
-RUN_CAPS     = {"telegram": 6, "facebook": 4, "whatsapp": 3}   # max posts per platform per run
+RUN_CAPS     = {"telegram": 7, "facebook": 5, "whatsapp": 3}   # max posts per platform per run
 
 # Errors that mean "this platform's SECRET/CONFIG is broken" (not the article
 # being bad): dead token, wrong channel ID, unlinked number, trial limit.
@@ -211,75 +211,31 @@ def clip_sentences(text, cap):
     space = text.rfind(" ", 0, cap)
     return (text[:space] if space > cap // 2 else text[:cap]).strip()
 
-# ---------- sentence-case headlines ------------------------------------------
-# Words allowed to go lowercase inside a headline. Anything NOT in this list
-# keeps its own casing, so proper nouns, acronyms and product names
-# (Uber, ElevenLabs, XR, GPS, Pixel Watch, llama.cpp) survive untouched:
-#   "Uber Data Breach Exposes Driver Licenses"  -> "Uber data breach exposes driver licenses"
-#   "Pixel Watch Gets Media Controls Redesign"  -> "Pixel Watch gets media controls redesign"
-# Caps stay reserved for genuine names/acronyms — never the whole headline.
-COMMON = frozenset("""
-a an the and or but nor yet so of to in on at by for with from as into onto
-about over under after before between among across against amid during since
-until via per up down out off than then some any all both each other another
-such own same too very just now here there when where why how what which who
-whom whose while whether if because although though instead also more most
-less least few many much every either neither again once not no its his her
-their our your my this that these those is are was were be been being has
-have had do does did says said say gets get got goes go makes make made takes
-take took comes come came sees see saw seen uses use used calls call called
-launches launch launched unveils unveiled releases release released
-announces announce announced reveals reveal revealed shows show shown brings
-brought adds added plans plan eyes set sets wins won beats hit hits run runs
-opens open opened tops leads lead led sparks drops dropped cuts joins joined
-builds built ships shipped rolls new old big small first second third last
-next early late full free high low top end start week year day days month
-time users user people world global local online data app apps web home tech
-digital future report reports check checks faulty cause caused server servers
-system systems access grant grants driver licenses exposes gift guide dads
-dad mom moms parents meeting notes dictation agent agents balances
-personality lets shop wallet fresh media controls redesign collection smart
-devices boost incentives spectrum regulator experience shine glasses
-subscription based cross platform
-through you breach breaches navigation screenless device outage outages
-""".split())
-
-def sentence_case(t):
-    """Headline casing: keep the first word as written, lowercase only
-    COMMON words, and preserve acronyms (AI, XR), digit tokens (v1.0.0, 2026)
-    and anything that already looks like a name/product (ElevenLabs, llama.cpp)."""
-    if not t:
-        return t
-    if t.isupper() and len(t) > 15:           # whole-title shoutcase -> soften
-        t = t.title()
-    out = []
-    for i, w in enumerate(t.split(" ")):
-        core = w.strip("()[]{}<>\"'“”‘’.,;:!?—–-")
-        keep = (i == 0                                # first word: as written
-                or not core                           # bare punctuation
-                or (core.isupper() and len(core) > 1)  # acronym: AI, XR, GPS
-                or any(c.isdigit() for c in core)      # 2026, v1.0.0
-                or w[0].islower()                     # already lowercase
-                or core.lower() not in COMMON)        # name/product/brand
-        out.append(w if keep else w.lower())
-    return " ".join(out)
-
 BODY_SHARE    = 0.70   # share of the article body that goes into a social post
 BODY_HARD_CAP = 4500   # ceiling sized so the FB photo-caption slice keeps the link line
+BODY_MIN      = 80     # below this the body is too thin to feed the post
 
 def build_caption(a, url):
-    title = sentence_case(re.sub(r"\s+", " ",
-                      strip_md(clean_chars(a.get("title") or ""))).strip())
-    # The BODY is the post text — the summary is only a last-resort fallback.
+    """Post layout: summary (the short hook that shows before "See more"),
+    one blank line, then the body. No headline — the summary is short enough
+    to preview whole on Facebook, and a headline on top just buried it."""
+    summary = re.sub(r"\s+", " ", strip_md(clean_chars(a.get("summary") or ""))).strip()
     body = humanize((a.get("body") or "").strip())
-    if len(body) < 60:
-        body = humanize((a.get("summary") or "").strip())
-    if len(body) < 60:
-        body = "Full story on the site."
-    body = body[:1].upper() + body[1:]
-    # ~70% of the body, always ending on a full sentence, never mid-word.
-    body = clip_sentences(body, min(BODY_HARD_CAP, max(200, int(len(body) * BODY_SHARE))))
-    return f"{title}\n\n{body}\n\nGet the full article 👉 {url}"
+    if summary and len(body) < BODY_MIN:      # body too thin to post separately
+        body = ""
+    if not summary and body:                  # no summary: first sentence is the lede
+        m = re.match(r".+?[.!?](?:\s|$)", body)
+        if m and len(body) > BODY_MIN:
+            summary, body = m.group(0).strip(), body[m.end():].strip()
+    if not summary and not body:
+        return f"Get the full article 👉 {url}"
+    if body:
+        body = body[:1].upper() + body[1:]
+        # ~70% of the body, always ending on a full sentence, never mid-word.
+        body = clip_sentences(body, min(BODY_HARD_CAP, max(200, int(len(body) * BODY_SHARE))))
+    # Layout guard: summary and body must never blend into one paragraph.
+    sep = "\n\n" if (summary and body) else ""
+    return f"{summary}{sep}{body}\n\nGet the full article 👉 {url}".strip()
 
 def split_chunks(text, first_limit=1024, limit=4096):
     """Split long text: chunk 1 fits a Telegram photo caption, the rest fit

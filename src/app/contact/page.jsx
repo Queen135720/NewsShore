@@ -1,4 +1,6 @@
-const wrap = { maxWidth: '760px', margin: '0 auto', padding: '56px 20px 96px' };
+import PageHeader from '../components/PageHeader';
+
+const wrap = { maxWidth: '760px', margin: '0 auto', padding: '128px 20px 96px' }
 const h1s = { fontSize: '2rem', fontWeight: 700, marginBottom: '10px' };
 const ps = { marginTop: '14px', marginBottom: '14px', lineHeight: 1.7 };
 const uls = { marginTop: '6px', marginBottom: '14px', paddingLeft: '26px', lineHeight: 1.7 };
@@ -6,9 +8,10 @@ const uls = { marginTop: '6px', marginBottom: '14px', paddingLeft: '26px', lineH
 export default function ContactPage() {
   return (
     <div style={wrap}>
+      <PageHeader />
       <h1 style={h1s}>Contact</h1>
       <p style={ps}>NewsShore can be reached by email at:</p>
-      <p style={{ ...ps, fontSize: '1.15rem' }}><strong>newsshore@gmail.com</strong></p>
+      <p style={{ ...ps, fontSize: '1.15rem' }}><strong>newsshoreteam@gmail.com</strong></p>
       <p style={ps}>To help us direct your message, please use the following subject lines:</p>
       <ul style={uls}>
         <li><strong>General</strong> — inquiries and reader feedback</li>

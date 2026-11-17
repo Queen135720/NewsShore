@@ -1,4 +1,6 @@
-const wrap = { maxWidth: '760px', margin: '0 auto', padding: '56px 20px 96px' };
+import PageHeader from '../components/PageHeader';
+
+const wrap = { maxWidth: '760px', margin: '0 auto', padding: '128px 20px 96px' }
 const h1s = { fontSize: '2rem', fontWeight: 700, marginBottom: '10px' };
 const h2s = { fontSize: '1.2rem', fontWeight: 700, marginTop: '40px', marginBottom: '10px' };
 const ps = { marginTop: '14px', marginBottom: '14px', lineHeight: 1.7 };
@@ -7,6 +9,7 @@ const uls = { marginTop: '6px', marginBottom: '14px', paddingLeft: '26px', lineH
 export default function PressKitPage() {
   return (
     <div style={wrap}>
+      <PageHeader />
       <h1 style={h1s}>Press Kit</h1>
 
       <h2 style={h2s}>About NewsShore</h2>

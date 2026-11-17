@@ -1,4 +1,6 @@
-const wrap = { maxWidth: '760px', margin: '0 auto', padding: '56px 20px 96px' };
+import PageHeader from '../components/PageHeader';
+
+const wrap = { maxWidth: '760px', margin: '0 auto', padding: '128px 20px 96px' }
 const h1s = { fontSize: '2rem', fontWeight: 700, marginBottom: '10px' };
 const h2s = { fontSize: '1.2rem', fontWeight: 700, marginTop: '40px', marginBottom: '10px' };
 const ps = { marginTop: '14px', marginBottom: '14px', lineHeight: 1.7 };
@@ -6,6 +8,7 @@ const ps = { marginTop: '14px', marginBottom: '14px', lineHeight: 1.7 };
 export default function CookiePolicyPage() {
   return (
     <div style={wrap}>
+      <PageHeader />
       <h1 style={h1s}>Cookie Policy</h1>
       <p style={{ ...ps, opacity: 0.75 }}><em>Effective date: November 15, 2026</em></p>
 

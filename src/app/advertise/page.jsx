@@ -1,10 +1,13 @@
-const wrap = { maxWidth: '760px', margin: '0 auto', padding: '56px 20px 96px' };
+import PageHeader from '../components/PageHeader';
+
+const wrap = { maxWidth: '760px', margin: '0 auto', padding: '128px 20px 96px' };
 const h1s = { fontSize: '2rem', fontWeight: 700, marginBottom: '10px' };
 const ps = { marginTop: '14px', marginBottom: '14px', lineHeight: 1.7 };
 
 export default function AdvertisePage() {
   return (
     <div style={wrap}>
+      <PageHeader />
       <h1 style={h1s}>Advertise</h1>
       <p style={ps}>
         The NewsShore advertising program is currently in development and will launch in the

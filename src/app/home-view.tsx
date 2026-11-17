@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import { Mail, Send } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import anime from 'animejs';
 import {
@@ -730,54 +731,61 @@ function SidebarLeaderboard({ onSeeMore, models, loading, arenaModels, arenaLoad
 
 
 /* ─────────────── Subscribe Section ─────────────── */
-function SubscribeSection() {
-  const [email, setEmail] = useState('');
-  const [loading, setLoading] = useState(false);
 
-  const handleSubscribe = async () => {
-    const trimmed = email.trim();
-    if (!trimmed) {
-      toast.error('Please enter your email address.');
-      return;
-    }
-    if (!isValidEmail(trimmed)) {
-      toast.error('Please enter a valid email address.');
-      return;
-    }
-    setLoading(true);
+export default function SubscribeSection() {
+  const [email, setEmail] = useState('');
+  const [status, setStatus] = useState('idle'); // idle | loading | ok | already | error
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!email.trim() || status === 'loading') return;
+    setStatus('loading');
     try {
       const res = await fetch('/api/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: trimmed }),
+        body: JSON.stringify({ email: email.trim() }),
       });
-      const data = await res.json();
-      if (data.success) {
-        toast.success(data.message);
-        setEmail('');
-      } else {
-        toast.error(data.error || 'Subscription failed.');
-      }
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.ok) setStatus('ok');
+      else if (data.already) setStatus('already');
+      else setStatus('error');
     } catch {
-      toast.error('Network error. Please try again.');
-    } finally {
-      setLoading(false);
+      setStatus('error');
     }
   };
 
   return (
     <div className="bg-white rounded-xl border border-gray-100 p-4 sm:p-5">
       <div className="flex items-center gap-2 mb-2">
-        <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />
-        <h3 className="font-[family-name:var(--font-gilroy)] text-sm sm:text-base font-bold text-gray-900">Daily Briefing</h3>
+        <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
+        <h3 className="font-[family-name:var(--font-gilroy)] text-base sm:text-lg font-bold text-gray-900">Stay in the loop</h3>
       </div>
-      <p className="text-xs text-gray-500 font-[family-name:var(--font-gilroy)] leading-relaxed mb-3">Get the top AI &amp; tech stories delivered to your inbox every morning.</p>
-      <div className="flex gap-2">
-        <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="your@email.com" className="flex-1 min-w-0 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0f1b3d]/20 font-[family-name:var(--font-space-grotesk)]" onKeyDown={(e) => { if (e.key === 'Enter') handleSubscribe(); }} />
-        <Button size="sm" className="bg-red-600 hover:bg-red-500 text-white font-semibold text-xs sm:text-sm px-3 sm:px-4 shrink-0 disabled:opacity-60" onClick={handleSubscribe} disabled={loading}>
-          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Subscribe'}
-        </Button>
-      </div>
+      <p className="text-xs sm:text-sm text-gray-500 mb-3 sm:mb-4">Get the biggest tech stories in your inbox.</p>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-2.5">
+        <input
+          type="email"
+          required
+          autoComplete="email"
+          value={email}
+          onChange={(e) => { setEmail(e.target.value); if (status !== 'idle' && status !== 'ok' && status !== 'already') setStatus('idle'); }}
+          placeholder="you@example.com"
+          disabled={status === 'loading'}
+          className="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0f1b3d]/30 focus:border-[#0f1b3d] transition-colors disabled:opacity-60"
+          style={{ touchAction: 'manipulation' }}
+        />
+        <button
+          type="submit"
+          disabled={status === 'loading' || status === 'ok' || status === 'already'}
+          className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-[#0f1b3d] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-600 disabled:opacity-60 disabled:cursor-not-allowed"
+          style={{ touchAction: 'manipulation' }}
+        >
+          {status === 'loading' ? 'Subscribing…' : (<><Send className="w-4 h-4" /> Subscribe</>)}
+        </button>
+        {status === 'ok' && <p className="text-xs sm:text-sm font-medium text-green-600">You're in! Check your inbox for your welcome mail.</p>}
+        {status === 'already' && <p className="text-xs sm:text-sm font-medium text-gray-500">You're already on the list — good to see you again.</p>}
+        {status === 'error' && <p className="text-xs sm:text-sm font-medium text-red-600">Something went wrong. Please try again.</p>}
+      </form>
     </div>
   );
 }

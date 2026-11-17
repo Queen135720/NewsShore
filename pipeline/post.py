@@ -285,11 +285,19 @@ def articles_without_routing():
     return out
 
 def posts_today(platform):
+    """Rows that can still consume a send slot today: already-posted ones plus
+    LIVE pendings (attempts < MAX_ATTEMPTS). Dead pendings can never post
+    again — the queue skips them — so they must not eat cap quota either;
+    counting them is exactly what locked facebook out for a whole day while
+    its token was broken: 20 dead rows -> cap full -> everything 'waiting'."""
     start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
-    return (SB.table("social_posts").select("id", count="exact")
-             .eq("platform", platform).in_("status", ["pending", "posted", "ready"])
-             .gte("created_at", start).execute().count)
-
+    posted = (SB.table("social_posts").select("id", count="exact")
+               .eq("platform", platform).in_("status", ["posted", "ready"])
+               .gte("created_at", start).execute().count)
+    live = (SB.table("social_posts").select("id", count="exact")
+              .eq("platform", platform).eq("status", "pending")
+              .gte("created_at", start).lt("attempts", MAX_ATTEMPTS).execute().count)
+    return (posted or 0) + (live or 0)
 def write_row(payload):
     """Upsert on (article_id, platform). If the DB lacks that unique
     constraint PostgREST 400s on the on_conflict clause — fall back to a
@@ -314,6 +322,7 @@ def route(unrouted):
                 (SB.table("social_posts").select("article_id,platform")
                  .gte("created_at", since48).execute().data)}
     routed = queued = waiting = dups = 0
+    capped = set()   # platforms whose daily cap filled up (visible in the log)
     for a in unrouted:
         tw = title_words(a["title"])
         # dedup vs OTHER articles only — this article's own earlier rows
@@ -337,6 +346,7 @@ def route(unrouted):
                 waiting += 1
                 continue                    # secret missing -> retried when it returns
             if counts[plat] >= DAILY_CAPS[plat]:
+                capped.add(plat)             # cap full for the day — say so, don't hide it
                 continue                    # daily cap hit -> retried within the window
             counts[plat] += 1
             write_row({"article_id": a["id"], "platform": plat,
@@ -346,6 +356,15 @@ def route(unrouted):
             made = True
         on_now = [p for p in platforms if (a["id"], p) in existing]
         missing = [p for p in platforms if p not in on_now]
+        # a platform lands in "waiting" for exactly one of three reasons:
+        # secret missing, daily cap full, or duplicate-content skip — name it,
+        # so "(waiting: facebook)" never becomes a guessing game again
+        missing = [
+            f"{p} (cap {counts[p]}/{DAILY_CAPS[p]} full)" if p in capped
+            else f"{p} (not configured)" if not CONFIGURED.get(p)
+            else p
+            for p in missing
+        ]
         extra = f"  (waiting: {', '.join(missing)})" if missing else ""
         print(f"[route] {a['title'][:55]} -> {', '.join(on_now) or 'none'}{extra}")
         if made:
@@ -353,6 +372,11 @@ def route(unrouted):
             seen.append((a["id"], tw))
     print(f"[route] {routed} article(s) routed -> {queued} post(s) queued, "
           f"{waiting} platform slot(s) waiting, {dups} duplicate(s) skipped")
+    for p in sorted(capped):
+        print(f"[route] {p}: daily cap {DAILY_CAPS[p]} full "
+              f"({counts[p]} posted/live rows today) — resumes after UTC midnight; "
+              f"clean dead rows with: update social_posts set status='expired' "
+              f"where status='pending' and attempts>=3;")
 
 # ---------- senders ----------
 def tg_api(method, payload):
@@ -496,6 +520,10 @@ def wa_diagnose():
                           "admin of any (create one, or fix the gateway number)")
             else:
                 print(f"[wa]   channel list -> {r.status_code}: {r.text[:200]}")
+                if r.status_code == 404:
+                    print("[wa]   404 = Whapi token invalid, or the gateway number is "
+                          "no longer paired to that channel (re-link it: Whapi dashboard "
+                          "-> channel QR/admin settings)")
     except Exception as e:
         print(f"[wa]   channel list failed: {e}")
 

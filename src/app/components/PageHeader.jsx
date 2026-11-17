@@ -4,7 +4,11 @@ import { useState } from 'react';
 
 const NAVY = '#0a2540'; // <- change the navy shade here if needed
 
-const PAGE_LINKS = [
+// Main homepage navs (must match your home category names EXACTLY)
+const CATEGORIES = ['Latest', 'AI News', 'Tech Giants', 'Tech News', 'Startups & Funding', 'Research', 'Deals', 'Global & China'];
+
+// Secondary: the footer pages (delete this array + its block below for categories only)
+const PAGES = [
   { href: '/careers', label: 'Careers' },
   { href: '/contact', label: 'Contact' },
   { href: '/advertise', label: 'Advertise' },
@@ -47,10 +51,14 @@ export default function PageHeader() {
           {open && (
             <>
               <div onClick={() => setOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: -1 }} aria-hidden="true" />
-              <nav className="ns-menu" style={{ position: 'absolute', top: '50px', right: 0, minWidth: '230px', backgroundColor: NAVY, border: '1px solid rgba(255,255,255,0.18)', borderRadius: '12px', padding: '8px', boxShadow: '0 16px 40px rgba(0,0,0,0.35)' }}>
-                <a href="/" onClick={() => setOpen(false)} style={{ display: 'block', padding: '10px 14px', color: '#cbd5e1', textDecoration: 'none', fontSize: '14px', borderRadius: '8px' }}>Home</a>
-                {PAGE_LINKS.map(p => (
-                  <a key={p.href} href={p.href} onClick={() => setOpen(false)} style={{ display: 'block', padding: '10px 14px', color: '#cbd5e1', textDecoration: 'none', fontSize: '14px', borderRadius: '8px' }}>{p.label}</a>
+              <nav className="ns-menu" style={{ position: 'absolute', top: '50px', right: 0, minWidth: '250px', maxHeight: '70vh', overflowY: 'auto', backgroundColor: NAVY, border: '1px solid rgba(255,255,255,0.18)', borderRadius: '12px', padding: '8px', boxShadow: '0 16px 40px rgba(0,0,0,0.35)' }}>
+                {CATEGORIES.map(c => (
+                  <a key={c} href={'/?category=' + encodeURIComponent(c)} onClick={() => setOpen(false)} style={{ display: 'block', padding: '10px 14px', color: '#e2e8f0', textDecoration: 'none', fontSize: '14px', borderRadius: '8px' }}>{c}</a>
+                ))}
+                <div style={{ height: '1px', background: 'rgba(255,255,255,0.15)', margin: '8px 4px' }} />
+                <div style={{ padding: '6px 14px 4px', color: 'rgba(255,255,255,0.45)', fontSize: '11px', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Company &amp; Legal</div>
+                {PAGES.map(p => (
+                  <a key={p.href} href={p.href} onClick={() => setOpen(false)} style={{ display: 'block', padding: '8px 14px', color: '#cbd5e1', textDecoration: 'none', fontSize: '13px', borderRadius: '8px' }}>{p.label}</a>
                 ))}
               </nav>
             </>

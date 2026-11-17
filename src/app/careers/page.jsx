@@ -1,10 +1,13 @@
-const wrap = { maxWidth: '760px', margin: '0 auto', padding: '56px 20px 96px' };
+import PageHeader from '../components/PageHeader';
+
+const wrap = { maxWidth: '760px', margin: '0 auto', padding: '128px 20px 96px' };
 const h1s = { fontSize: '2rem', fontWeight: 700, marginBottom: '10px' };
 const ps = { marginTop: '14px', marginBottom: '14px', lineHeight: 1.7 };
 
 export default function CareersPage() {
   return (
     <div style={wrap}>
+      <PageHeader />
       <h1 style={h1s}>Careers</h1>
       <p style={ps}>
         NewsShore is a newly established AI & technology publication. Our newsroom is

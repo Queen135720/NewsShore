@@ -16,17 +16,6 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen flex flex-col bg-white font-[family-name:var(--font-gilroy)]">
       <PageHeader />
-      <div className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-3">
-          <button
-            onClick={() => router.push('/')}
-            className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-[#0f1b3d] transition-colors"
-            style={{ touchAction: 'manipulation' }}
-          >
-            <ArrowLeft className="w-4 h-4" /><span>Back to News</span>
-          </button>
-        </div>
-      </div>
 
       {/* Content */}
       <main className="flex-1">

@@ -9,7 +9,6 @@ import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import PageHeader from '../components/PageHeader';
 
-const wrap = { maxWidth: '760px', margin: '0 auto', padding: '128px 20px 96px' }
 const wrap = { maxWidth: '760px', margin: '0 auto', padding: '128px 20px 96px' };
 const h1s = { fontSize: '2rem', fontWeight: 700, marginBottom: '10px' };
 const h2s = { fontSize: '1.2rem', fontWeight: 700, marginTop: '40px', marginBottom: '10px' };

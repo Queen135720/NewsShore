@@ -20,9 +20,6 @@ export default function AboutPage() {
       {/* Content */}
       <main className="flex-1">
         <div className="max-w-4xl mx-auto px-5 sm:px-8 lg:px-10 py-8 sm:py-12">
-          <div className="flex items-center gap-3 mb-6">
-            <img src="/logo-full-transparent.png" alt="NewsShore" className="h-7 sm:h-9 w-auto object-contain" />
-          </div>
           <h1 className="font-[family-name:var(--font-space-grotesk)] text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-4">About NewsShore</h1>
           <p className="text-base sm:text-lg text-gray-600 leading-relaxed mb-8">
             NewsShore is your trusted, independent source for AI and technology news. We deliver in-depth coverage of the AI industry, technology giants, startup funding, research breakthroughs, and global developments shaping the future — all with a commitment to accuracy, transparency, and accessibility.

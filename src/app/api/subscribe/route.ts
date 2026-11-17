@@ -33,7 +33,7 @@ Facebook: https://web.facebook.com/profile.php?id=61592735245077
 
 We're glad you're here. Welcome aboard — let's stay informed, together.
 
-The NewsShore Team;
+The NewsShore Team`;
 
 const WELCOME_HTML = `<!DOCTYPE html>
 <html>

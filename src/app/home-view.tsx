@@ -922,6 +922,12 @@ export function Home({ initialArticles }: { initialArticles: NewsArticle[] }) {
     ? allArticles.slice(1)
     : allArticles.filter((a) => a.category === activeCategory);
 
+    // Select category from URL (?category=...) — used by the page-header menu
+  useEffect(() => {
+    const cat = new URLSearchParams(window.location.search).get('category');
+    if (cat) handleCategoryClick(cat);
+  }, []);
+
   return (
     <div className="min-h-screen flex flex-col font-[family-name:var(--font-dm-sans)]">
       <Header onCategoryClick={handleCategoryClick} onAboutOpen={() => router.push('/about')} onArticleSelect={openArticle} searchableArticles={allArticles} />

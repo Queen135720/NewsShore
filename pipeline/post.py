@@ -400,6 +400,40 @@ def fb_call(path, payload):
         raise RuntimeError(f"FB {path} -> {r.status_code}: {r.text[:400]}")
     return r.json()
 
+def fb_preflight():
+    """One cheap authenticated GET before any posting. A dead FB token is the
+    one failure that looks like silence ('waiting facebook' forever) — so we
+    catch it here: the Action log gets the exact Graph error, the owner gets a
+    DM, and facebook is tripped for the run so pending rows keep their attempts
+    instead of burning them. Returns True when facebook should be tripped."""
+    try:
+        r = requests.get(f"https://graph.facebook.com/{FB_VER}/{FB_PAGE}",
+                         params={"fields": "id,name", "access_token": FB_TOKEN},
+                         timeout=30)
+    except Exception as e:
+        print(f"[setup] FB preflight network error ({e}) — trying to post anyway")
+        return False
+    if r.ok:
+        print(f"[setup] facebook token OK — page: {r.json().get('name', FB_PAGE)}")
+        return False
+    if r.status_code >= 500:
+        print(f"[setup] FB preflight got {r.status_code} (Facebook-side hiccup) — trying to post anyway")
+        return False
+    try:                                   # 4xx = our secret/config is wrong
+        msg = r.json().get("error", {}).get("message", r.text[:200])
+    except Exception:
+        msg = r.text[:200]
+    print(f"[setup] FACEBOOK TOKEN DEAD -> {msg}")
+    print("[setup] facebook tripped for this run — its posts stay pending until the secret is fixed")
+    if OWNER_ID and TG_TOKEN:
+        try:                               # same DM channel as failure alerts
+            tg_api("sendMessage", {"chat_id": OWNER_ID,
+                   "text": f"\u26a0\ufe0f NewsShore: Facebook token failed preflight — FB posts are waiting.\n"
+                           f"{msg[:200]}"})
+        except Exception:
+            pass                           # alerting must never crash the run
+    return True
+
 def send_facebook(p):
     a = p["articles"]
     caption = build_caption(a, article_url(a))
@@ -514,6 +548,9 @@ def main():
     for plat, ok in CONFIGURED.items():
         if not ok:
             print(f"[setup] {plat} not configured (missing secrets) — those articles stay website-only")
+    tripped = set()   # platforms whose secrets look broken this run
+    if CONFIGURED["facebook"] and fb_preflight():
+        tripped.add("facebook")
     unrouted = articles_without_routing()
     if unrouted:
         route(unrouted)
@@ -571,7 +608,6 @@ def main():
     failures = 0
     errors = []
     per_run = {}
-    tripped = set()   # platforms whose secrets look broken this run
     for p in live:
         plat = p["platform"]
         if plat in tripped:

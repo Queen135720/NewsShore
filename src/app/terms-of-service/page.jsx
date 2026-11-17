@@ -1,4 +1,6 @@
-const wrap = { maxWidth: '760px', margin: '0 auto', padding: '56px 20px 96px' };
+import PageHeader from '../components/PageHeader';
+
+const wrap = { maxWidth: '760px', margin: '0 auto', padding: '128px 20px 96px' }
 const h1s = { fontSize: '2rem', fontWeight: 700, marginBottom: '10px' };
 const h2s = { fontSize: '1.2rem', fontWeight: 700, marginTop: '40px', marginBottom: '10px' };
 const ps = { marginTop: '14px', marginBottom: '14px', lineHeight: 1.7 };
@@ -6,12 +8,13 @@ const ps = { marginTop: '14px', marginBottom: '14px', lineHeight: 1.7 };
 export default function TermsPage() {
   return (
     <div style={wrap}>
+      <PageHeader />
       <h1 style={h1s}>Terms of Service</h1>
       <p style={{ ...ps, opacity: 0.75 }}><em>Effective date: November 15, 2026</em></p>
 
       <h2 style={h2s}>1. Acceptance of these terms</h2>
       <p style={ps}>
-        By accessing or using NewsShore (the "Site"), you agree to these Terms of Service.
+        By accessing or using NewsShore, you agree to these Terms of Service.
         If you do not agree, please discontinue use of the Site.
       </p>
 
@@ -83,7 +86,7 @@ export default function TermsPage() {
 
       <h2 style={h2s}>11. Governing law</h2>
       <p style={ps}>
-        These terms are governed by the laws of [COUNTRY], without regard to conflict-of-law
+        These terms are governed by the laws of the Unite States, without regard to conflict-of-law
         rules.
       </p>
 

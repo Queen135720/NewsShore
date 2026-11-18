@@ -221,7 +221,7 @@ Source site: ${item.sourceName} (suggested category: "${item.category}", suggest
 Source content: ${sourceContent}`;
 
     // All providers already down this run → fail fast, don't hammer
-  if (providerDown.gemini && providerDown.glm && providerDown.groq && providerDown.cloudflare && providerDown.groq20b && providerDown.nvidia && providerDown.nvidia2) {
+  if (providerDown.glm && providerDown.groq && providerDown.cloudflare && providerDown.groq20b && providerDown.nvidia && providerDown.nvidia2) {
     throw new Error('All providers throttled — pausing this run');
   }
 
@@ -279,20 +279,12 @@ Source content: ${sourceContent}`;
       else console.warn(`NVIDIA2 failed, falling back: ${err.message}`);
     }
   }
-  if (!providerDown.gemini) {
-    try { return await callGeminiFirst(prompt); }
-    catch (err) {
-      if (/429|rate|unavailable for free|403/i.test(err.message)) { providerDown.gemini = true; console.warn('Gemini quota dead — skipping rest of this run'); }
-      else console.warn(`Gemini failed, falling back: ${err.message}`);
-    }
-  }
 
-  let r = await callEden(prompt);   if (r) return r;
-  r = await callApinex(prompt);     if (r) return r;
-  // const rChu  = await callChutes(prompt); if (rChu)  return rChu;  // disabled: Chutes needs a one-time $5 top-up
-  r = await callNovita(prompt);     if (r) return r;
-  
-  throw new Error('All 6 AI providers failed');
+  const rOr   = await callOpenRouter(prompt);  if (rOr)   return rOr;
+  const rAxf  = await callAxforge(prompt);     if (rAxf)  return rAxf;
+  const rKilo = await callKilo(prompt);        if (rKilo) return rKilo;
+
+  throw new Error('All AI providers failed');
 }
 
 async function retryFetch(url, options) {
@@ -402,14 +394,12 @@ async function callBazaar(prompt) {
   }
 }
 
-// ==== NEW PROVIDERS: Eden AI, Chutes, Novita, APINEX ====
-const EDEN_MODEL   = "google/gemma-4-31b-it";       // Eden catalog id ($0) — copy exact from catalog           // from Eden catalog, $0 filter
-const CHUTES_MODEL = "Qwen/Qwen3.8-27B-TEE-pareton";      // from chutes.ai model list
-const NOVITA_MODEL = "qwen/qwen-2.5-7b-instruct";   // $0 model — verify exact id on the model page's API example      // e.g. qwen2.5-7b-instruct (a $0 one)
-const APINEX_MODEL = "free/deepseek-v4.1-flash";      // from apinex.bond free category
+// ===== NEW PROVIDER MODELS (Nov 2026 refresh) =====
+const OPENROUTER_MODEL = "nvidia/nemotron-3.5-lightning:free";        // OpenRouter - 1M ctx, 50 req/day
+const AXFORGE_MODEL    = "glm-5.3-flash";                             // AxForge (EU) - 3M tokens/30 days
+const KILO_MODEL       = "nvidia/nemotron-3.5-lightning:free";        // Kilo free pool - no key needed
 
-// Shared caller for OpenAI-compatible providers (Chutes, Novita, APINEX)
-// Shared caller for OpenAI-compatible providers (Eden v3, Chutes, Novita, APINEX)
+// Shared caller for OpenAI-compatible providers (OpenRouter, Axforge, Kilo AI)
 async function callOpenAIStyle(label, url, apiKey, model, prompt, timeoutMs) {
   if (providerDown[label]) return null;
   if (!apiKey) { console.log(`[${label}] no API key set`); return null; }
@@ -455,27 +445,42 @@ async function callOpenAIStyle(label, url, apiKey, model, prompt, timeoutMs) {
   } finally { clearTimeout(timer); }
 }
 
-async function callEden(prompt) {
-  // Eden moved their API (Nov 2026): OpenAI-style v3 endpoint on api.edenai.run
-  return callOpenAIStyle("eden", "https://api.edenai.run/v3/chat/completions",
-    process.env.EDEN_API_KEY, EDEN_MODEL, prompt, 60000); // 60s: gemma-4 reasons before answering
+// ---------- OpenRouter: free models, 20 RPM / 50 requests per day ----------
+function callOpenRouter(prompt) {
+  return callOpenAIStyle(
+    "openrouter",
+    "https://openrouter.ai/api/v1/chat/completions",
+    process.env.OPENROUTER_API_KEY,
+    OPENROUTER_MODEL,
+    prompt,
+    45000
+  );
 }
 
-async function callNovita(prompt) {
-  return callOpenAIStyle("novita", "https://api.novita.ai/v3/openai/chat/completions",
-    process.env.NOVITA_API_KEY, NOVITA_MODEL, prompt, 45000);
+// ---------- AxForge: EU-hosted open models, 3M tokens every 30 days ----------
+function callAxforge(prompt) {
+  return callOpenAIStyle(
+    "axforge",
+    "https://api.axforge.ai/v1/chat/completions",
+    process.env.AXFORGE_API_KEY,
+    AXFORGE_MODEL,
+    prompt,
+    45000
+  );
 }
 
-async function callApinex(prompt) {
-  return callOpenAIStyle("apinex", "https://apinex.bond/v1/chat/completions",
-    process.env.APINEX_API_KEY, APINEX_MODEL, prompt, 45000);
+// ---------- Kilo Code: free pool, 200 req/hr, no key required (experimental tail) ----------
+function callKilo(prompt) {
+  return callOpenAIStyle(
+    "kilo",
+    "https://api.kilo.ai/api/gateway/chat/completions",
+    // if [kilo] returns 404 in the logs, try https://api.kilo.ai/api/gateway/v1/chat/completions
+    process.env.KILO_API_KEY || "free",
+    KILO_MODEL,
+    prompt,
+    45000
+  );
 }
-
-async function callChutes(prompt) {
-  return callOpenAIStyle("chutes", "https://llm.chutes.ai/v1/chat/completions",
-    process.env.CHUTES_API_KEY, CHUTES_MODEL, prompt, 60000); // 60s: cold starts
-}
-
 
 // ---------- JSON repair for small models ----------
 function looseGrab(text, names) {
@@ -816,28 +821,6 @@ async function callNvidia2(prompt) {
   }
 }
 
-async function callGemini(prompt) {
-  if (!process.env.GEMINI_API_KEY) throw new Error('GEMINI_API_KEY not set');
-  const res = await retryFetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        tools: [{ google_search: {} }],
-      }),
-    }
-  );
-  if (!res.ok) {
-    const errBody = await res.text();
-    throw new Error(`Gemini error: ${res.status} — ${errBody.substring(0, 200)}`);
-  }
-  const data = await res.json();
-  const text = data.candidates[0].content.parts[0].text;
-  return safeParseJSON(text); // ★ was a double-return with dead code — fixed
-}
-
 // ---- 4. FETCH IMAGE FROM UNSPLASH ----
 // ★ Completely rebuilt. Never uses the headline directly, never repeats an image,
 // never falls back to source-article images (that was the Alamy watermark leak).
@@ -1138,7 +1121,7 @@ async function run() {
 
       // If every provider was down for this article, abort the batch —
       // remaining articles would fail identically and burn more quota
-      if (providerDown.glm && providerDown.groq && providerDown.cloudflare && providerDown.groq20b && providerDown.nvidia && providerDown.nvidia2 && providerDown.gemini) {
+      if (providerDown.glm && providerDown.groq && providerDown.cloudflare && providerDown.groq20b && providerDown.nvidia && providerDown.nvidia2) {
         console.log('All providers exhausted — ending this run early. Providers recover before the next run.');
         break;
       }

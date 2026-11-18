@@ -1,10 +1,10 @@
 {
-  "fetchedAt": "2026-11-18T14:39:29.021Z",
+  "fetchedAt": "2026-11-18T23:38:08.440Z",
   "source": "llm-stats.com",
   "sourceUrl": "https://llm-stats.com/leaderboards/llm-leaderboard",
   "methodology": "https://llm-stats.com/methodology/llm-stats-score",
-  "totalModelsExtracted": 453,
-  "modelsRanked": 453,
+  "totalModelsExtracted": 454,
+  "modelsRanked": 454,
   "models": [
     {
       "rank": 1,
@@ -5986,6 +5986,20 @@
     },
     {
       "rank": 428,
+      "model_id": "gemini-4-neon",
+      "name": "Gemini 4 Neon",
+      "organization": "Google",
+      "organization_id": "google",
+      "country": "US",
+      "score": null,
+      "input_price": 3,
+      "output_price": 15,
+      "context": 1048576,
+      "multimodal": true,
+      "url": "https://llm-stats.com/models/gemini-4-neon"
+    },
+    {
+      "rank": 429,
       "model_id": "glm-4.5v",
       "name": "GLM-4.5V",
       "organization": "Zhipu AI",
@@ -5999,7 +6013,7 @@
       "url": "https://llm-stats.com/models/glm-4.5v"
     },
     {
-      "rank": 429,
+      "rank": 430,
       "model_id": "gpt-5.6-cyber",
       "name": "GPT-5.6 Cyber",
       "organization": "OpenAI",
@@ -6013,7 +6027,7 @@
       "url": "https://llm-stats.com/models/gpt-5.6-cyber"
     },
     {
-      "rank": 430,
+      "rank": 431,
       "model_id": "gpt-6-astra-law",
       "name": "GPT-6 Astra Law",
       "organization": "OpenAI",
@@ -6027,7 +6041,7 @@
       "url": "https://llm-stats.com/models/gpt-6-astra-law"
     },
     {
-      "rank": 431,
+      "rank": 432,
       "model_id": "gpt-6-rosalind",
       "name": "GPT-6 Rosalind",
       "organization": "OpenAI",
@@ -6041,7 +6055,7 @@
       "url": "https://llm-stats.com/models/gpt-6-rosalind"
     },
     {
-      "rank": 432,
+      "rank": 433,
       "model_id": "grok-2-image-1212",
       "name": "Grok-2 Image 1212",
       "organization": "xAI",
@@ -6055,7 +6069,7 @@
       "url": "https://llm-stats.com/models/grok-2-image-1212"
     },
     {
-      "rank": 433,
+      "rank": 434,
       "model_id": "grok-4-1-fast-non-reasoning",
       "name": "Grok-4.1 Fast Non-Reasoning",
       "organization": "xAI",
@@ -6069,7 +6083,7 @@
       "url": "https://llm-stats.com/models/grok-4-1-fast-non-reasoning"
     },
     {
-      "rank": 434,
+      "rank": 435,
       "model_id": "grok-4-1-fast-reasoning",
       "name": "Grok-4.1 Fast Reasoning",
       "organization": "xAI",
@@ -6083,7 +6097,7 @@
       "url": "https://llm-stats.com/models/grok-4-1-fast-reasoning"
     },
     {
-      "rank": 435,
+      "rank": 436,
       "model_id": "grok-4.20-multi-agent-beta-0309",
       "name": "Grok-4.20 Multi-Agent Beta",
       "organization": "xAI",
@@ -6097,7 +6111,7 @@
       "url": "https://llm-stats.com/models/grok-4.20-multi-agent-beta-0309"
     },
     {
-      "rank": 436,
+      "rank": 437,
       "model_id": "grok-4-fast-non-reasoning",
       "name": "Grok-4 Fast Non-Reasoning",
       "organization": "xAI",
@@ -6111,7 +6125,7 @@
       "url": "https://llm-stats.com/models/grok-4-fast-non-reasoning"
     },
     {
-      "rank": 437,
+      "rank": 438,
       "model_id": "grok-4-fast-reasoning",
       "name": "Grok-4 Fast Reasoning",
       "organization": "xAI",
@@ -6125,7 +6139,7 @@
       "url": "https://llm-stats.com/models/grok-4-fast-reasoning"
     },
     {
-      "rank": 438,
+      "rank": 439,
       "model_id": "jev",
       "name": "Jev",
       "organization": "TypeSafe AI",
@@ -6139,7 +6153,7 @@
       "url": "https://llm-stats.com/models/jev"
     },
     {
-      "rank": 439,
+      "rank": 440,
       "model_id": "kimi-k2.8",
       "name": "Kimi K2.8 Preview",
       "organization": "Moonshot AI",
@@ -6153,7 +6167,7 @@
       "url": "https://llm-stats.com/models/kimi-k2.8"
     },
     {
-      "rank": 440,
+      "rank": 441,
       "model_id": "l3.1-70b-euryale-v2.2",
       "name": "L3.1 70B Euryale v2.2",
       "organization": "Sao10K",
@@ -6167,7 +6181,7 @@
       "url": "https://llm-stats.com/models/l3.1-70b-euryale-v2.2"
     },
     {
-      "rank": 441,
+      "rank": 442,
       "model_id": "l3-8b-lunaris-v1",
       "name": "L3 8B Lunaris v1",
       "organization": "Sao10K",
@@ -6181,7 +6195,7 @@
       "url": "https://llm-stats.com/models/l3-8b-lunaris-v1"
     },
     {
-      "rank": 442,
+      "rank": 443,
       "model_id": "llama-guard-4-12b",
       "name": "Llama Guard 4 12B",
       "organization": "Meta",
@@ -6195,7 +6209,7 @@
       "url": "https://llm-stats.com/models/llama-guard-4-12b"
     },
     {
-      "rank": 443,
+      "rank": 444,
       "model_id": "mistral-small-2409",
       "name": "Mistral Small",
       "organization": "Mistral AI",
@@ -6209,7 +6223,7 @@
       "url": "https://llm-stats.com/models/mistral-small-2409"
     },
     {
-      "rank": 444,
+      "rank": 445,
       "model_id": "mythomax-l2-13b",
       "name": "MythoMax L2 13B",
       "organization": "Gryphe",
@@ -6223,7 +6237,7 @@
       "url": "https://llm-stats.com/models/mythomax-l2-13b"
     },
     {
-      "rank": 445,
+      "rank": 446,
       "model_id": "nemotron-content-safety-3.5",
       "name": "Nemotron Content Safety 3.5",
       "organization": "NVIDIA",
@@ -6237,7 +6251,7 @@
       "url": "https://llm-stats.com/models/nemotron-content-safety-3.5"
     },
     {
-      "rank": 446,
+      "rank": 447,
       "model_id": "o3-pro-2025-06-10",
       "name": "o3-pro",
       "organization": "OpenAI",
@@ -6251,7 +6265,7 @@
       "url": "https://llm-stats.com/models/o3-pro-2025-06-10"
     },
     {
-      "rank": 447,
+      "rank": 448,
       "model_id": "parse-v5.0",
       "name": "Parse",
       "organization": "Cohere",
@@ -6265,7 +6279,7 @@
       "url": "https://llm-stats.com/models/parse-v5.0"
     },
     {
-      "rank": 448,
+      "rank": 449,
       "model_id": "qwen3.8-2.4t-a95b",
       "name": "Qwen3.8-2.4T-A95B",
       "organization": "Alibaba Cloud / Qwen Team",
@@ -6279,7 +6293,7 @@
       "url": "https://llm-stats.com/models/qwen3.8-2.4t-a95b"
     },
     {
-      "rank": 449,
+      "rank": 450,
       "model_id": "qwen3.8-max-0902",
       "name": "Qwen3.8 Max (0902)",
       "organization": "Alibaba Cloud / Qwen Team",
@@ -6293,7 +6307,7 @@
       "url": "https://llm-stats.com/models/qwen3.8-max-0902"
     },
     {
-      "rank": 450,
+      "rank": 451,
       "model_id": "qwen3-coder",
       "name": "Qwen3-Coder",
       "organization": "Alibaba Cloud / Qwen Team",
@@ -6307,7 +6321,7 @@
       "url": "https://llm-stats.com/models/qwen3-coder"
     },
     {
-      "rank": 451,
+      "rank": 452,
       "model_id": "qwen3-next-80b-a3b-base",
       "name": "Qwen3-Next-80B-A3B-Base",
       "organization": "Alibaba Cloud / Qwen Team",
@@ -6321,7 +6335,7 @@
       "url": "https://llm-stats.com/models/qwen3-next-80b-a3b-base"
     },
     {
-      "rank": 452,
+      "rank": 453,
       "model_id": "qwen4-max-preview",
       "name": "Qwen4-Max-Preview",
       "organization": "Alibaba Cloud / Qwen Team",
@@ -6335,7 +6349,7 @@
       "url": "https://llm-stats.com/models/qwen4-max-preview"
     },
     {
-      "rank": 453,
+      "rank": 454,
       "model_id": "seed-2.0-code",
       "name": "Seed 2.0 Code",
       "organization": "ByteDance",

@@ -1182,6 +1182,37 @@ async function run() {
   const newItems = await fetchNewItems();
   console.log(`Found ${newItems.length} new item(s).`);
 
+  // ================================================================
+  // ONE-TIME PENDING RESET — only runs when RESET_PENDING=1
+  // Marks every currently-found feed item as processed, then exits.
+  // ================================================================
+  if (process.env.RESET_PENDING === '1') {
+    console.log('==============================================');
+    console.log('RESET_PENDING is ENABLED');
+
+    if (!Array.isArray(newItems) || newItems.length === 0) {
+      console.log('Nothing new found — pending is already 0.');
+      process.exit(0);
+    }
+
+    const urls = [...new Set(newItems.map(i => i?.link).filter(Boolean))];
+    console.log(`Marking ${urls.length} item(s) as processed...`);
+
+    const { error: resetError } = await supabase
+      .from('processed_urls')
+      .insert(urls.map(u => ({ source_url: u, status: 'rejected' })));
+
+    if (resetError) {
+      console.log(`Insert failed: ${resetError.message}`);
+      console.log('Nothing was saved — send me this error.');
+      process.exit(1);
+    }
+
+    console.log(`Done. Pending is now 0 — the next run starts fresh.`);
+    console.log('==============================================');
+    process.exit(0);
+  }
+
   const usedKeys = await loadUsedImageKeys();
 
   const MAX_PER_RUN = 10;

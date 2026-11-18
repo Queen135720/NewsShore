@@ -486,7 +486,7 @@ function callOpenRouter(prompt) {
     process.env.OPENROUTER_API_KEY,
     OPENROUTER_MODEL,
     prompt,
-    45000
+    60000
   );
 }
 
@@ -498,7 +498,7 @@ function callAxforge(prompt) {
     process.env.AXFORGE_API_KEY,
     AXFORGE_MODEL,
     prompt,
-    45000
+    60000
   );
 }
 
@@ -796,7 +796,7 @@ async function callNvidia(prompt) {
         temperature: 0.7,
         max_tokens: 2000
       }),
-      signal: AbortSignal.timeout(25000)
+      signal: AbortSignal.timeout(60000)
     });
     if (!res.ok) {
       const t = await res.text();
@@ -833,7 +833,7 @@ async function callNvidia2(prompt) {
         temperature: 0.7,
         max_tokens: 2000
       }),
-      signal: AbortSignal.timeout(25000)
+      signal: AbortSignal.timeout(60000)
     });
     if (!res.ok) {
       const t = await res.text();

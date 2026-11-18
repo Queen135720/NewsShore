@@ -1113,6 +1113,7 @@ async function saveArticle(item, rewritten, usedKeys) {
   for (const r of recent ?? []) {
     if (isLikelyDuplicate(rewritten.headline, r.title)) {
       console.log(`Skipping duplicate: "${rewritten.headline}" ~ already saved as "${r.title}"`);
+      console.log('[empty-dump] provider:', rewritten?._provider ?? '(old provider, no stamp)', 'raw:', JSON.stringify(rewritten ?? null).slice(0, 200));
       await supabase.from('processed_urls').insert({ source_url: item.link, status: 'rejected' });
       return false;
     }

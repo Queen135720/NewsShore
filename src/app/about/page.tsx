@@ -10,7 +10,7 @@ import Link from 'next/link';
 import PageHeader from '../components/PageHeader';
 
 const wrap = { maxWidth: '760px', margin: '0 auto', padding: '128px 20px 96px' };
-const h1s = { fontSize: '5rem', fontWeight: 700, marginBottom: '10px' };
+const h1s = { fontSize: '2rem', fontWeight: 700, marginBottom: '10px', marginTop: '50px' };
 
 export default function AboutPage() {
 

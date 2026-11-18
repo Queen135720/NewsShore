@@ -399,52 +399,85 @@ const OPENROUTER_MODEL = "nvidia/nemotron-3.5-lightning:free";        // OpenRou
 const AXFORGE_MODEL    = "glm-5.3-flash";                             // AxForge (EU) - 3M tokens/30 days
 const KILO_MODEL       = "nvidia/nemotron-3.5-lightning:free";        // Kilo free pool - no key needed
 
-// Shared caller for OpenAI-compatible providers (OpenRouter, Axforge, Kilo AI)
+// ================================================================
+// Circuit breaker — shared by every provider that uses callOpenAIStyle.
+// ================================================================
+const providerDown = {}; // label -> timestamp when it may be retried
+
+function isProviderDown(label) {
+  const until = providerDown[label];
+  if (!until) return false;
+  if (Date.now() >= until) { delete providerDown[label]; return false; }
+  return true;
+}
+
+function markProviderDown(label, ms, cause) {
+  providerDown[label] = Date.now() + ms;
+  console.log(`[${label}] down for ${Math.round(ms / 60000)}m — ${cause}`);
+}
+
+// ================================================================
+// Shared OpenAI-compatible caller — full circuit breaker built in.
+// ================================================================
 async function callOpenAIStyle(label, url, apiKey, model, prompt, timeoutMs) {
-  if (providerDown[label]) return null;
-  if (!apiKey) { console.log(`[${label}] no API key set`); return null; }
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), timeoutMs || 45000);
+  if (isProviderDown(label)) return null; // sleeping: skip instantly, no request wasted
+
   try {
     const res = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
       body: JSON.stringify({
-        model: model,
-        messages: [{ role: "user", content: prompt }],
-        max_tokens: 6000,
-        temperature: 0.3,
+        model,
+        messages: [
+          { role: "system", content: "You are a professional news editor. Respond with valid JSON only, no extra text." },
+          { role: "user", content: prompt },
+        ],
+        temperature: 0.4,
       }),
-      signal: ctrl.signal,
+      signal: AbortSignal.timeout(timeoutMs),
     });
-    const body = await res.text();
+
     if (!res.ok) {
-      console.log(`[${label}] HTTP ${res.status}: ${body.slice(0, 300)}`);
-      // 402 = balance/check-in (retry hourly — fixable on their website);
-      // 401/403/404 = wrong key or model (6h nap); else = rate limit (15 min)
-      const napMs = res.status === 402 ? 60 * 60000
-                  : [401, 403, 404].includes(res.status) ? 6 * 3600000 : 15 * 60000;
-      providerDown[label] = true;
-      setTimeout(() => { providerDown[label] = false; }, napMs);
+      const body = await res.text().catch(() => "");
+      const snippet = body.slice(0, 120).replace(/\s+/g, " ");
+      if (res.status === 402) {
+        markProviderDown(label, 60 * 60 * 1000, `HTTP 402 ${snippet}`);              // credit / check-in needed
+      } else if ([401, 403, 404].includes(res.status)) {
+        markProviderDown(label, 6 * 60 * 60 * 1000, `HTTP ${res.status} ${snippet}`); // bad key or dead model
+      } else {
+        markProviderDown(label, 15 * 60 * 1000, `HTTP ${res.status} ${snippet}`);     // 429 / 5xx / anything else
+      }
       return null;
     }
-    const data = JSON.parse(body);
-    const text = data?.choices?.[0]?.message?.content || data?.choices?.[0]?.text || data?.generated_text || null;
-    if (!text || !String(text).trim()) { console.log(`[${label}] empty reply: ${body.slice(0, 200)}`); return null; }
-    let obj;
-    try { obj = normalizeArticleFields(repairArticleJSON(String(text))); }
-    catch (e) { console.log(`[${label}] replied but not valid article JSON — next provider`); return null; }
-    console.log(`[${label}] JSON OK`);
-    return JSON.stringify(obj);
-  } catch (e) {
-    const cause = e.cause ? ' (cause: ' + (e.cause.message || e.cause.code || e.cause) + ')' : '';
-    console.log(`[${label}] failed: ${e.message}${cause}`);
-    providerDown[label] = true;
-    setTimeout(() => { providerDown[label] = false; }, 30 * 60000);
-    return null;
-  } finally { clearTimeout(timer); }
-}
 
+    const data = await res.json();
+    const text = data?.choices?.[0]?.message?.content;
+    if (!text) {
+      markProviderDown(label, 15 * 60 * 1000, "empty response");
+      return null;
+    }
+
+    const article = normalizeArticleFields(repairArticleJSON(text));
+    if (!article) {
+      // garbage JSON = model problem, not provider problem:
+      // no cooldown, just fall through to the next provider
+      console.log(`[${label}] returned non-JSON reply, skipping to next provider`);
+      return null;
+    }
+
+    console.log(`[${label}] ok`);
+    return article;
+  } catch (err) {
+    const cause = err?.name === "TimeoutError"
+      ? "timeout"
+      : (err?.cause?.code || err?.message || "network error");
+    markProviderDown(label, 15 * 60 * 1000, cause);
+    return null;
+  }
+}
 // ---------- OpenRouter: free models, 20 RPM / 50 requests per day ----------
 function callOpenRouter(prompt) {
   return callOpenAIStyle(

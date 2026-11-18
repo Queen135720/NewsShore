@@ -401,8 +401,6 @@ const KILO_MODEL       = "nvidia/nemotron-3.5-lightning:free";        // Kilo fr
 
 // ================================================================
 // Circuit breaker — shared by every provider that uses callOpenAIStyle.
-// ================================================================
-const providerDown = {}; // label -> timestamp when it may be retried
 
 function isProviderDown(label) {
   const until = providerDown[label];

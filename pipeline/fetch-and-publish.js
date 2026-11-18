@@ -321,19 +321,84 @@ function safeParseJSON(text) {
   try { return JSON.parse(result); } catch (e) { throw new Error('Failed to parse AI JSON'); }
 }
 
+// ====================================================================
+// GLM (Zhipu bigmodel.cn) — FULLY INDEPENDENT provider function
+// glm-4.7-flash (4.5-flash is retiring). Own timeout, own circuit
+// breaker, own graded cooldowns, own JSON guard. Returns the article
+// object on success, or null on any failure (never throws).
+// ====================================================================
+let glmDownUntil = 0; // circuit breaker: timestamp before which GLM is skipped
+
 async function callGLM(prompt) {
-  if (!process.env.GLM_API_KEY) throw new Error('GLM_API_KEY not set');
-  const res = await retryFetch('https://open.bigmodel.cn/api/paas/v4/chat/completions', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.GLM_API_KEY}` },
-    body: JSON.stringify({ model: 'glm-4.5-flash', messages: [{ role: 'user', content: prompt }] }),
-  });
-  if (!res.ok) {
-    const errBody = await res.text();
-    throw new Error(`GLM error: ${res.status} — ${errBody.substring(0, 200)}`);
+  // --- 0. Circuit breaker: while sleeping, skip instantly, no request ---
+  if (Date.now() < glmDownUntil) return null;
+
+  if (!process.env.GLM_API_KEY) {
+    console.log('[glm] GLM_API_KEY not set — skipping');
+    glmDownUntil = Date.now() + 6 * 60 * 60 * 1000;
+    return null;
   }
-  const data = await res.json();
-  return safeParseJSON(data.choices[0].message.content);
+
+  try {
+    // --- 1. The request (45s hard timeout — no more "hung") ---
+    const res = await fetch('https://open.bigmodel.cn/api/paas/v4/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${process.env.GLM_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: 'glm-4.7-flash',
+        messages: [
+          { role: 'system', content: 'You are a professional news editor. Respond with valid JSON only, no extra text.' },
+          { role: 'user', content: prompt },
+        ],
+        temperature: 0.4,
+      }),
+      signal: AbortSignal.timeout(45000),
+    });
+
+    // --- 2. HTTP error: graded cooldown, then fall to next provider ---
+    if (!res.ok) {
+      const body = await res.text().catch(() => '');
+      const snippet = body.slice(0, 120).replace(/\s+/g, ' ');
+      let minutes;
+      if (res.status === 402) minutes = 60;                              // out of credit
+      else if ([401, 403, 404].includes(res.status)) minutes = 360;      // bad key / dead model
+      else minutes = 15;                                                 // 429 / 5xx / anything else
+      glmDownUntil = Date.now() + minutes * 60 * 1000;
+      console.log(`[glm] down for ${minutes}m — HTTP ${res.status} ${snippet}`);
+      return null;
+    }
+
+    // --- 3. Extract the reply text ---
+    const data = await res.json();
+    const text = data?.choices?.[0]?.message?.content;
+    if (!text) {
+      glmDownUntil = Date.now() + 15 * 60 * 1000;
+      console.log('[glm] down for 15m — empty response');
+      return null;
+    }
+
+    // --- 4. Clean + validate JSON (garbage reply = no cooldown, just skip) ---
+    const article = normalizeArticleFields(repairArticleJSON(text));
+    if (!article) {
+      console.log('[glm] returned non-JSON reply, skipping to next provider');
+      return null;
+    }
+
+    console.log('[glm] ok');
+    return article;
+
+  } catch (err) {
+    // --- 5. Timeout / network failure: 15m cooldown ---
+    const cause = err?.name === 'TimeoutError'
+      ? 'timeout'
+      : (err?.cause?.code || err?.message || 'network error');
+    glmDownUntil = Date.now() + 15 * 60 * 1000;
+    console.log(`[glm] down for 15m — ${cause}`);
+    return null;
+  }
 }
 
 async function callGroq(prompt) {

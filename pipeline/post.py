@@ -4,13 +4,17 @@
 #      -> one social_posts row per (article, platform): a big story can hit
 #         telegram + facebook + whatsapp at once
 #   2. cleans it into a human-looking post (markdown stripped, pure regex)
-#   3. posts it: summary lede, blank line, ~70% of the article body, link
-#   4. HARD duplicate guard: a (article, platform) pair that already went out
+#   3. snips the article's card off the live website (a real browser
+#      screenshot — no AI touch, pixel-identical to what readers see) and
+#      uploads it to Supabase storage; platforms that take an image URL get
+#      the snip instead of the raw hero image
+#   4. posts it: summary lede, blank line, ~70% of the article body, link
+#   5. HARD duplicate guard: a (article, platform) pair that already went out
 #      in the last 48h can never be sent again, no matter what routing did
 # Only articles saved within PICKUP_WINDOW_H hours are ever routed (latest
 # content only — no old backlog drains).
 
-import os, sys, time
+import os, sys, time, json
 from datetime import datetime, timezone
 import requests
 from supabase import create_client
@@ -25,7 +29,7 @@ OWNER_ID   = os.environ.get("OWNER_CHAT_ID")     # DMs: failure alert with error
 FB_PAGE    = os.environ.get("FACEBOOK_PAGE_ID")
 FB_TOKEN   = os.environ.get("FACEBOOK_PAGE_TOKEN")
 FB_VER     = "v22.0"
-SITE       = os.environ.get("SITE_URL", "https://newsshore.com")
+SITE       = os.environ.get("SITE_URL", "https://newsshore.vercel.app")
 
 # ---- WhatsApp gateway: self-hosted Evolution API (free) or Whapi.Cloud ----
 # WA_PROVIDER picks the gateway explicitly; by default it is "evolution" as
@@ -58,6 +62,22 @@ DAILY_CAPS   = {"whatsapp": 130, "facebook": 150, "telegram": 170}
 MAX_ATTEMPTS = 3
 PICKUP_WINDOW_H = 2     # only articles saved within this many hours get posted
 RUN_CAPS     = {"telegram": 7, "facebook": 5, "whatsapp": 3}   # max posts per platform per run
+
+# ---- card snip (social image = the article card exactly as on the website) --
+# SNIP=True captures each article's card from the live site with a headless
+# browser and uploads it to Supabase storage; the raw hero image stays the
+# fallback for every platform. No image editing, no AI — a real screenshot.
+#   SITE_URL   where the site lives (https://newsshore.vercel.app today; the
+#              custom domain later — one secret change, no code change)
+#   SNIP_BUCKET storage bucket for the snips; created public on first use
+#   SNIP_CACHE_H hours a stored snip stays valid (site shows "18m ago" etc.,
+#              so refresh it while the article is fresh enough to post)
+SNIP_ENABLED = os.environ.get("SNIP_ENABLED", "1") not in ("0", "false", "no")
+SNIP_BUCKET  = os.environ.get("SNIP_BUCKET", "social-cards")
+SNIP_CACHE_H = 6
+SNIP_TIMEOUT_MS   = 45000     # page-load budget per article
+SNIP_DEADLINE_S   = 240       # whole-run budget for ALL snips combined
+SNIP_JPEG_QUALITY = 90
 
 # Errors that mean "this platform's SECRET/CONFIG is broken" (not the article
 # being bad): dead token, wrong channel ID, unlinked number, trial limit.
@@ -378,6 +398,235 @@ def route(unrouted):
               f"clean dead rows with: update social_posts set status='expired' "
               f"where status='pending' and attempts>=3;")
 
+# ---------- card snip: social image = the website's own article card ----------
+# The site renders every article as a card: photo on top, white info block
+# under it (title, minute read, country, freshness). That card IS the brand.
+# We load the site in a real headless browser, find the card for THIS
+# article, and screenshot the element — pixel-identical to what a reader
+# sees, with zero AI retouching (the reason this layer exists).
+# Matching: card <img> src == the article's image_url from Supabase; if the
+# src carries tracking junk after the path, a title-prefix match is the
+# fallback. The newest article sits in the dark hero slot (article.bg-gray-900)
+# instead of the white grid — handled too. Anything off (site down, card
+# missing, browser missing, storage refusing) falls back to the raw hero
+# image, so a snip problem can never block a post.
+from playwright.sync_api import sync_playwright, Error as PWError
+def _norm_img(u):
+    """Comparable form of an image URL: strip query/fragment tracking junk."""
+    if not u:
+        return ""
+    u = re.sub(r"[?#].*$", "", u.strip())
+    return u.rstrip("/").lower()
+
+# per-run in-memory snip memo: article_id -> (url, when). Survives missing
+# DB cache columns and keeps a triple-platform article to one capture.
+_SNIP_MEMO = {}
+
+def _snip_filename(article):
+    aid = str(article["id"])
+    return f"{aid}.jpg"
+
+def _snip_cache_ok(article):
+    """A stored snip is reusable while it is fresh enough (the card shows
+    '18m ago' style freshness text, so stale snips would lie)."""
+    try:
+        rows = (SB.table("articles").select("card_image_url,card_snipped_at")
+                .eq("id", article["id"]).limit(1).execute().data)
+        if not rows or not rows[0].get("card_image_url"):
+            return None
+        snipped = rows[0].get("card_snipped_at")
+        if snipped:
+            age_h = (datetime.now(timezone.utc)
+                     - datetime.fromisoformat(snipped.replace("Z", "+00:00"))
+                     ).total_seconds() / 3600
+            if age_h <= SNIP_CACHE_H:
+                return rows[0]["card_image_url"]
+        # no timestamp (or stale) -> not cache-ok, but keep URL for upsert
+        return None
+    except Exception:
+        return None
+
+_SNIP_JS = """() => {
+    // find the article card whose <img> matches the target (query string
+    // stripped on both sides — Unsplash/Verge URLs carry tracking params);
+    // if that fails, the first card whose heading starts with the title prefix
+    const norm = u => (u || '').split(/[?#]/)[0].replace(/\\/+$/, '').toLowerCase();
+    const target = norm(IMG);
+    const prefix = (PREFIX || '').toLowerCase();
+    const arts = [...document.querySelectorAll('article')];
+    let card = null, how = '';
+    if (target) {
+        const hit = arts.find(a => {
+            const im = a.querySelector('img');
+            return im && norm(im.getAttribute('src')) === target;
+        });
+        if (hit) { card = hit; how = 'image'; }
+    }
+    if (!card && prefix) {
+        const hit = arts.find(a => {
+            const h = a.querySelector('h1,h2,h3,h4');
+            return h && h.textContent.trim().toLowerCase().startsWith(prefix);
+        });
+        if (hit) { card = hit; how = 'title'; }
+    }
+    if (!card) return null;
+    const im = card.querySelector('img');
+    const r = card.getBoundingClientRect();
+    return { found: true, how,
+             hasImg: !!(im && im.complete && im.naturalWidth > 0),
+             w: Math.round(r.width), h: Math.round(r.height),
+             title: (card.querySelector('h1,h2,h3,h4') || {}).innerText || null };
+}"""
+
+def _snip_one(page, article):
+    """Locate this article's card on the homepage grid and return its PNG bytes.
+    Returns None (and prints why) whenever the card can't be matched."""
+    img_url = article.get("image_url") or ""
+    prefix = (article.get("title") or "").strip().lower()[:28]
+    js = _SNIP_JS.replace("IMG", json.dumps(img_url)).replace("PREFIX", json.dumps(prefix))
+    try:
+        hit = page.evaluate(js)
+    except PWError as e:
+        print(f"[snip] evaluate failed on {article['title'][:40]!r}: {e}")
+        return None
+    if not hit or not hit.get("found"):
+        print(f"[snip] no card matched for {article['title'][:40]!r} "
+              f"(image {img_url[:60]}) — using raw image")
+        return None
+    print(f"[snip] matched card by {hit['how']} ({hit['w']}x{hit['h']}px): "
+          f"{article['title'][:50]!r}")
+    # re-locate the card as an element handle via the same match rule, so the
+    # screenshot targets exactly what the JS matcher found (image match first,
+    # title-prefix fallback — the newest article sits in the dark hero slot
+    # with a different img src than the grid card, and must still snip)
+    handle = page.evaluate_handle(
+        """([img, prefix]) => {
+            const norm = u => (u || '').split(/[?#]/)[0].replace(/\\/+$/, '').toLowerCase();
+            const arts = [...document.querySelectorAll('article')];
+            let card = null;
+            if (img) {
+                card = arts.find(a => {
+                    const im = a.querySelector('img');
+                    return im && norm(im.getAttribute('src')) === norm(img);
+                });
+            }
+            if (!card && prefix) {
+                card = arts.find(a => {
+                    const h = a.querySelector('h1,h2,h3,h4');
+                    return h && h.textContent.trim().toLowerCase().startsWith(prefix);
+                });
+            }
+            return card || null;
+        }""", [img_url, prefix])
+    card = handle.as_element()
+    if card is None:
+        print(f"[snip] card vanished before screenshot for {article['title'][:40]!r}")
+        return None
+    try:
+        # scroll first so lazy-loading kicks in, THEN wait for the photo
+        card.scroll_into_view_if_needed()
+        page.wait_for_function(
+            "el => { const im = el.querySelector('img');"
+            "        return im && im.complete && im.naturalWidth > 0; }",
+            arg=card, timeout=15000)
+        png = card.screenshot(type="png")
+    except PWError as e:
+        print(f"[snip] capture failed for {article['title'][:40]!r}: {str(e)[:120]}")
+        return None
+    finally:
+        handle.dispose()
+    print(f"[snip] captured card: {article['title'][:50]}")
+    return png
+
+def _snip_upload(data, path, ctype):
+    """JPEG/PNG bytes -> public Supabase storage URL. Bucket auto-created
+    public on first use. Returns None on any failure (callers fall back to
+    the raw image)."""
+    try:
+        try:
+            SB.storage.get_bucket(SNIP_BUCKET)
+        except Exception:
+            SB.storage.create_bucket(SNIP_BUCKET, options={"public": True})
+        bucket = SB.storage.from_(SNIP_BUCKET)
+        try:    # upsert: a re-snipped card replaces its own earlier file
+            bucket.upload(path, data,
+                          {"content-type": ctype, "upsert": "true",
+                           "cache-control": "public, max-age=3600"})
+        except Exception as up_err:
+            # older storage3: same key already exists and upsert flag dropped
+            if "Duplicate" in str(up_err) or "already exists" in str(up_err):
+                bucket.update(path, data, {"content-type": ctype,
+                                           "cache-control": "public, max-age=3600"})
+            else:
+                raise
+        return bucket.get_public_url(path)
+    except Exception as e:
+        print(f"[snip] storage unavailable ({str(e)[:120]}) — using raw image")
+        return None
+
+def _snip_bytes_to_jpeg(png_bytes):
+    """Crop nothing, change nothing — just re-encode PNG bytes as JPEG to keep
+    the upload small. If PIL isn't installed (CI keeps the image slim), the
+    PNG goes up as-is; every platform accepts PNG too."""
+    try:
+        from PIL import Image
+        import io
+        im = Image.open(io.BytesIO(png_bytes)).convert("RGB")
+        buf = io.BytesIO()
+        im.save(buf, "JPEG", quality=SNIP_JPEG_QUALITY)
+        return buf.getvalue(), "image/jpeg"
+    except Exception:
+        return png_bytes, "image/png"
+
+def snip_card(article, browser_ctx):
+    """Public entry: fresh snip for this article, or its cached one.
+    Returns a public URL (snip or cached) or None (fall back to raw image)."""
+    if not SNIP_ENABLED:
+        return None
+    # per-run memo first: a triple-platform article snips ONCE even if the
+    # DB cache columns are missing or the DB write failed
+    memo = _SNIP_MEMO.get(article["id"])
+    if memo and (datetime.now(timezone.utc) - memo[1]).total_seconds() < SNIP_CACHE_H * 3600:
+        return memo[0]
+    cached = _snip_cache_ok(article)
+    if cached:
+        return cached
+    # site must be up and the article must actually have an image to snip
+    if not article.get("image_url"):
+        return None
+    try:
+        page = browser_ctx.new_page()
+        try:
+            page.emulate_media(reduced_motion="reduce")
+            page.goto(SITE.rstrip("/"), wait_until="domcontentloaded",
+                      timeout=SNIP_TIMEOUT_MS)
+            page.wait_for_selector("article img", timeout=30000)
+            page.wait_for_timeout(2000)
+            png = _snip_one(page, article)
+        finally:
+            page.close()
+        if not png:
+            return None
+        data, ctype = _snip_bytes_to_jpeg(png)
+        path = _snip_filename(article)
+        url = _snip_upload(data, path, ctype)
+        if url:
+            _SNIP_MEMO[article["id"]] = (url, datetime.now(timezone.utc))
+            try:
+                SB.table("articles").update({
+                    "card_image_url": url,
+                    "card_snipped_at": datetime.now(timezone.utc).isoformat(),
+                }).eq("id", article["id"]).execute()
+            except Exception:
+                pass    # cache write is best-effort; the snip still posts
+        return url
+    except PWError as e:
+        print(f"[snip] browser error on {article['title'][:40]!r}: {str(e)[:150]}")
+        return None
+    except Exception as e:
+        print(f"[snip] failed for {article['title'][:40]!r} ({str(e)[:120]}) — using raw image")
+        return None
+
 # ---------- senders ----------
 def tg_api(method, payload):
     r = requests.post(f"https://api.telegram.org/bot{TG_TOKEN}/{method}", json=payload, timeout=60)
@@ -397,13 +646,14 @@ def article_url(a):
     SB.table("articles").update({"public_url": url}).eq("id", aid).execute()
     return url
 
-def send_telegram(p):
+def send_telegram(p, snip_url=None):
     a = p["articles"]
     caption = build_caption(a, article_url(a))
-    if a.get("image_url"):
+    photo = snip_url or a.get("image_url")
+    if photo:
         try:
             chunks = split_chunks(caption)
-            msg_id = tg_api("sendPhoto", {"chat_id": TG_CHANNEL, "photo": a["image_url"],
+            msg_id = tg_api("sendPhoto", {"chat_id": TG_CHANNEL, "photo": photo,
                                           "caption": chunks[0]})["message_id"]
             try:
                 for chunk in chunks[1:]:
@@ -458,18 +708,19 @@ def fb_preflight():
             pass                           # alerting must never crash the run
     return True
 
-def send_facebook(p):
+def send_facebook(p, snip_url=None):
     a = p["articles"]
     caption = build_caption(a, article_url(a))
-    if a.get("image_url"):
+    photo = snip_url or a.get("image_url")
+    if photo:
         try:
-            data = fb_call("photos", {"url": a["image_url"], "caption": caption[:5000],
+            data = fb_call("photos", {"url": photo, "caption": caption[:5000],
                                       "access_token": FB_TOKEN})
             return data.get("post_id") or data["id"]
         except RuntimeError as e:
             if CONFIG_ERR.search(str(e)):
                 raise               # token dead -> the link post would fail too
-            print(f"[fb] photo failed ({e}); image was {a['image_url']}")
+            print(f"[fb] photo failed ({e}); image was {photo}")
             print("[fb] retrying as a link post")
     data = fb_call("feed", {"message": caption, "link": article_url(a),
                             "access_token": FB_TOKEN})
@@ -527,17 +778,18 @@ def wa_diagnose():
     except Exception as e:
         print(f"[wa]   channel list failed: {e}")
 
-def send_whatsapp(p):
+def send_whatsapp(p, snip_url=None):
     a = p["articles"]
     caption = build_caption(a, article_url(a))
+    photo = snip_url or a.get("image_url")
     if WA_PROVIDER == "evolution":
         # Evolution API v2: sendText/sendMedia accept the channel JID
         # (xxx@newsletter) directly in `number`; media posts carry the caption.
-        if a.get("image_url"):
+        if photo:
             try:
                 data = wa_call(f"message/sendMedia/{EVO_INSTANCE}",
                                {"number": WA_CHANNEL, "mediatype": "image",
-                                "media": a["image_url"],
+                                "media": photo,
                                 "caption": caption[:1024]})
                 time.sleep(5)    # spacing — look human, not like a blast tool
                 key = data.get("key") or {}
@@ -554,10 +806,10 @@ def send_whatsapp(p):
     # ---- legacy Whapi.Cloud ----
     # /messages/image takes to + media + caption, /messages/text to + body.
     # Channel IDs look like 123456789@newsletter.
-    if a.get("image_url"):
+    if photo:
         try:
             data = wa_call("messages/image",
-                           {"to": WA_CHANNEL, "media": a["image_url"],
+                           {"to": WA_CHANNEL, "media": photo,
                             "caption": caption[:1024]})
             time.sleep(5)            # spacing — look human, not like a blast tool
             return data.get("id") or "sent"
@@ -636,15 +888,42 @@ def main():
     failures = 0
     errors = []
     per_run = {}
-    for p in live:
+    # ---- card snip session ----------------------------------------------
+    # One browser for the whole run: first article pays the ~5s launch cost,
+    # the rest reuse it. A hard deadline keeps snipping from ever stalling
+    # the run past SNIP_DEADLINE_S — after that every article falls back to
+    # its raw image and posting continues untouched.
+    snip_ctx = None
+    snip_pw = None
+    snip_deadline = time.monotonic() + SNIP_DEADLINE_S
+    if SNIP_ENABLED and live:
+        try:
+            snip_pw = sync_playwright().start()
+            snip_ctx = snip_pw.chromium.launch(headless=True).new_context(
+                viewport={"width": 1280, "height": 1600},
+                device_scale_factor=2,      # 2x screenshot = crisp on phones
+                user_agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+                           "(KHTML, like Gecko) Chrome/126 Safari/537.36")
+        except Exception as e:
+            print(f"[setup] browser unavailable ({str(e)[:100]}) — "
+                  f"posts will use the raw article images")
+            snip_ctx = None
+    if snip_ctx:
+        print(f"[setup] card snip active (bucket {SNIP_BUCKET!r}, "
+              f"deadline {SNIP_DEADLINE_S}s, cache {SNIP_CACHE_H}h)")
+    try:
+      for p in live:
         plat = p["platform"]
         if plat in tripped:
             continue          # config error -> don't burn more attempts this run
         if per_run.get(plat, 0) >= RUN_CAPS.get(plat, 3):   # per-run throttle per platform
             continue                                       # stays pending for the next run
         per_run[plat] = per_run.get(plat, 0) + 1
+        snip_url = None
+        if snip_ctx and time.monotonic() < snip_deadline:
+            snip_url = snip_card(p["articles"], snip_ctx)
         try:
-            ext_id = SENDERS[p["platform"]](p)
+            ext_id = SENDERS[p["platform"]](p, snip_url=snip_url)
             SB.table("social_posts").update({
                 "status": "posted",
                 "external_id": ext_id,
@@ -665,6 +944,18 @@ def main():
                       f"fix the secret and they retry automatically")
                 if plat == "whatsapp":
                     wa_diagnose()          # Action log shows the real channel IDs
+    finally:
+      # browser down cleanly whether the loop finished, crashed or timed out
+      if snip_ctx:
+          try:
+              snip_ctx.close()
+          except Exception:
+              pass
+      if snip_pw:
+          try:
+              snip_pw.stop()
+          except Exception:
+              pass
     if failures and OWNER_ID and TG_TOKEN:
         try:                              # DM the owner the actual error text —
             tg_api("sendMessage", {   # 'failed' in the SQL stays explainable

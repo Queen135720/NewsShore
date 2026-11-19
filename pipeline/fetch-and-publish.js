@@ -85,11 +85,9 @@ const SOURCES = [
   // ---- Global Tech (country-specific) ----
   { name: 'Rest of World', url: 'https://restofworld.org/feed/latest/', category: 'Global Tech', region: 'Global' },
   { name: 'TechCabal', url: 'https://techcabal.com/feed/', category: 'Global Tech', region: 'Nigeria' },
-  { name: 'Nairametrics Tech', url: 'https://nairametrics.com/feed/', category: 'Global Tech', region: 'Nigeria' },
   { name: 'TechCentral ZA', url: 'https://techcentral.co.za/feed/', category: 'Global Tech', region: 'South Africa' },
   { name: 'e27', url: 'https://e27.co/feed/', category: 'Global Tech', region: 'Singapore' },
   { name: 'TechNode', url: 'https://technode.com/feed/', category: 'Global Tech', region: 'China' },
-  { name: 'Nocamels', url: 'https://nocamels.com/feed/', category: 'Global Tech', region: 'Israel' },
 ];
 
 // ---- 2. FETCH NEW ITEMS ----

@@ -340,7 +340,7 @@ async function callGLM(prompt) {
         model: 'glm-4.7-flash',
         thinking: { type: 'disabled' },   // NEW — skips the reasoning phase (the timeout culprit)
         messages: [
-          { role: 'system', content: 'You are a professional news editor. Respond with valid JSON only, no extra text.' },
+          { role: 'system', content: 'You are a professional news Writer and editor. Respond with valid JSON only, no extra text.' },
           { role: 'user', content: prompt },
         ],
         temperature: 0.4,
@@ -354,6 +354,7 @@ async function callGLM(prompt) {
       let minutes;
       if (res.status === 402) minutes = 60;
       else if ([401, 403, 404].includes(res.status)) minutes = 360;
+      else if (res.status === 429) minutes = 2;   // NEW — congestion clears fast, rejoin this same run
       else minutes = 15;
       glmDownUntil = Date.now() + minutes * 60 * 1000;
       console.log(`[glm] down for ${minutes}m — HTTP ${res.status} ${snippet}`);

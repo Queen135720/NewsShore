@@ -1089,6 +1089,8 @@ async function saveArticle(item, rewritten, usedKeys) {
     return false;
   }
 
+  console.log('[empty-dump] provider:', rewritten?._provider ?? '(old provider, no stamp)', 'raw:', JSON.stringify(rewritten ?? null).slice(0, 200));
+
   rewritten = { ...r, headline, title: headline, body, article: body, summary };
 
   // ---- duplicate gate AFTER the rewrite (catches paraphrases) ----

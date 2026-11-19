@@ -1093,45 +1093,47 @@ async function saveArticle(item, rewritten, usedKeys) {
   let summary = String(r.summary || r.excerpt || r.description || r.subtitle || '').trim();
   if (!summary && body) summary = body.replace(/\s+/g, ' ').slice(0, 280);
 
-   if (!rewritten?.headline || !rewritten?.body) {
-    console.log(`Skipping empty article: ${item.title} — headline or body missing`);
-    console.log('[empty-dump] provider:', rewritten?._provider ?? '(old provider, no stamp)',
-                'raw:', JSON.stringify(rewritten ?? null).slice(0, 200));
-    return false; // transient — stays pending, retries next run
-  }
-
-  
   rewritten = { ...r, headline, title: headline, body, article: body, summary };
 
-    // ---- duplicate gate AFTER the rewrite (catches paraphrases) ----
+  // ---- empty guard: nothing publishable = transient failure, stays pending ----
+  if (!rewritten.headline || !rewritten.body) {
+    console.log(`Skipping empty article: ${item.title} — headline or body missing`);
+    console.log('[empty-dump] provider:', r?._provider ?? '(old provider, no stamp)',
+                'raw:', JSON.stringify(r ?? null).slice(0, 200));
+    return false;
+  }
+
+  // ---- duplicate gate AFTER the rewrite (catches paraphrases) ----
+  // 0.75 hard floor — anything looser is a different story. Confirmed duplicates
+  // are marked processed so they leave pending permanently.
   const dupHit = await isDuplicateStory([item.title, headline]);
-  const confirmedDup = (dupHit && (dupHit.sim ?? 1) >= 0.75) ? dupHit : null;   // hard 0.75 floor
+  const confirmedDup = (dupHit && (dupHit.sim ?? 1) >= 0.75) ? dupHit : null;
   if (confirmedDup) {
     console.log(`Skipping duplicate story: "${headline}" ~ already saved as "${confirmedDup.match}" (sim ${confirmedDup.sim.toFixed(2)})`);
     await supabase.from('processed_urls').insert({ source_url: item.link, status: 'rejected' });
     return false;
   }
-  
+
   // Category/region: trust the LLM's read of the story, fall back to the source's values
   const VALID_CATEGORIES = ['AI News', 'Mobile & Social', 'Tech News', 'Tech Giants', 'Startups & Funding', 'Research', 'Deals', 'Global Tech'];
   const category = VALID_CATEGORIES.includes(rewritten.category) ? rewritten.category : item.category;
   const region = (typeof rewritten.region === 'string' && rewritten.region.trim().length > 0) ? rewritten.region.trim() : item.region;
 
-  // Fuzzy duplicate check: skip if a similar story was saved in the last 3 days
+  // Fuzzy duplicate check against articles saved in the last 10 days
   const threeDaysAgo = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString();
   const { data: recent } = await supabase
     .from('articles')
     .select('id, title')
     .gte('created_at', threeDaysAgo);
-  for (const r of recent ?? []) {
-    if (isLikelyDuplicate(rewritten.headline, r.title)) {
-      console.log(`Skipping duplicate: "${rewritten.headline}" ~ already saved as "${r.title}"`);
+  for (const recentItem of recent ?? []) {
+    if (isLikelyDuplicate(rewritten.headline, recentItem.title)) {
+      console.log(`Skipping duplicate: "${rewritten.headline}" ~ already saved as "${recentItem.title}"`);
       await supabase.from('processed_urls').insert({ source_url: item.link, status: 'rejected' });
       return false;
     }
   }
 
-    // Same publisher + same image = re-served/reposted article — always a duplicate
+  // Same publisher + same image = re-served/reposted article — always a duplicate
   const sourceImg = extractSourceImage(item);
   if (sourceImg) {
     const { data: imgDup } = await supabase

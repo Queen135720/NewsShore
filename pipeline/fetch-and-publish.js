@@ -1111,7 +1111,6 @@ async function saveArticle(item, rewritten, usedKeys) {
     await supabase.from('processed_urls').insert({ source_url: item.link, status: 'rejected' });
     return false;
   }
-  }
   
   // Category/region: trust the LLM's read of the story, fall back to the source's values
   const VALID_CATEGORIES = ['AI News', 'Mobile & Social', 'Tech News', 'Tech Giants', 'Startups & Funding', 'Research', 'Deals', 'Global Tech'];

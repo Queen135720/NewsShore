@@ -295,30 +295,19 @@ async function retryFetch(url, options) {
 }
 
 function safeParseJSON(text) {
-  let cleaned = text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-  try { return JSON.parse(cleaned); } catch (e) { /* continue */ }
-  const start = cleaned.indexOf('{');
-  const end = cleaned.lastIndexOf('}');
-  if (start === -1 || end === -1) throw new Error('No JSON object in response');
-  let jsonStr = cleaned.substring(start, end + 1);
-  try { return JSON.parse(jsonStr); } catch (e) { /* continue */ }
-  let result = '';
-  let inString = false;
-  let escaped = false;
-  for (let i = 0; i < jsonStr.length; i++) {
-    const ch = jsonStr[i];
-    if (escaped) { result += ch; escaped = false; continue; }
-    if (ch === '\\') { result += ch; escaped = true; continue; }
-    if (ch === '"') { inString = !inString; result += ch; continue; }
-    if (inString && (ch === '\n' || ch === '\r' || ch === '\t')) {
-      result += ch === '\n' ? '\\n' : ch === '\r' ? '\\r' : '\\t';
-      continue;
-    }
-    result += ch;
+  if (typeof text !== 'string' || !text.trim()) return null;
+  try {
+    const start = text.indexOf('{');
+    const end = text.lastIndexOf('}');
+    if (start === -1 || end <= start) return null;      // no JSON object in the reply at all
+    const parsed = JSON.parse(text.slice(start, end + 1));
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return null;
+    if (Object.keys(parsed).length === 0) return null;  // bare {} is junk, not a success
+    return parsed;
+  } catch {
+    return null;
   }
-  try { return JSON.parse(result); } catch (e) { throw new Error('Failed to parse AI JSON'); }
 }
-
 
 let glmDownUntil = 0;
 
@@ -1103,8 +1092,8 @@ async function saveArticle(item, rewritten, usedKeys) {
     return false;
   }
 
-  // ---- duplicate gate AFTER the rewrite (catches paraphrases) ----
-  // 0.75 hard floor — anything looser is a different story. Confirmed duplicates
+   // ---- duplicate gate AFTER the rewrite (catches paraphrases) ----
+  // 0.75 hard floor: looser matches are different stories. Confirmed duplicates
   // are marked processed so they leave pending permanently.
   const dupHit = await isDuplicateStory([item.title, headline]);
   const confirmedDup = (dupHit && (dupHit.sim ?? 1) >= 0.75) ? dupHit : null;
@@ -1228,7 +1217,7 @@ async function run() {
   let saved = 0, rejected = 0, failed = 0;
   for (const item of batch) {
     try {
-          // ---- duplicate gate BEFORE spending AI tokens ----
+      // ---- duplicate gate BEFORE spending AI tokens ----
       const dupHit = await isDuplicateStory([item.title]);
       if (dupHit) {
       console.log(`Skipping duplicate story: "${item.title}" ~ already saved as "${dupHit.match}" (sim ${dupHit.sim.toFixed(2)})`);

@@ -318,6 +318,8 @@ function safeParseJSON(text) {
   }
   try { return JSON.parse(result); } catch (e) { throw new Error('Failed to parse AI JSON'); }
 }
+
+
 let glmDownUntil = 0;
 
 async function callGLM(prompt) {
@@ -329,64 +331,72 @@ async function callGLM(prompt) {
     return null;
   }
 
-  try {
-    const res = await fetch('https://open.bigmodel.cn/api/paas/v4/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${process.env.GLM_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: 'glm-4.7-flash',
-        thinking: { type: 'disabled' },   // NEW — skips the reasoning phase (the timeout culprit)
-        messages: [
-          { role: 'system', content: 'You are a professional news Writer and editor. Respond with valid JSON only, no extra text.' },
-          { role: 'user', content: prompt },
-        ],
-        temperature: 0.4,
-      }),
-      signal: AbortSignal.timeout(90000),   // was 45000 — NEW
-    });
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const res = await fetch('https://open.bigmodel.cn/api/paas/v4/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${process.env.GLM_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: 'glm-4.7-flash',
+          thinking: { type: 'disabled' },
+          messages: [
+            { role: 'system', content: 'You are a professional news editor. Respond with valid JSON only, no extra text.' },
+            { role: 'user', content: prompt },
+          ],
+          temperature: 0.4,
+        }),
+        signal: AbortSignal.timeout(90000),
+      });
 
-    if (!res.ok) {
-      const body = await res.text().catch(() => '');
-      const snippet = body.slice(0, 120).replace(/\s+/g, ' ');
-      let minutes;
-      if (res.status === 402) minutes = 60;
-      else if ([401, 403, 404].includes(res.status)) minutes = 360;
-      else if (res.status === 429) minutes = 2;   // NEW — congestion clears fast, rejoin this same run
-      else minutes = 15;
-      glmDownUntil = Date.now() + minutes * 60 * 1000;
-      console.log(`[glm] down for ${minutes}m — HTTP ${res.status} ${snippet}`);
-      return null;
-    }
+      if (res.status === 429 && attempt === 1) {
+        console.log('[glm] congestion (429) — retrying in 8s');
+        await new Promise((r) => setTimeout(r, 8000));
+        continue;
+      }
 
-    const data = await res.json();
-    const text = data?.choices?.[0]?.message?.content;
-    if (!text) {
+      if (!res.ok) {
+        const body = await res.text().catch(() => '');
+        const snippet = body.slice(0, 120).replace(/\s+/g, ' ');
+        let minutes;
+        if (res.status === 402) minutes = 60;
+        else if ([401, 403, 404].includes(res.status)) minutes = 360;
+        else if (res.status === 429) minutes = 2;
+        else minutes = 15;
+        glmDownUntil = Date.now() + minutes * 60 * 1000;
+        console.log(`[glm] down for ${minutes}m — HTTP ${res.status} ${snippet}`);
+        return null;
+      }
+
+      const data = await res.json();
+      const text = data?.choices?.[0]?.message?.content;
+      if (!text) {
+        glmDownUntil = Date.now() + 15 * 60 * 1000;
+        console.log('[glm] down for 15m — empty response');
+        return null;
+      }
+
+      const article = normalizeArticleFields(repairArticleJSON(text));
+      if (!article) {
+        console.log('[glm] returned non-JSON reply, skipping to next provider');
+        return null;
+      }
+
+      article._provider = 'glm';
+      console.log('[glm] ok');
+      return article;
+
+    } catch (err) {
+      const cause = err?.name === 'TimeoutError' ? 'timeout' : (err?.cause?.code || err?.message || 'network error');
       glmDownUntil = Date.now() + 15 * 60 * 1000;
-      console.log('[glm] down for 15m — empty response');
+      console.log(`[glm] down for 15m — ${cause}`);
       return null;
     }
-
-    const article = normalizeArticleFields(repairArticleJSON(text));
-    if (!article) {
-      console.log('[glm] returned non-JSON reply, skipping to next provider');
-      return null;
-    }
-
-    article._provider = 'glm';   // NEW — diagnostic stamp (see section 3)
-    console.log('[glm] ok');
-    return article;
-
-  } catch (err) {
-    const cause = err?.name === 'TimeoutError'
-      ? 'timeout'
-      : (err?.cause?.code || err?.message || 'network error');
-    glmDownUntil = Date.now() + 15 * 60 * 1000;
-    console.log(`[glm] down for 15m — ${cause}`);
-    return null;
   }
+
+  return null;
 }
 
 async function callGroq(prompt) {
@@ -1083,21 +1093,24 @@ async function saveArticle(item, rewritten, usedKeys) {
   let summary = String(r.summary || r.excerpt || r.description || r.subtitle || '').trim();
   if (!summary && body) summary = body.replace(/\s+/g, ' ').slice(0, 280);
 
-  if (!headline || !body) {
-    console.log('Skipping empty article:', item.title ?? item.link,
-      !headline && !body ? '— missing headline AND body' : !headline ? '— missing headline' : '— missing body');
-    return false;
+   if (!rewritten?.headline || !rewritten?.body) {
+    console.log(`Skipping empty article: ${item.title} — headline or body missing`);
+    console.log('[empty-dump] provider:', rewritten?._provider ?? '(old provider, no stamp)',
+                'raw:', JSON.stringify(rewritten ?? null).slice(0, 200));
+    return false; // transient — stays pending, retries next run
   }
 
-  console.log('[empty-dump] provider:', rewritten?._provider ?? '(old provider, no stamp)', 'raw:', JSON.stringify(rewritten ?? null).slice(0, 200));
-
+  
   rewritten = { ...r, headline, title: headline, body, article: body, summary };
 
-  // ---- duplicate gate AFTER the rewrite (catches paraphrases) ----
+    // ---- duplicate gate AFTER the rewrite (catches paraphrases) ----
   const dupHit = await isDuplicateStory([item.title, headline]);
-  if (dupHit) {
-    console.log(`Skipping duplicate story: "${headline}" ~ already saved as "${dupHit.match}" (sim ${dupHit.sim.toFixed(2)})`);
+  const confirmedDup = (dupHit && (dupHit.sim ?? 1) >= 0.75) ? dupHit : null;   // hard 0.75 floor
+  if (confirmedDup) {
+    console.log(`Skipping duplicate story: "${headline}" ~ already saved as "${confirmedDup.match}" (sim ${confirmedDup.sim.toFixed(2)})`);
+    await supabase.from('processed_urls').insert({ source_url: item.link, status: 'rejected' });
     return false;
+  }
   }
   
   // Category/region: trust the LLM's read of the story, fall back to the source's values
@@ -1114,7 +1127,6 @@ async function saveArticle(item, rewritten, usedKeys) {
   for (const r of recent ?? []) {
     if (isLikelyDuplicate(rewritten.headline, r.title)) {
       console.log(`Skipping duplicate: "${rewritten.headline}" ~ already saved as "${r.title}"`);
-      console.log('[empty-dump] provider:', rewritten?._provider ?? '(old provider, no stamp)', 'raw:', JSON.stringify(rewritten ?? null).slice(0, 200));
       await supabase.from('processed_urls').insert({ source_url: item.link, status: 'rejected' });
       return false;
     }

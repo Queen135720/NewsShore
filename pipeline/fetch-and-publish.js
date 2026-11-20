@@ -132,7 +132,13 @@ async function fetchNewItems() {
 
           // Skip promos, roundups, and non-news filler
           const t = (item.title || '').toLowerCase();
-          if (/wallpaper|giveaway|contest|save on your pass|discount code|cyber monday|black friday|newsletter|podcast episode|techcrunch disrupt|GTA|grand theft|switch 2|xbox|playstation|nintendo|witcher|steam deck|epic games|fortnite|valorant|gaming|game pad|gamepad|controller review|8bitdo|directv|multiview|smart TV|apple tv|google tv|homepod|home speakers|smart speaker|soundbar|home theater|home theatre|bluetooth speaker|wireless speaker|speaker (review|launch|deal)|sony.*(microphone|speaker)|repair cost|repairability comparison/i.test(t)) continue;
+          if (/wallpaper|giveaway|contest|save on your pass|discount code|cyber monday|black friday|newsletter|podcast episode|techcrunch disrupt|GTA|grand theft|switch 2|xbox|playstation|nintendo|witcher|steam deck|epic games|fortnite|valorant|gaming|game pad|gamepad|controller review|8bitdo|directv|multiview|smart TV|apple tv|google tv|homepod|home speakers|smart speaker|soundbar|home theater|home theatre|bluetooth speaker|wireless speaker|speaker (review|launch|deal)|sony.*(microphone|speaker)|repair cost|bitcoin|ethereum|solana|xrp|dogecoin|crypto|cryptocurrency|price drop|fall[sd]?|fell|rise[sd]?|rose|surge[sd]?|plunge[sd]?|slump[sd]?|rally|rallied|below|above|trading|stock exchange|listed compan|market value|market cap|equity market|all-?share index|ngx|jse\b|bullish|bearish|sell-?off)\b/,
+  /\b(bank|banking)\b[^.]{0,80}\b(app|application|service|relaunch|deposit|loan|ussd|branch|737)\b/,
+  /\b(interest rate|inflation|gdp\b|central bank|mortgage|money supply)\b/,
+  /\b(k-?pop|entertainment (company|industry)|idol|record label|celebrity|actor|singer|box office|talent (recruit|show)|betting|gambl\w*)\b/,
+  /\b(football|soccer|premier league|nba\b|cricket|tournament|championship|ambassadorial)\b/,
+  /\b(election|parliament|senate|minister|presidency)\b/,
+  /\b(digital divide|internet access (to|for) (public|schools|libraries)|verge|repairability comparison/i.test(t)) continue;
 
           seenThisRun.add(item.link);
           allItems.push({ ...item, sourceName: source.name, category: source.category, region: source.region });
@@ -159,7 +165,10 @@ async function rewriteArticle(item) {
 
   const prompt = `You are a neutral tech news writer for a general, non-technical global audience.
 
-RELEVANCE CHECK — do this first:
+RELEVANCE CHECK — apply strictly before writing anything:
+ACCEPT only tech-industry stories: new products, apps, AI models, chips, gadgets, cybersecurity,
+tech company moves (launches, funding, layoffs, M&A), tech policy/regulation aimed at tech,
+and computing/science research.
 Decide if the story is GENUINELY tech news. It must be primarily about technology, AI, software, hardware, gadgets, internet, robotics, science, space, quantum computing, cyber security, startups, or the tech industry itself.
 Reject ALL of these even if a tech company or tech person is mentioned:
 - Business, finance, pension funds, stock markets, IPOs, oil, banking (unless it is fintech or crypto technology)
@@ -174,10 +183,19 @@ Reject ALL of these even if a tech company or tech person is mentioned:
 - TV and streaming platform features (smart tv, apple tv, multiview, channel guides, streaming apps on TVs)
 - Company PR statements about ongoing business relationships (e.g., "CEO says contracts continue")
 - Repair cost comparisons between devices
+- Stock exchange listings, market caps, share price moves, sell-offs
+- Crypto and asset price action (e.g. "Bitcoin drops below $62,000")
+- Banking and consumer-finance services (e.g. a bank relaunching its mobile/USSD app)
+- Entertainment, music, film, celebrity, sports, betting stories
+- Startup business drama with no tech angle (a closure, founder dispute, failed roadmap, PR crisis)
+- Digital-inclusion social programs (public Wi-Fi, library internet, digital-divide campaigns)
+- Politics, elections, macroeconomics (inflation, interest rates) with no tech subject
+- If no category fits naturally, REJECT — never force a story into a category.
 - Individual HR matters (one executive suspended, one person fired, internal disputes)
 - Court cases are tech news ONLY when they directly concern a tech company's products, data practices, or AI technology (e.g., states suing OpenAI over children's data = keep as AI News; a parking dispute involving a tech CEO = reject)
 - Product price announcements and discount posts (including "now available to preorder at $X" when the story is about the price, not the product)
 If the tech angle is not the CENTRAL subject of the story, respond ONLY with:
+Rule of thumb: if the story would still make sense in a world without the tech industry, reject it.
 {"reject": true, "reason": "one short sentence"}
 
 If the story passes the relevance check, rewrite it into:
@@ -1176,6 +1194,26 @@ async function run() {
   console.log('Checking sources for new articles...');
   const newItems = await fetchNewItems();
   console.log(`Found ${newItems.length} new item(s).`);
+      // ---- Non-tech backstop: pattern hits reject UNLESS a tech anchor rescues the story ----
+  const NON_TECH_PATTERNS = [
+    /\b(bitcoin|ethereum|solana|xrp|dogecoin|crypto|cryptocurrency)\b[^.]{0,80}\b(price|drop[sd]?|fall[sd]?|fell|rise[sd]?|rose|surge[sd]?|plunge[sd]?|slump[sd]?|rally|rallied|below|above|trading)\b/,
+    /\b(stock exchange|listed compan|market value|market cap|equity market|all-?share index|ngx|jse\b|bullish|bearish|sell-?off)\b/,
+    /\b(shares?|stocks?)\b[^.]{0,40}\b(rose|fell|gained|lost|closed|slumped|surged)\b/,
+    /\b(bank|banking)\b[^.]{0,80}\b(app|application|service|relaunch|deposit|loan|ussd|branch|737)\b/,
+    /\b(interest rate|inflation|gdp\b|central bank|mortgage|money supply)\b/,
+    /\b(k-?pop|entertainment (company|industry)|idol|record label|celebrity|actor|singer|box office|talent (recruit|show)|betting|gambl\w*)\b/,
+    /\b(football|soccer|premier league|nba\b|cricket|tournament|championship|ambassadorial)\b/,
+    /\b(election|parliament|senate|minister|presidency)\b/,
+    /\b(digital divide|internet access (to|for) (public|schools|libraries)|free wi-?fi)\b/,
+  ];
+  const TECH_ANCHORS = /\b(ai|artificial intelligence|chatbot|llm|machine learning|chip|semiconductor|processor|gpu|smartphone|iphone|android|windows|ios\b|startup|funding|venture|cyber|hack|data breach|robot|drone|satellite|quantum|battery|5g\b|6g\b|software|openai|google|apple|microsoft|nvidia|meta\b|amazon|tesla|tencent|alibaba|huawei|xiaomi|samsung)\b/;
+
+function isTechRelevant(titleText) {
+  const text = (titleText || '').toLowerCase();
+  if (!text) return true;
+  if (TECH_ANCHORS.test(text)) return true;   // clearly tech stories always pass
+  return !NON_TECH_PATTERNS.some((p) => p.test(text));
+}
 
   // ================================================================
   // ONE-TIME PENDING RESET — only runs when RESET_PENDING=1

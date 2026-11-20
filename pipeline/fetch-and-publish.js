@@ -1219,11 +1219,11 @@ async function run() {
   let saved = 0, rejected = 0, failed = 0;
   for (const item of batch) {
     try {
-      // ---- duplicate gate BEFORE spending AI tokens ----
-      const dupHit = await isDuplicateStory([item.title, headline]);
-      const confirmedDup = (dupHit && (dupHit.sim ?? 1) >= 0.75) ? dupHit : null;
-      if (confirmedDup) {
-        console.log(`Skipping duplicate story: "${headline}" ~ already saved as "${confirmedDup.match}" (sim ${confirmedDup.sim.toFixed(2)})`);
+      // ---- duplicate gate BEFORE spending AI tokens (title-only) ----
+      const preDup = await isDuplicateStory([item.title]);
+      const confirmedPre = (preDup && (preDup.sim ?? 1) >= 0.75) ? preDup : null;
+      if (confirmedPre) {
+        console.log(`Skipping duplicate story (pre-check): "${item.title}" ~ already saved as "${confirmedPre.match}" (sim ${confirmedPre.sim.toFixed(2)})`);
         await supabase.from('processed_urls').insert({ source_url: item.link, status: 'rejected' });
         continue;
       }

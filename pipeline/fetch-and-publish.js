@@ -320,7 +320,9 @@ async function callGLM(prompt) {
     return null;
   }
 
-  for (let attempt = 1; attempt <= 2; attempt++) {
+  const waits = [6000, 18000]; // before retry 2 and 3
+
+  for (let attempt = 1; attempt <= 3; attempt++) {
     try {
       const res = await fetch('https://open.bigmodel.cn/api/paas/v4/chat/completions', {
         method: 'POST',
@@ -332,7 +334,7 @@ async function callGLM(prompt) {
           model: 'glm-4.7-flash',
           thinking: { type: 'disabled' },
           messages: [
-            { role: 'system', content: 'You are a professional news editor. Respond with valid JSON only, no extra text.' },
+            { role: 'system', content: 'You are a professional news writer and editor. Respond with valid JSON only, no extra text.' },
             { role: 'user', content: prompt },
           ],
           temperature: 0.4,
@@ -340,9 +342,9 @@ async function callGLM(prompt) {
         signal: AbortSignal.timeout(90000),
       });
 
-      if (res.status === 429 && attempt === 1) {
-        console.log('[glm] congestion (429) — retrying in 8s');
-        await new Promise((r) => setTimeout(r, 8000));
+      if (res.status === 429 && attempt <= 2) {
+        console.log(`[glm] congestion (429) — retry ${attempt + 1}/3 in ${waits[attempt - 1] / 1000}s`);
+        await new Promise((r) => setTimeout(r, waits[attempt - 1]));
         continue;
       }
 
@@ -352,7 +354,7 @@ async function callGLM(prompt) {
         let minutes;
         if (res.status === 402) minutes = 60;
         else if ([401, 403, 404].includes(res.status)) minutes = 360;
-        else if (res.status === 429) minutes = 2;
+        else if (res.status === 429) minutes = 1.5;  // 3rd strike — short nap, rejoins this same run
         else minutes = 15;
         glmDownUntil = Date.now() + minutes * 60 * 1000;
         console.log(`[glm] down for ${minutes}m — HTTP ${res.status} ${snippet}`);

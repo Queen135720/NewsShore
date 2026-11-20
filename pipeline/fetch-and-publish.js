@@ -1227,7 +1227,7 @@ async function run() {
         await supabase.from('processed_urls').insert({ source_url: item.link, status: 'rejected' });
         continue;
       }
-    }
+      
       const rewritten = await rewriteArticle(item);
 
       if (rewritten?.reject) {

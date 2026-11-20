@@ -1245,13 +1245,6 @@ async function run() {
   let saved = 0, rejected = 0, failed = 0;
   for (const item of batch) {
     try {
-      // ---- non-tech backstop (before spending AI tokens) ----
-      if (!isTechRelevant(item.title)) {
-        console.log(`Filtered (non-tech backstop): ${item.title}`);
-        await supabase.from('processed_urls').insert({ source_url: item.link, status: 'rejected' });
-        rejected++;
-        continue;
-      }
       // ---- duplicate gate BEFORE spending AI tokens (title-only) ----
       const preDup = await isDuplicateStory([item.title]);
       const confirmedPre = (preDup && (preDup.sim ?? 1) >= 0.75) ? preDup : null;

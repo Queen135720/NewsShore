@@ -130,9 +130,16 @@ async function fetchNewItems() {
           const itemDate = item.isoDate ? new Date(item.isoDate).getTime() : 0;
           if (itemDate && Date.now() - itemDate > 1 * 24 * 60 * 60 * 1000) continue;
 
-          // Skip promos, roundups, and non-news filler
-          const t = (item.title || '').toLowerCase();
-          if (/wallpaper|giveaway|contest|save on your pass|discount code|cyber monday|black friday|newsletter|podcast episode|techcrunch disrupt|GTA|grand theft|switch 2|xbox|playstation|nintendo|witcher|steam deck|epic games|fortnite|valorant|gaming|game pad|gamepad|controller review|8bitdo|directv|multiview|smart TV|apple tv|google tv|homepod|home speakers|smart speaker|soundbar|home theater|home theatre|bluetooth speaker|wireless speaker|speaker (review|launch|deal)|sony.*(microphone|speaker)|repair cost|bitcoin|ethereum|solana|xrp|dogecoin|crypto|cryptocurrency|price drop|fall[sd]?|fell|rise[sd]?|rose|surge[sd]?|plunge[sd]?|slump[sd]?|rally|rallied|below|above|trading|stock exchange|listed compan|market value|market cap|equity market|all-?share index|ngx|jse\b|bullish|bearish|sell-?off)|(bank|banking)(app|application|service|relaunch|deposit|loan|ussd|branch|737)|(interest rate|inflation|gdp\b|central bank|mortgage|money supply)|entertainment (company|industry)|idol|record label|celebrity|actor|singer|box office|talent (recruit|show)|betting|gambl\w*)|(football|soccer|premier league|nba\b|cricket|tournament|championship|ambassadorial)|(election|parliament|senate|minister|presidency)|(digital divide|internet access (to|for) (public|schools|libraries)|the verge|repairability comparison/i.test(t)) continue;
+          // ===== Non-tech title filter =====
+
+          // Hard rejects — brand rules that never pass, regardless of context
+          const HARD_REJECT = /wallpaper|giveaway|contest|save on your pass|discount code|cyber monday|black friday|newsletter|podcast episode|techcrunch disrupt|\bgta\b|grand theft|switch 2|xbox|playstation|nintendo|witcher|steam deck|epic games|fortnite|valorant|gaming|gamepad|controller review|8bitdo|directv|multiview|smart tv|apple tv|google tv|homepod|home speakers?|smart speaker|soundbar|home theat(?:er|re)|bluetooth speaker|wireless speaker|speaker (?:review|launch|deal)|sony.*(?:microphone|speaker)|repair cost|repairability comparison|the verge|bitcoin|ethereum|solana|\bxrp\b|dogecoin|\bcrypto\b|cryptocurrency|price drop|stock exchange|listed compan|market value|market cap|equity market|all-?share index|\bngx\b|\bjse\b|bullish|bearish|sell-?off|(?:bank|banking)[a-z ]{0,30}(?:app|application|service|relaunch|deposit|loan|ussd|branch|737)|interest rate|inflation|\bgdp\b|central bank|mortgage|money supply|entertainment (?:company|industry)|\bidol\b|record label|celebrity|\bactor\b|\bsinger\b|box office|talent (?:recruit|show)|\bbetting\b|gambl|football|soccer|premier league|\bnba\b|cricket|tournament|championship|ambassadorial|election|parliament|senate|minister|presidency|digital divide|internet access (?:to|for) (?:public|schools|libraries)/i;
+
+          // Market-price language — rejected ONLY when no tech anchor rescues the story
+          const PRICE_WORDS = /\b(?:falls?|fell|drops?|dropped|rise[sd]?|rose|surge[sd]?|plunge[sd]?|slump[sd]?|rall(?:y|ies|ied))\b/i;
+
+          // Tech anchors — their presence means the story is about tech
+          const TECH_ANCHOR = /\b(?:ai|artificial intelligence|chatgpt|chatbot|llm|machine learning|chip|semiconductor|processor|gpu|smartphone|iphone|android|windows|ios|startup|funding|venture|cyber|hack|data breach|robot|drone|satellite|quantum|battery|5g|software|openai|google|apple|microsoft|nvidia|meta|amazon|tesla|tencent|alibaba|huawei|xiaomi|samsung|spacex|starlink|whatsapp|tiktok|instagram|telegram|snapchat|youtube)\b/i;
 
           seenThisRun.add(item.link);
           allItems.push({ ...item, sourceName: source.name, category: source.category, region: source.region });

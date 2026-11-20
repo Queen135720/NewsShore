@@ -740,11 +740,11 @@ export default function SubscribeSection() {
     setStatus('loading');
     try {
       const res = await fetch('/api/subscribe', {
-        console.log('subscribe response:', data);
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email.trim() }),
       });
+      console.log('subscribe response:', data);
       const data = await res.json().catch(() => ({}));
       if (res.ok && data.ok) setStatus('ok');
       else if (data.already) setStatus('already');

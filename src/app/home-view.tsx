@@ -733,59 +733,139 @@ function SidebarLeaderboard({ onSeeMore, models, loading, arenaModels, arenaLoad
 export default function SubscribeSection() {
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState('idle'); // idle | loading | ok | already | error
+  const [detail, setDetail] = useState('');
+  const [mailStatus, setMailStatus] = useState('');
 
-  const handleSubmit = async (e) => {
+  const submit = async (e) => {
     e.preventDefault();
-    if (!email.trim() || status === 'loading') return;
+    const clean = email.trim();
+    if (!clean) {
+      setStatus('error');
+      setDetail('Please enter an email address.');
+      return;
+    }
     setStatus('loading');
+    setDetail('');
+    setMailStatus('');
     try {
       const res = await fetch('/api/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim() }),
+        body: JSON.stringify({ email: clean }),
       });
-      console.log('subscribe response:', data);
-      const data = await res.json().catch(() => ({}));
-      if (res.ok && data.ok) setStatus('ok');
-      else if (data.already) setStatus('already');
-      else setStatus('error');
-    } catch {
+      const raw = await res.text();
+      let data = {};
+      try { data = JSON.parse(raw); } catch { /* not JSON — keep the raw text */ }
+
+      console.log('[subscribe] HTTP', res.status, 'body:', raw.slice(0, 300));
+
+      if (res.ok && data.ok) {
+        setStatus('ok');
+        setMailStatus(data.mailStatus || 'unknown');
+      } else if (res.ok && data.already) {
+        setStatus('already');
+      } else {
+        setStatus('error');
+        setDetail('HTTP ' + res.status + (raw ? ' — ' + raw.slice(0, 160) : ' — (empty response)'));
+      }
+    } catch (err) {
       setStatus('error');
+      setDetail('Network error — ' + (err?.message || 'request failed'));
     }
   };
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 p-4 sm:p-5">
-      <div className="flex items-center gap-2 mb-2">
-        <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
-        <h3 className="font-[family-name:var(--font-gilroy)] text-base sm:text-lg font-bold text-gray-900">Stay in the loop</h3>
-      </div>
-      <p className="text-xs sm:text-sm text-gray-500 mb-3 sm:mb-4">Get the biggest tech stories in your inbox.</p>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-2.5">
-        <input
-          type="email"
-          required
-          autoComplete="email"
-          value={email}
-          onChange={(e) => { setEmail(e.target.value); if (status !== 'idle' && status !== 'ok' && status !== 'already') setStatus('idle'); }}
-          placeholder="you@example.com"
-          disabled={status === 'loading'}
-          className="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0f1b3d]/30 focus:border-[#0f1b3d] transition-colors disabled:opacity-60"
-          style={{ touchAction: 'manipulation' }}
-        />
-        <button
-          type="submit"
-          disabled={status === 'loading' || status === 'ok' || status === 'already'}
-          className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-[#0f1b3d] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-600 disabled:opacity-60 disabled:cursor-not-allowed"
-          style={{ touchAction: 'manipulation' }}
-        >
-          {status === 'loading' ? 'Subscribing…' : (<><Send className="w-4 h-4" /> Subscribe</>)}
-        </button>
-        {status === 'ok' && <p className="text-xs sm:text-sm font-medium text-green-600">You're in! Check your inbox for your welcome mail.</p>}
-        {status === 'already' && <p className="text-xs sm:text-sm font-medium text-gray-500">You're already on the list — good to see you again.</p>}
-        {status === 'error' && <p className="text-xs sm:text-sm font-medium text-red-600">Something went wrong. Please try again.</p>}
-      </form>
-    </div>
+    <section
+      style={{
+        background: '#ffffff',
+        borderRadius: 16,
+        padding: '36px 32px',
+        fontFamily: 'var(--font-dm-sans), sans-serif',
+      }}
+    >
+      <style>{`.ns-sub-btn:hover { background: #dc2626 !important; }`}</style>
+
+      <p style={{ margin: 0, color: '#dc2626', fontWeight: 700, fontSize: 13, letterSpacing: 1.5 }}>
+        NEWSLETTER
+      </p>
+      <h2
+        style={{
+          fontFamily: 'var(--font-gilroy), sans-serif',
+          color: '#0f1b3d',
+          fontSize: 28,
+          margin: '10px 0 8px',
+        }}
+      >
+        Tech that matters, in your inbox.
+      </h2>
+      <p style={{ margin: '0 0 22px', color: '#4b5563', fontSize: 15, lineHeight: 1.6 }}>
+        One email when something big drops. No spam — unsubscribe anytime.
+      </p>
+
+      {status !== 'ok' && status !== 'already' && (
+        <form onSubmit={submit} style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          <input
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@example.com"
+            style={{
+              flex: '1 1 240px',
+              padding: '14px 16px',
+              borderRadius: 10,
+              border: '1px solid #d1d5db',
+              fontSize: 15,
+              color: '#0f1b3d',
+              outline: 'none',
+            }}
+          />
+          <button
+            type="submit"
+            disabled={status === 'loading'}
+            className="ns-sub-btn"
+            style={{
+              background: '#0f1b3d',
+              color: '#ffffff',
+              border: 'none',
+              borderRadius: 10,
+              padding: '14px 28px',
+              fontSize: 15,
+              fontWeight: 700,
+              cursor: status === 'loading' ? 'wait' : 'pointer',
+            }}
+          >
+            {status === 'loading' ? 'Subscribing…' : 'Subscribe'}
+          </button>
+        </form>
+      )}
+
+      {status === 'ok' && (
+        <div style={{ background: '#ecfdf5', border: '1px solid #a7f3d0', borderRadius: 10, padding: '16px 18px' }}>
+          <p style={{ margin: 0, color: '#065f46', fontWeight: 700 }}>You're in! Welcome to NewsShore.</p>
+          <p style={{ margin: '8px 0 0', color: '#065f46', fontSize: 13 }}>
+            Mail status: <b>{mailStatus}</b> — if this says "sent" but nothing arrived, check your spam folder.
+          </p>
+        </div>
+      )}
+
+      {status === 'already' && (
+        <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: '16px 18px' }}>
+          <p style={{ margin: 0, color: '#92400e' }}>
+            This email is already on the list — no need to subscribe again.
+          </p>
+        </div>
+      )}
+
+      {status === 'error' && (
+        <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 10, padding: '16px 18px', marginTop: 14 }}>
+          <p style={{ margin: 0, color: '#991b1b', fontWeight: 700 }}>Something went wrong</p>
+          <p style={{ margin: '8px 0 0', color: '#991b1b', fontSize: 13, wordBreak: 'break-word' }}>
+            Server said: {detail}
+          </p>
+        </div>
+      )}
+    </section>
   );
 }
 

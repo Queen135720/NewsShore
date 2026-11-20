@@ -98,8 +98,20 @@ const HARD_REJECT = /wallpaper|giveaway|contest|save on your pass|discount code|
 // Market-price language — rejected ONLY when no tech anchor rescues the story
 const PRICE_WORDS = /\b(?:falls?|fell|drops?|dropped|rise[sd]?|rose|surge[sd]?|plunge[sd]?|slump[sd]?|rall(?:y|ies|ied))\b/i;
 
-// Tech anchors — their presence means the story is about tech
-const TECH_ANCHOR = /\b(?:ai|artificial intelligence|chatgpt|chatbot|llm|machine learning|chip|semiconductor|processor|gpu|smartphone|iphone|android|windows|ios|startup|funding|venture|cyber|hack|data breach|robot|drone|satellite|quantum|battery|5g|software|openai|google|apple|microsoft|nvidia|meta|amazon|tesla|tencent|alibaba|huawei|xiaomi|samsung|spacex|starlink|whatsapp|tiktok|instagram|telegram|snapchat|youtube)\b/i;
+// Music/entertainment vocabulary — rejected UNLESS a tech anchor is present
+const MUSIC_WORDS = /\b(?:albums?|music|musicians?|synths?|synthesizers?|soundtracks?|concerts?|festivals?|remix(?:es)?|vinyl|dj)\b/i;
+
+// Updated: added spotify + data center as anchors
+const TECH_ANCHOR = /\b(?:ai|artificial intelligence|chatgpt|chatbot|llm|machine learning|chip|semiconductor|processor|gpu|smartphone|iphone|android|windows|ios|startup|funding|venture|cyber|hack|data breach|robot|drone|satellite|quantum|battery|5g|software|openai|google|apple|microsoft|nvidia|meta|amazon|tesla|tencent|alibaba|huawei|xiaomi|samsung|spacex|starlink|whatsapp|tiktok|instagram|telegram|snapchat|youtube|spotify|data cent(?:er|re))\b/i;
+
+// One filter, two checkpoints: fetch time (raw title) + save time (rewritten headline)
+function isOffBrand(text) {
+  const t = (text || '').toLowerCase();
+  if (!t) return false;
+  if (HARD_REJECT.test(t)) return true;
+  if ((MUSIC_WORDS.test(t) || PRICE_WORDS.test(t)) && !TECH_ANCHOR.test(t)) return true;
+  return false;
+}
 
 // ---- 2. FETCH NEW ITEMS ----
 async function fetchNewItems() {
@@ -142,12 +154,10 @@ async function fetchNewItems() {
           if (itemDate && Date.now() - itemDate > 1 * 24 * 60 * 60 * 1000) continue;
 
           // ===== Non-tech title filter =====
-          const t = (item.title || '').toLowerCase();
-          if (HARD_REJECT.test(t) || (PRICE_WORDS.test(t) && !TECH_ANCHOR.test(t))) {
-              console.log(`Filtered (non-tech): ${item.title}`);
-              continue;
+          if (isOffBrand(item.title)) {
+            console.log(`Filtered (non-tech): ${item.title}`);
+            continue;
           }
-
           seenThisRun.add(item.link);
           allItems.push({ ...item, sourceName: source.name, category: source.category, region: source.region });
         }
@@ -1120,6 +1130,13 @@ async function saveArticle(item, rewritten, usedKeys) {
     return false;
   }
 
+
+    // ---- off-brand check on the FINAL headline (catches junk the LLM rewrote) ----
+  if (isOffBrand(headline)) {
+    console.log(`Skipping off-brand rewrite: "${headline}" — from "${item.title}"`);
+    await supabase.from('processed_urls').insert({ source_url: item.link, status: 'rejected' });
+    return false;
+  }
    // ---- duplicate gate AFTER the rewrite (catches paraphrases) ----
   // 0.75 hard floor: looser matches are different stories. Confirmed duplicates
   // are marked processed so they leave pending permanently.

@@ -1202,26 +1202,6 @@ async function run() {
   console.log('Checking sources for new articles...');
   const newItems = await fetchNewItems();
   console.log(`Found ${newItems.length} new item(s).`);
-      // ---- Non-tech backstop: pattern hits reject UNLESS a tech anchor rescues the story ----
-  const NON_TECH_PATTERNS = [
-    /\b(bitcoin|ethereum|solana|xrp|dogecoin|crypto|cryptocurrency)\b[^.]{0,80}\b(price|drop[sd]?|fall[sd]?|fell|rise[sd]?|rose|surge[sd]?|plunge[sd]?|slump[sd]?|rally|rallied|below|above|trading)\b/,
-    /\b(stock exchange|listed compan|market value|market cap|equity market|all-?share index|ngx|jse\b|bullish|bearish|sell-?off)\b/,
-    /\b(shares?|stocks?)\b[^.]{0,40}\b(rose|fell|gained|lost|closed|slumped|surged)\b/,
-    /\b(bank|banking)\b[^.]{0,80}\b(app|application|service|relaunch|deposit|loan|ussd|branch|737)\b/,
-    /\b(interest rate|inflation|gdp\b|central bank|mortgage|money supply)\b/,
-    /\b(k-?pop|entertainment (company|industry)|idol|record label|celebrity|actor|singer|box office|talent (recruit|show)|betting|gambl\w*)\b/,
-    /\b(football|soccer|premier league|nba\b|cricket|tournament|championship|ambassadorial)\b/,
-    /\b(election|parliament|senate|minister|presidency)\b/,
-    /\b(digital divide|internet access (to|for) (public|schools|libraries)|free wi-?fi)\b/,
-  ];
-  const TECH_ANCHORS = /\b(ai|artificial intelligence|chatbot|llm|machine learning|chip|semiconductor|processor|gpu|smartphone|iphone|android|windows|ios\b|startup|funding|venture|cyber|hack|data breach|robot|drone|satellite|quantum|battery|5g\b|6g\b|software|openai|google|apple|microsoft|nvidia|meta\b|amazon|tesla|tencent|alibaba|huawei|xiaomi|samsung)\b/;
-
-function isTechRelevant(titleText) {
-  const text = (titleText || '').toLowerCase();
-  if (!text) return true;
-  if (TECH_ANCHORS.test(text)) return true;   // clearly tech stories always pass
-  return !NON_TECH_PATTERNS.some((p) => p.test(text));
-}
 
   // ================================================================
   // ONE-TIME PENDING RESET — only runs when RESET_PENDING=1

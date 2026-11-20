@@ -740,6 +740,7 @@ export default function SubscribeSection() {
     setStatus('loading');
     try {
       const res = await fetch('/api/subscribe', {
+        console.log('subscribe response:', data);
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email.trim() }),

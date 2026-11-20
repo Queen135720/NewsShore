@@ -1218,10 +1218,13 @@ async function run() {
   for (const item of batch) {
     try {
       // ---- duplicate gate BEFORE spending AI tokens ----
-      const dupHit = await isDuplicateStory([item.title]);
-      if (dupHit) {
-      console.log(`Skipping duplicate story: "${item.title}" ~ already saved as "${dupHit.match}" (sim ${dupHit.sim.toFixed(2)})`);
-      continue;
+      const dupHit = await isDuplicateStory([item.title, headline]);
+      const confirmedDup = (dupHit && (dupHit.sim ?? 1) >= 0.75) ? dupHit : null;
+      if (confirmedDup) {
+        console.log(`Skipping duplicate story: "${headline}" ~ already saved as "${confirmedDup.match}" (sim ${confirmedDup.sim.toFixed(2)})`);
+        await supabase.from('processed_urls').insert({ source_url: item.link, status: 'rejected' });
+        continue;
+      }
     }
       const rewritten = await rewriteArticle(item);
 

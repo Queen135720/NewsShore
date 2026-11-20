@@ -2,93 +2,6 @@
 import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
-// NewsShore subscribe: saves email to Supabase + sends Brevo welcome mail.
-  const html = `
-<div style="margin:0;padding:0;background:#f4f5f7;font-family:Arial,Helvetica,sans-serif;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f5f7;padding:24px 12px;">
-    <tr><td align="center">
-      <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#ffffff;border-radius:12px;overflow:hidden;">
-        <tr><td style="background:#0f1b3d;padding:28px 32px;">
-          <span style="font-size:22px;font-weight:bold;color:#ffffff;letter-spacing:0.5px;">NewsShore</span>
-        </td></tr>
-        <tr><td style="padding:32px 32px 8px 32px;">
-          <h1 style="margin:0 0 16px 0;font-size:20px;color:#0f1b3d;">Thank you for subscribing to NewsShore</h1>
-          <p style="margin:0 0 16px 0;font-size:15px;line-height:22px;color:#333333;">
-            You're on the list. From now on, the tech stories that actually matter will land in your inbox —
-            clear, concise, and free of noise.
-          </p>
-          <p style="margin:0 0 12px 0;font-size:15px;line-height:22px;color:#333333;">Here's what we cover:</p>
-          <ul style="margin:0 0 24px 0;padding-left:20px;font-size:15px;line-height:24px;color:#333333;">
-            <li>AI News &amp; Research</li>
-            <li>Tech Giants: OpenAI, Google, Apple, Nvidia, Meta &amp; more</li>
-            <li>Startups &amp; Funding</li>
-            <li>Mobile &amp; Social</li>
-            <li>Tech News from around the world, with a focus on Africa and emerging markets</li>
-          </ul>
-        </td></tr>
-        <tr><td style="padding:24px 32px;border-top:1px solid #eeeeee;">
-          <p style="margin:0 0 12px 0;font-size:15px;font-weight:bold;color:#0f1b3d;">Join Our Socials</p>
-          <table role="presentation" cellpadding="0" cellspacing="0">
-            <tr>
-              <td style="padding:0 8px 8px 0;">
-                <a href="https://t.me/News_Shore" style="display:inline-block;background:#0f1b3d;color:#ffffff;text-decoration:none;font-size:14px;font-weight:bold;padding:10px 18px;border-radius:6px;">Telegram</a>
-              </td>
-              <td style="padding:0 8px 8px 0;">
-                <a href="https://whatsapp.com/channel/0029Vb8MT8c002THGmdgsd32" style="display:inline-block;background:#25D366;color:#ffffff;text-decoration:none;font-size:14px;font-weight:bold;padding:10px 18px;border-radius:6px;">WhatsApp</a>
-              </td>
-              <td style="padding:0 0 8px 0;">
-                <a href="https://web.facebook.com/profile.php?id=61592735245077" style="display:inline-block;background:#1877F2;color:#ffffff;text-decoration:none;font-size:14px;font-weight:bold;padding:10px 18px;border-radius:6px;">Facebook</a>
-              </td>
-            </tr>
-          </table>
-        </td></tr>
-        <tr><td style="padding:16px 32px;background:#fafafa;">
-          <p style="margin:0;font-size:12px;line-height:18px;color:#888888;">
-            You're receiving this email because you subscribed at newsshore.com.
-            If this wasn't you, you can ignore this email.
-          </p>
-        </td></tr>
-      </table>
-    </td></tr>
-  </table>
-</div>`;
-
-  const text = `Thank you for subscribing to NewsShore!
-
-Hi there,
-
-Welcome to NewsShore — and thank you for subscribing.
-
-We started NewsShore because AI is no longer just a "tech people" topic. It's reshaping jobs, business, education, and everyday life — which means everyone deserves to understand what's happening, not just engineers and developers.
-
-Here's what you can expect from us:
-
-🌍 Global Coverage
-We track AI and tech developments across every major market — from Silicon Valley to Shenzhen, London to Lagos. No region gets left out of the story.
-
-✅ Reliability Tags
-Every article is clearly labeled "Independently verified" or "Company claim," so you always know how much to trust what you're reading. We go beyond press releases — checking independent sources, public filings, and expert analysis.
-
-📖 Glossary Boxes
-See a confusing term like "LLM" or "fine-tuning"? Our "Understand This Story" glossary breaks down the jargon in plain language, right inside the article.
-
-🔗 Related Stories
-Explore more on any topic using in-page tabs — no need to leave the article you're reading.
-
-📊 AI Model Intelligence Leaderboard
-Curious which AI models are actually the best? Our leaderboard ranks 300+ models using the LLM Stats Score, updated daily.
-
-You're on the list. From now on, the tech stories that actually matter will land in your inbox — clear, concise, and free of noise.
-
-Join Our Socials:
-Telegram: https://t.me/News_Shore
-WhatsApp: https://whatsapp.com/channel/0029Vb8MT8c002THGmdgsd32
-Facebook: https://web.facebook.com/profile.php?id=61592735245077
-
-We're glad you're here. Welcome aboard — let's stay informed, together.
-
-The NewsShore Team`;
-
 
 export async function POST(req) {
   const log = (...args) => console.log('[subscribe]', ...args);
@@ -135,7 +48,7 @@ export async function POST(req) {
     log('duplicate check failed (continuing):', err?.message);
   }
 
-  // ---- 4. Save the subscriber (this must never be blocked by the mail) ----
+  // ---- 4. Save the subscriber (never blocked by the mail step) ----
   try {
     const insert = await fetch(`${sbUrl}/rest/v1/subscribers`, {
       method: 'POST',
@@ -166,12 +79,108 @@ async function sendWelcomeEmail(email, log) {
   const senderName = process.env.BREVO_SENDER_NAME || 'NewsShore';
 
   if (!apiKey || !senderEmail) {
-    log('MAIL SKIPPED — BREVO_API_KEY / BREVO_SENDER_EMAIL not set. Add them on the host and REDEPLOY.');
+    log('MAIL SKIPPED — BREVO_API_KEY / BREVO_SENDER_EMAIL not set on the host. Add them and REDEPLOY.');
     return 'skipped-env-missing';
   }
 
-  const html = `...welcome HTML below...`;
-  const text = `...plain version below...`;
+  const html = `
+<div style="margin:0;padding:0;background:#f4f5f7;font-family:Arial,Helvetica,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f5f7;padding:24px 12px;">
+    <tr><td align="center">
+      <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#ffffff;border-radius:12px;overflow:hidden;">
+        <tr><td style="background:#0f1b3d;padding:28px 32px;">
+          <span style="font-size:22px;font-weight:bold;color:#ffffff;letter-spacing:0.5px;">NewsShore</span>
+        </td></tr>
+        <tr><td style="padding:32px 32px 8px 32px;">
+          <h1 style="margin:0 0 16px 0;font-size:20px;color:#0f1b3d;">Thank you for subscribing to NewsShore</h1>
+          <p style="margin:0 0 16px 0;font-size:15px;line-height:22px;color:#333333;">
+            Hi there,
+          </p>
+          <p style="margin:0 0 16px 0;font-size:15px;line-height:22px;color:#333333;">
+            Welcome to NewsShore — and thank you for subscribing.
+          </p>
+          <p style="margin:0 0 16px 0;font-size:15px;line-height:22px;color:#333333;">
+            We started NewsShore because AI is no longer just a "tech people" topic. It's reshaping jobs, business,
+            education, and everyday life — which means everyone deserves to understand what's happening, not just
+            engineers and developers.
+          </p>
+          <p style="margin:0 0 12px 0;font-size:15px;line-height:22px;color:#333333;">Here's what you can expect from us:</p>
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:15px;line-height:22px;color:#333333;">
+            <tr><td style="padding:6px 0;"><b>Global Coverage</b><br>We track AI and tech developments across every major market — from Silicon Valley to Shenzhen, London to Lagos. No region gets left out of the story.</td></tr>
+            <tr><td style="padding:6px 0;"><b>Reliability Tags</b><br>Every article is clearly labeled "Independently verified" or "Company claim," so you always know how much to trust what you're reading. We go beyond press releases — checking independent sources, public filings, and expert analysis.</td></tr>
+            <tr><td style="padding:6px 0;"><b>Glossary Boxes</b><br>See a confusing term like "LLM" or "fine-tuning"? Our "Understand This Story" glossary breaks down the jargon in plain language, right inside the article.</td></tr>
+            <tr><td style="padding:6px 0;"><b>Related Stories</b><br>Explore more on any topic using in-page tabs — no need to leave the article you're reading.</td></tr>
+            <tr><td style="padding:6px 0;"><b>AI Model Intelligence Leaderboard</b><br>Curious which AI models are actually the best? Our leaderboard ranks 300+ models using the LLM Stats Score, updated daily.</td></tr>
+          </table>
+          <p style="margin:24px 0 0 0;font-size:15px;line-height:22px;color:#333333;">
+            You're on the list. From now on, the tech stories that actually matter will land in your inbox — clear, concise, and free of noise.
+          </p>
+          <p style="margin:16px 0 0 0;font-size:15px;line-height:22px;color:#333333;">
+            We're glad you're here. Welcome aboard — let's stay informed, together.<br><b>The NewsShore Team</b>
+          </p>
+        </td></tr>
+        <tr><td style="padding:24px 32px;border-top:1px solid #eeeeee;">
+          <p style="margin:0 0 12px 0;font-size:15px;font-weight:bold;color:#0f1b3d;">Join Our Socials</p>
+          <table role="presentation" cellpadding="0" cellspacing="0">
+            <tr>
+              <td style="padding:0 8px 8px 0;">
+                <a href="https://t.me/News_Shore" style="display:inline-block;background:#0f1b3d;color:#ffffff;text-decoration:none;font-size:14px;font-weight:bold;padding:10px 18px;border-radius:6px;">Telegram</a>
+              </td>
+              <td style="padding:0 8px 8px 0;">
+                <a href="https://whatsapp.com/channel/0029Vb8MT8c002THGmdgsd32" style="display:inline-block;background:#25D366;color:#ffffff;text-decoration:none;font-size:14px;font-weight:bold;padding:10px 18px;border-radius:6px;">WhatsApp</a>
+              </td>
+              <td style="padding:0 0 8px 0;">
+                <a href="https://web.facebook.com/profile.php?id=61592735245077" style="display:inline-block;background:#1877F2;color:#ffffff;text-decoration:none;font-size:14px;font-weight:bold;padding:10px 18px;border-radius:6px;">Facebook</a>
+              </td>
+            </tr>
+          </table>
+        </td></tr>
+        <tr><td style="padding:16px 32px;background:#fafafa;">
+          <p style="margin:0;font-size:12px;line-height:18px;color:#888888;">
+            You're receiving this email because you subscribed at newsshore.com.
+            If this wasn't you, you can ignore this email.
+          </p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</div>`;
+
+  const text = `Thank you for subscribing to NewsShore!
+
+Hi there,
+
+Welcome to NewsShore — and thank you for subscribing.
+
+We started NewsShore because AI is no longer just a "tech people" topic. It's reshaping jobs, business, education, and everyday life — which means everyone deserves to understand what's happening, not just engineers and developers.
+
+Here's what you can expect from us:
+
+GLOBAL COVERAGE
+We track AI and tech developments across every major market — from Silicon Valley to Shenzhen, London to Lagos. No region gets left out of the story.
+
+RELIABILITY TAGS
+Every article is clearly labeled "Independently verified" or "Company claim," so you always know how much to trust what you're reading. We go beyond press releases — checking independent sources, public filings, and expert analysis.
+
+GLOSSARY BOXES
+See a confusing term like "LLM" or "fine-tuning"? Our "Understand This Story" glossary breaks down the jargon in plain language, right inside the article.
+
+RELATED STORIES
+Explore more on any topic using in-page tabs — no need to leave the article you're reading.
+
+AI MODEL INTELLIGENCE LEADERBOARD
+Curious which AI models are actually the best? Our leaderboard ranks 300+ models using the LLM Stats Score, updated daily.
+
+You're on the list. From now on, the tech stories that actually matter will land in your inbox — clear, concise, and free of noise.
+
+Join Our Socials:
+Telegram: https://t.me/News_Shore
+WhatsApp: https://whatsapp.com/channel/0029Vb8MT8c002THGmdgsd32
+Facebook: https://web.facebook.com/profile.php?id=61592735245077
+
+We're glad you're here. Welcome aboard — let's stay informed, together.
+
+The NewsShore Team`;
 
   try {
     const res = await fetch('https://api.brevo.com/v3/smtp/email', {

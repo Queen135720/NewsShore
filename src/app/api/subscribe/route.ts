@@ -4,8 +4,15 @@ import { NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 
 export async function POST(req) {
-  const log = (...args) => console.log('[subscribe]', ...args);
+  try {
+    return await handleSubscribe(req);
+  } catch (err) {
+    console.log('[subscribe] CRASH:', err?.message, '\n', err?.stack?.slice(0, 400));
+    return NextResponse.json({ error: 'crash', detail: String(err?.message || err) }, { status: 500 });
+  }
+}
 
+async function handleSubscribe(req) {
   // ---- 1. Read + validate email ----
   let email = '';
   try {

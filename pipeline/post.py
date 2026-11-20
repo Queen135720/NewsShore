@@ -5,9 +5,11 @@
 #         telegram + facebook + whatsapp at once
 #   2. cleans it into a human-looking post (markdown stripped, pure regex)
 #   3. snips the article's card off the live website (a real browser
-#      screenshot — no AI touch, pixel-identical to what readers see) and
-#      uploads it to Supabase storage; platforms that take an image URL get
-#      the snip instead of the raw hero image
+#      screenshot — no AI touch) and uploads it to Supabase storage;
+#      platforms that take an image URL get the snip instead of the raw
+#      hero image. Inside the throwaway screenshot page ONLY, the card is
+#      restyled for social: navy text block, no minute-read / claimed-
+#      verified marker / "19m ago" chip. The live site never changes.
 #   4. posts it: summary lede, blank line, ~70% of the article body, link
 #   5. HARD duplicate guard: a (article, platform) pair that already went out
 #      in the last 48h can never be sent again, no matter what routing did
@@ -78,6 +80,12 @@ SNIP_CACHE_H = 6
 SNIP_TIMEOUT_MS   = 45000     # page-load budget per article
 SNIP_DEADLINE_S   = 240       # whole-run budget for ALL snips combined
 SNIP_JPEG_QUALITY = 90
+
+# social restyle: navy hex for the card's text block (and the hero card's
+# bottom fade, so both card shapes match), plus a master switch. Painted
+# ONLY inside the throwaway screenshot page; the live site never changes.
+SNIP_NAVY     = os.environ.get("SNIP_NAVY", "#0b1f3a")
+SNIP_RESTYLE  = os.environ.get("SNIP_RESTYLE", "1") not in ("0", "false", "no")
 
 # Errors that mean "this platform's SECRET/CONFIG is broken" (not the article
 # being bad): dead token, wrong channel ID, unlinked number, trial limit.
@@ -402,14 +410,20 @@ def route(unrouted):
 # The site renders every article as a card: photo on top, white info block
 # under it (title, minute read, country, freshness). That card IS the brand.
 # We load the site in a real headless browser, find the card for THIS
-# article, and screenshot the element — pixel-identical to what a reader
-# sees, with zero AI retouching (the reason this layer exists).
+# article, and screenshot the element — a real capture, no AI retouching
+# (the reason this layer exists).
 # Matching: card <img> src == the article's image_url from Supabase; if the
 # src carries tracking junk after the path, a title-prefix match is the
 # fallback. The newest article sits in the dark hero slot (article.bg-gray-900)
 # instead of the white grid — handled too. Anything off (site down, card
 # missing, browser missing, storage refusing) falls back to the raw hero
 # image, so a snip problem can never block a post.
+#
+# SOCIAL RESTYLE (screenshot page only — the live site is never touched):
+# before the element screenshot, a style tag + one DOM pass in the
+# throwaway browser tab re-dress the card the way the social channels want
+# it: navy text block, no minute-read chip, no claimed/verified marker, no
+# "19m ago" freshness chip. Readers who visit the site see none of this.
 from playwright.sync_api import sync_playwright, Error as PWError
 def _norm_img(u):
     """Comparable form of an image URL: strip query/fragment tracking junk."""
@@ -477,6 +491,104 @@ _SNIP_JS = """() => {
              w: Math.round(r.width), h: Math.round(r.height),
              title: (card.querySelector('h1,h2,h3,h4') || {}).innerText || null };
 }"""
+
+# ---- social restyle: applied ONLY inside the throwaway screenshot page -------
+# A <style> tag repaints the card's text block navy (and the hero card's
+# bottom fade, so both card shapes match) and hides the meta chips social
+# shouldn't show; a JS pass then collapses any chip row left empty, so the
+# layout re-flows cleanly instead of leaving a stub of whitespace.
+_SNIP_RESTYLE_CSS = """
+/* hide the three meta chips social must not show */
+article span:has(> svg.lucide-clock) { display: none !important; }          /* whole "2 min read" chip */
+article span[data-slot="badge"]:has(> svg.lucide-shield-check) { display: none !important; }  /* "Independently verified" */
+article span[data-slot="badge"]:has(> svg.lucide-circle-alert) { display: none !important; }  /* "Company claim" */
+/* the white info block under the photo -> navy, with light text */
+article.bg-white { background: NAVY !important; border-color: NAVY !important; }
+article.bg-white h3 { color: #f8fafc !important; }
+article.bg-white p  { color: #cbd5e1 !important; }
+/* badges: solid light pills would clash on navy -> translucent, hero-style */
+article.bg-white span[data-slot="badge"] { background: rgba(255,255,255,0.12) !important; border-color: rgba(255,255,255,0.25) !important; color: #e2e8f0 !important; }
+/* the dark hero card's bottom fade: black -> navy to match */
+article.bg-gray-900 div.bg-gradient-to-t { background: linear-gradient(to top, NAVY 0%, rgba(NAVYRGB,0.3) 60%, transparent 100%) !important; }
+"""
+
+# runs inside the page after the style tag; returns a small report so the
+# log (and the tests) can see what actually happened
+_SNIP_RESTYLE_JS = """() => {
+    const chips = [];
+    const isAgo = el => {
+        // a plain leaf span whose whole text is "19m ago" / "2h ago" /
+        // "just now" / "yesterday" — nothing else
+        if (el.children.length) return false;
+        const t = (el.textContent || '').trim().toLowerCase();
+        if (!t) return false;
+        if (t === 'just now' || t === 'yesterday') return true;
+        return /^\\d+(?:\\.\\d+)?\\s*(?:s|mo|m|h|d|y)\\s*ago$/.test(t)
+            || /^\\d+\\s*(?:second|minute|hour|day|week|month|year)s?\\s*ago$/.test(t);
+    };
+    // 1) hide every "…ago" chip (the site renders them as bare leaf spans,
+    //    no class to hang a CSS rule on). Marked data-snip-hidden so step 2
+    //    can find the rows that held them.
+    document.querySelectorAll('article span').forEach(s => {
+        if (isAgo(s)) {
+            s.style.setProperty('display', 'none', 'important');
+            s.setAttribute('data-snip-hidden', '1');
+            chips.push(s.textContent.trim());
+        }
+    });
+    // 2) collapse chip ROWS our pass emptied — only divs that actually held
+    //    one of the chips we hid (min-read / "ago"). Decorative textless
+    //    layers (the hero's gradient overlay, spacers) must be left alone:
+    //    they carry no text either, but hiding them would wreck the card.
+    document.querySelectorAll('article div').forEach(d => {
+        const heldHidden = [...d.children].some(c =>
+            c.nodeType === 1 && (c.getAttribute('data-snip-hidden') === '1'
+                                 || c.style.display === 'none'
+                                 || (c.tagName === 'SPAN' && c.querySelector('svg.lucide-clock'))));
+        if (!heldHidden) return;
+        const visible = [...d.children].filter(c => {
+            const st = getComputedStyle(c);
+            if (st.display === 'none') return false;
+            const r = c.getBoundingClientRect();
+            return r.width > 0 && r.height > 0;
+        });
+        if (visible.length === 0) {
+            d.style.setProperty('display', 'none', 'important');
+        }
+    });
+    // 3) safety net for text the CSS layer didn't enumerate: anything still
+    //    painted darker than mid-gray on a navy card gets flipped to light
+    document.querySelectorAll('article.bg-white *').forEach(el => {
+        const st = getComputedStyle(el);
+        const m = (st.color || '').match(/rgba?\\((\\d+),\\s*(\\d+),\\s*(\\d+)/);
+        if (!m) return;
+        const [r, g, b] = [+m[1], +m[2], +m[3]];
+        if (st.color.includes('rgba(0, 0, 0, 0)')) return;      // transparent
+        if ((r * 299 + g * 587 + b * 114) / 1000 < 128) {
+            el.style.color = '#e2e8f0';
+        }
+    });
+    return { hidden: chips.length, chips: chips.slice(0, 5) };
+}"""
+
+def _snip_style_card(page):
+    """Restyle the card for the social image, inside the screenshot page only.
+    Failures are logged and swallowed — a restyle problem never blocks a snip
+    (worst case the card keeps its website look)."""
+    if not SNIP_RESTYLE:
+        return
+    try:
+        rgb = "%d, %d, %d" % tuple(  # hex -> "r, g, b" for rgba() in the gradient
+            int(SNIP_NAVY[i:i + 2], 16) for i in (1, 3, 5))
+        page.add_style_tag(content=_SNIP_RESTYLE_CSS
+                           .replace("NAVYRGB", rgb).replace("NAVY", SNIP_NAVY))
+        report = page.evaluate(_SNIP_RESTYLE_JS)
+        print(f"[snip] social restyle: hid {report['hidden']} freshness chip(s)"
+              + (f" {report['chips']}" if report.get("chips") else ""))
+    except PWError as e:
+        print(f"[snip] restyle skipped ({str(e)[:100]}) — card keeps website look")
+    except Exception as e:
+        print(f"[snip] restyle skipped ({str(e)[:100]}) — card keeps website look")
 
 def _snip_one(page, article):
     """Locate this article's card on the homepage grid and return its PNG bytes.
@@ -602,6 +714,7 @@ def snip_card(article, browser_ctx):
                       timeout=SNIP_TIMEOUT_MS)
             page.wait_for_selector("article img", timeout=30000)
             page.wait_for_timeout(2000)
+            _snip_style_card(page)      # social restyle (navy + hidden chips)
             png = _snip_one(page, article)
         finally:
             page.close()

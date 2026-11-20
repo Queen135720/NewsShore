@@ -1,9 +1,61 @@
+// src/app/api/subscribe/route.js
+import { NextResponse } from 'next/server';
+
+export const dynamic = 'force-dynamic';
 // NewsShore subscribe: saves email to Supabase + sends Brevo welcome mail.
-// Even if the mail fails, the subscriber is saved — signup never errors for the user.
+  const html = `
+<div style="margin:0;padding:0;background:#f4f5f7;font-family:Arial,Helvetica,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f5f7;padding:24px 12px;">
+    <tr><td align="center">
+      <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#ffffff;border-radius:12px;overflow:hidden;">
+        <tr><td style="background:#0f1b3d;padding:28px 32px;">
+          <span style="font-size:22px;font-weight:bold;color:#ffffff;letter-spacing:0.5px;">NewsShore</span>
+        </td></tr>
+        <tr><td style="padding:32px 32px 8px 32px;">
+          <h1 style="margin:0 0 16px 0;font-size:20px;color:#0f1b3d;">Thank you for subscribing to NewsShore</h1>
+          <p style="margin:0 0 16px 0;font-size:15px;line-height:22px;color:#333333;">
+            You're on the list. From now on, the tech stories that actually matter will land in your inbox —
+            clear, concise, and free of noise.
+          </p>
+          <p style="margin:0 0 12px 0;font-size:15px;line-height:22px;color:#333333;">Here's what we cover:</p>
+          <ul style="margin:0 0 24px 0;padding-left:20px;font-size:15px;line-height:24px;color:#333333;">
+            <li>AI News &amp; Research</li>
+            <li>Tech Giants: OpenAI, Google, Apple, Nvidia, Meta &amp; more</li>
+            <li>Startups &amp; Funding</li>
+            <li>Mobile &amp; Social</li>
+            <li>Tech News from around the world, with a focus on Africa and emerging markets</li>
+          </ul>
+        </td></tr>
+        <tr><td style="padding:24px 32px;border-top:1px solid #eeeeee;">
+          <p style="margin:0 0 12px 0;font-size:15px;font-weight:bold;color:#0f1b3d;">Join Our Socials</p>
+          <table role="presentation" cellpadding="0" cellspacing="0">
+            <tr>
+              <td style="padding:0 8px 8px 0;">
+                <a href="https://t.me/News_Shore" style="display:inline-block;background:#0f1b3d;color:#ffffff;text-decoration:none;font-size:14px;font-weight:bold;padding:10px 18px;border-radius:6px;">Telegram</a>
+              </td>
+              <td style="padding:0 8px 8px 0;">
+                <a href="https://whatsapp.com/channel/0029Vb8MT8c002THGmdgsd32" style="display:inline-block;background:#25D366;color:#ffffff;text-decoration:none;font-size:14px;font-weight:bold;padding:10px 18px;border-radius:6px;">WhatsApp</a>
+              </td>
+              <td style="padding:0 0 8px 0;">
+                <a href="https://web.facebook.com/profile.php?id=61592735245077" style="display:inline-block;background:#1877F2;color:#ffffff;text-decoration:none;font-size:14px;font-weight:bold;padding:10px 18px;border-radius:6px;">Facebook</a>
+              </td>
+            </tr>
+          </table>
+        </td></tr>
+        <tr><td style="padding:16px 32px;background:#fafafa;">
+          <p style="margin:0;font-size:12px;line-height:18px;color:#888888;">
+            You're receiving this email because you subscribed at newsshore.com.
+            If this wasn't you, you can ignore this email.
+          </p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</div>`;
 
-const WELCOME_SUBJECT = 'Welcome to NewsShore — AI & Tech news, made for everyone';
+  const text = `Thank you for subscribing to NewsShore!
 
-const WELCOME_TEXT = `Hi there,
+Hi there,
 
 Welcome to NewsShore — and thank you for subscribing.
 
@@ -26,7 +78,9 @@ Explore more on any topic using in-page tabs — no need to leave the article yo
 📊 AI Model Intelligence Leaderboard
 Curious which AI models are actually the best? Our leaderboard ranks 300+ models using the LLM Stats Score, updated daily.
 
-Stay connected with us beyond your inbox:
+You're on the list. From now on, the tech stories that actually matter will land in your inbox — clear, concise, and free of noise.
+
+Join Our Socials:
 Telegram: https://t.me/News_Shore
 WhatsApp: https://whatsapp.com/channel/0029Vb8MT8c002THGmdgsd32
 Facebook: https://web.facebook.com/profile.php?id=61592735245077
@@ -35,118 +89,117 @@ We're glad you're here. Welcome aboard — let's stay informed, together.
 
 The NewsShore Team`;
 
-const WELCOME_HTML = `<!DOCTYPE html>
-<html>
-<body style="margin:0;padding:0;background-color:#f4f5f7;font-family:Arial,Helvetica,sans-serif;">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f5f7;padding:24px 12px;">
-<tr><td align="center">
-<table role="presentation" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background-color:#ffffff;border-radius:12px;overflow:hidden;">
-  <tr><td style="background-color:#0f1b3d;padding:28px 32px;text-align:center;">
-    <span style="color:#ffffff;font-size:26px;font-weight:bold;letter-spacing:1px;">NewsShore</span><br>
-    <span style="color:#94a3b8;font-size:11px;letter-spacing:2px;text-transform:uppercase;">AI &amp; Tech news, made for everyone</span>
-  </td></tr>
-  <tr><td style="padding:32px;">
-    <p style="margin:0 0 16px;font-size:16px;color:#111827;">Hi there,</p>
-    <p style="margin:0 0 16px;font-size:16px;color:#111827;line-height:1.6;">Welcome to <strong>NewsShore</strong> &mdash; and thank you for subscribing.</p>
-    <p style="margin:0 0 16px;font-size:16px;color:#111827;line-height:1.6;">We started NewsShore because AI is no longer just a &ldquo;tech people&rdquo; topic. It&rsquo;s reshaping jobs, business, education, and everyday life &mdash; which means everyone deserves to understand what&rsquo;s happening, not just engineers and developers.</p>
-    <p style="margin:0 0 16px;font-size:16px;color:#111827;line-height:1.6;">Every day, we track the stories that matter across the technology world and bring them to you in plain, clear language &mdash; no jargon, no noise.</p>
-    <p style="margin:0 0 10px;font-size:15px;color:#111827;"><strong>What we cover:</strong></p>
-    <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 16px;">
-      <tr><td style="padding:4px 0;font-size:15px;color:#374151;"><span style="color:#dc2626;">&bull;</span>&nbsp; Artificial intelligence and machine learning</td></tr>
-      <tr><td style="padding:4px 0;font-size:15px;color:#374151;"><span style="color:#dc2626;">&bull;</span>&nbsp; Tech giants &mdash; OpenAI, Google, Microsoft, Nvidia, Meta and more</td></tr>
-      <tr><td style="padding:4px 0;font-size:15px;color:#374151;"><span style="color:#dc2626;">&bull;</span>&nbsp; Startups, funding rounds and acquisitions</td></tr>
-      <tr><td style="padding:4px 0;font-size:15px;color:#374151;"><span style="color:#dc2626;">&bull;</span>&nbsp; New research and breakthroughs</td></tr>
-      <tr><td style="padding:4px 0;font-size:15px;color:#374151;"><span style="color:#dc2626;">&bull;</span>&nbsp; Deals and global tech markets</td></tr>
-    </table>
-    <p style="margin:0;font-size:16px;color:#111827;line-height:1.6;">That&rsquo;s it &mdash; you&rsquo;re all set. The next time something big happens in tech, you&rsquo;ll be among the first to know.</p>
-  </td></tr>
-  <tr><td style="background-color:#f8fafc;border-top:1px solid #e5e7eb;padding:28px 32px;text-align:center;">
-    <p style="margin:0 0 14px;font-size:13px;font-weight:bold;color:#0f1b3d;letter-spacing:2px;text-transform:uppercase;">Join Our Socials</p>
-    <a href="https://t.me/News_Shore" style="display:inline-block;margin:4px;padding:11px 22px;background-color:#0f1b3d;color:#ffffff;text-decoration:none;font-size:14px;font-weight:bold;border-radius:24px;">Telegram</a>
-    <a href="https://whatsapp.com/channel/0029Vb8MT8c002THGmdgsd32" style="display:inline-block;margin:4px;padding:11px 22px;background-color:#25D366;color:#ffffff;text-decoration:none;font-size:14px;font-weight:bold;border-radius:24px;">WhatsApp</a>
-    <a href="https://web.facebook.com/profile.php?id=61592735245077" style="display:inline-block;margin:4px;padding:11px 22px;background-color:#1877F2;color:#ffffff;text-decoration:none;font-size:14px;font-weight:bold;border-radius:24px;">Facebook</a>
-  </td></tr>
-  <tr><td style="padding:18px 32px;text-align:center;">
-    <p style="margin:0;font-size:12px;color:#9ca3af;line-height:1.5;">You received this email because you subscribed at NewsShore.<br>&copy; 2026 NewsShore. All rights reserved.</p>
-  </td></tr>
-</table>
-</td></tr>
-</table>
-</body>
-</html>`;
 
-export async function POST(request) {
+export async function POST(req) {
+  const log = (...args) => console.log('[subscribe]', ...args);
+
+  // ---- 1. Read + validate email ----
+  let email = '';
   try {
-    const body = await request.json().catch(() => ({}));
-    const email = String(body.email || '').trim().toLowerCase();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return Response.json({ error: 'invalid email' }, { status: 400 });
-    }
+    const body = await req.json();
+    email = String(body?.email ?? '').trim().toLowerCase();
+  } catch {
+    return NextResponse.json({ error: 'invalid_request' }, { status: 400 });
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+    return NextResponse.json({ error: 'invalid_email' }, { status: 400 });
+  }
 
-    const sbUrl = (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '').replace(/\/+$/, '');
-    const sbKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    if (!sbUrl || !sbKey) {
-      console.error('[subscribe] Missing SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY env vars on host');
-      return Response.json({ error: 'server config' }, { status: 500 });
-    }
-    const sbHeaders = {
-      'apikey': sbKey,
-      'Authorization': 'Bearer ' + sbKey,
-      'Content-Type': 'application/json',
-    };
+  // ---- 2. Supabase config ----
+  const sbUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const sbKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!sbUrl || !sbKey) {
+    log('missing SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY');
+    return NextResponse.json({ error: 'server_config' }, { status: 500 });
+  }
+  const sbHeaders = {
+    'Content-Type': 'application/json',
+    apikey: sbKey,
+    Authorization: `Bearer ${sbKey}`,
+  };
 
-    // 1. Already subscribed? -> friendly notice, no second mail
-    const check = await fetch(`${sbUrl}/rest/v1/subscribers?select=email&email=eq.${encodeURIComponent(email)}`, { headers: sbHeaders });
-    if (!check.ok) {
-      console.error(`[subscribe] Supabase check failed ${check.status}: ${(await check.text()).slice(0, 200)}`);
-      return Response.json({ error: 'database' }, { status: 500 });
+  // ---- 3. Duplicate check — existing subscribers never get a second mail ----
+  try {
+    const check = await fetch(
+      `${sbUrl}/rest/v1/subscribers?email=eq.${encodeURIComponent(email)}&select=id`,
+      { headers: sbHeaders }
+    );
+    if (check.ok) {
+      const rows = await check.json();
+      if (Array.isArray(rows) && rows.length > 0) {
+        log('already subscribed:', email);
+        return NextResponse.json({ already: true });
+      }
     }
-    if ((await check.json()).length > 0) {
-      return Response.json({ already: true });
-    }
+  } catch (err) {
+    log('duplicate check failed (continuing):', err?.message);
+  }
 
-    // 2. Save the subscriber
+  // ---- 4. Save the subscriber (this must never be blocked by the mail) ----
+  try {
     const insert = await fetch(`${sbUrl}/rest/v1/subscribers`, {
       method: 'POST',
-      headers: { ...sbHeaders, 'Prefer': 'resolution=ignore-duplicates' },
+      headers: { ...sbHeaders, Prefer: 'return=minimal' },
       body: JSON.stringify({ email }),
     });
-    if (!insert.ok) {
-      console.error(`[subscribe] Supabase insert failed ${insert.status}: ${(await insert.text()).slice(0, 200)}`);
-      return Response.json({ error: 'database' }, { status: 500 });
+    if (!insert.ok && insert.status !== 409) {
+      const t = await insert.text().catch(() => '');
+      log('insert failed:', insert.status, t.slice(0, 200));
+      return NextResponse.json({ error: 'server_error' }, { status: 500 });
     }
-
-    // 3. Send the welcome mail (non-fatal: subscriber is already saved)
-    const mailErr = await sendWelcomeEmail(email);
-    if (mailErr) console.error('[subscribe] Welcome mail not sent (subscriber saved):', mailErr);
-
-    return Response.json({ ok: true });
-  } catch (e) {
-    console.error('[subscribe] crashed:', e);
-    return Response.json({ error: 'server' }, { status: 500 });
+  } catch (err) {
+    log('insert error:', err?.message);
+    return NextResponse.json({ error: 'server_error' }, { status: 500 });
   }
+  log('saved:', email);
+
+  // ---- 5. Welcome mail — best effort, full diagnostics ----
+  const mailStatus = await sendWelcomeEmail(email, log);
+
+  return NextResponse.json({ ok: true, mailStatus });
 }
 
-async function sendWelcomeEmail(email) {
+// ================================================================
+async function sendWelcomeEmail(email, log) {
   const apiKey = process.env.BREVO_API_KEY;
   const senderEmail = process.env.BREVO_SENDER_EMAIL;
-  if (!apiKey || !senderEmail) return 'BREVO_API_KEY / BREVO_SENDER_EMAIL env vars not set on host';
+  const senderName = process.env.BREVO_SENDER_NAME || 'NewsShore';
+
+  if (!apiKey || !senderEmail) {
+    log('MAIL SKIPPED — BREVO_API_KEY / BREVO_SENDER_EMAIL not set. Add them on the host and REDEPLOY.');
+    return 'skipped-env-missing';
+  }
+
+  const html = `...welcome HTML below...`;
+  const text = `...plain version below...`;
 
   try {
     const res = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
-      headers: { 'accept': 'application/json', 'api-key': apiKey, 'content-type': 'application/json' },
+      headers: {
+        accept: 'application/json',
+        'api-key': apiKey,
+        'content-type': 'application/json',
+      },
       body: JSON.stringify({
-        sender: { name: process.env.BREVO_SENDER_NAME || 'NewsShore', email: senderEmail },
+        sender: { name: senderName, email: senderEmail },
         to: [{ email }],
-        subject: WELCOME_SUBJECT,
-        htmlContent: WELCOME_HTML,
-        textContent: WELCOME_TEXT,
+        subject: 'Welcome to NewsShore',
+        htmlContent: html,
+        textContent: text,
       }),
+      signal: AbortSignal.timeout(15000),
     });
-    if (!res.ok) return `Brevo ${res.status}: ${(await res.text()).slice(0, 300)}`;
-    return null;
-  } catch (e) {
-    return String(e.message || e);
+
+    const body = await res.text().catch(() => '');
+    if (res.ok) {
+      log('welcome mail sent to', email);
+      return 'sent';
+    }
+    log(`MAIL FAILED — HTTP ${res.status}: ${body.slice(0, 300)}`);
+    return `error-${res.status}`;
+  } catch (err) {
+    log('MAIL FAILED —', err?.message);
+    return 'error-network';
   }
 }

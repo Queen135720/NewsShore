@@ -138,7 +138,7 @@ async function fetchNewItems() {
   /\b(k-?pop|entertainment (company|industry)|idol|record label|celebrity|actor|singer|box office|talent (recruit|show)|betting|gambl\w*)\b/,
   /\b(football|soccer|premier league|nba\b|cricket|tournament|championship|ambassadorial)\b/,
   /\b(election|parliament|senate|minister|presidency)\b/,
-  /\b(digital divide|internet access (to|for) (public|schools|libraries)|verge|repairability comparison/i.test(t)) continue;
+  /\b(digital divide|internet access (to|for) (public|schools|libraries)|the verge|repairability comparison/i.test(t)) continue;
 
           seenThisRun.add(item.link);
           allItems.push({ ...item, sourceName: source.name, category: source.category, region: source.region });
@@ -1257,6 +1257,13 @@ function isTechRelevant(titleText) {
   let saved = 0, rejected = 0, failed = 0;
   for (const item of batch) {
     try {
+      // ---- non-tech backstop (before spending AI tokens) ----
+      if (!isTechRelevant(item.title)) {
+        console.log(`Filtered (non-tech backstop): ${item.title}`);
+        await supabase.from('processed_urls').insert({ source_url: item.link, status: 'rejected' });
+        rejected++;
+        continue;
+      }
       // ---- duplicate gate BEFORE spending AI tokens (title-only) ----
       const preDup = await isDuplicateStory([item.title]);
       const confirmedPre = (preDup && (preDup.sim ?? 1) >= 0.75) ? preDup : null;

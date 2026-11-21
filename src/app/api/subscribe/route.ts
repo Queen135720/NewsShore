@@ -13,6 +13,8 @@ export async function POST(req) {
 }
 
 async function handleSubscribe(req) {
+  const log = (...args) => console.log('[subscribe]', ...args);
+
   // ---- 1. Read + validate email ----
   let email = '';
   try {
@@ -55,7 +57,7 @@ async function handleSubscribe(req) {
     log('duplicate check failed (continuing):', err?.message);
   }
 
-  // ---- 4. Save the subscriber (never blocked by the mail step) ----
+  // ---- 4. Save the subscriber ----
   try {
     const insert = await fetch(`${sbUrl}/rest/v1/subscribers`, {
       method: 'POST',
@@ -73,7 +75,7 @@ async function handleSubscribe(req) {
   }
   log('saved:', email);
 
-  // ---- 5. Welcome mail — best effort, full diagnostics ----
+  // ---- 5. Welcome mail — best effort ----
   const mailStatus = await sendWelcomeEmail(email, log);
 
   return NextResponse.json({ ok: true, mailStatus });
@@ -100,9 +102,7 @@ async function sendWelcomeEmail(email, log) {
         </td></tr>
         <tr><td style="padding:32px 32px 8px 32px;">
           <h1 style="margin:0 0 16px 0;font-size:20px;color:#0f1b3d;">Thank you for subscribing to NewsShore</h1>
-          <p style="margin:0 0 16px 0;font-size:15px;line-height:22px;color:#333333;">
-            Hi there,
-          </p>
+          <p style="margin:0 0 16px 0;font-size:15px;line-height:22px;color:#333333;">Hi there,</p>
           <p style="margin:0 0 16px 0;font-size:15px;line-height:22px;color:#333333;">
             Welcome to NewsShore — and thank you for subscribing.
           </p>

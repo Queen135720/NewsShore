@@ -88,8 +88,9 @@ async function sendWelcomeEmail(email, log) {
   const senderName = process.env.BREVO_SENDER_NAME || 'NewsShore';
 
   if (!apiKey || !senderEmail) {
-    log('MAIL SKIPPED — BREVO_API_KEY / BREVO_SENDER_EMAIL not set on the host. Add them and REDEPLOY.');
-    return 'skipped-env-missing';
+    const missing = [!apiKey && 'BREVO_API_KEY', !senderEmail && 'BREVO_SENDER_EMAIL'].filter(Boolean).join(' + ');
+    log(`MAIL SKIPPED — ${missing} not visible to the site. Add them where SUPABASE_SERVICE_ROLE_KEY lives, then REDEPLOY.`);
+    return `skipped-env-missing (${missing})`;
   }
 
   const html = `

@@ -37,6 +37,7 @@ const SOURCES = [
   { name: 'Hugging Face', url: 'https://huggingface.co/blog/feed.xml', category: 'AI News', region: 'Global' },
   { name: 'TechCrunch AI', url: 'https://techcrunch.com/category/artificial-intelligence/feed/', category: 'AI News', region: 'Global' },
   { name: 'MIT Tech Review', url: 'https://www.technologyreview.com/feed/', category: 'AI News', region: 'US' },
+  { name: 'Ars Technica AI', url: 'https://arstechnica.com/ai/feed/', category: 'Tech News', region: 'US' }, // ⚠ verify — kept (was mislabeled "Robotics"; it's their AI feed — the LLM will file these as AI News)
 
   // ---- Tech Giants (tech leaders as people) ----
   { name: 'Simon Willison', url: 'https://simonwillison.net/atom/everything/', category: 'Tech Giants', region: 'Global' },
@@ -46,7 +47,6 @@ const SOURCES = [
   // ---- Tech News (general + robotics) ----
   { name: 'The Verge', url: 'https://www.theverge.com/rss/index.xml', category: 'Tech News', region: 'Global' },
   { name: 'Ars Technica', url: 'https://feeds.arstechnica.com/arstechnica/index', category: 'Tech News', region: 'Global' },
-  { name: 'Ars Technica AI', url: 'https://arstechnica.com/ai/feed/', category: 'Tech News', region: 'US' }, // ⚠ verify — kept (was mislabeled "Robotics"; it's their AI feed — the LLM will file these as AI News)
   { name: 'TechCrunch Robotics', url: 'https://techcrunch.com/category/robotics/feed/', category: 'Tech News', region: 'Global' },
   { name: 'TechCrunch Space', url: 'https://techcrunch.com/category/space/feed/', category: 'Tech News', region: 'Global' },
   { name: 'TechCrunch Security', url: 'https://techcrunch.com/category/security/feed/', category: 'Tech News', region: 'Global' },
@@ -255,227 +255,6 @@ Source site: ${item.sourceName} (suggested category: "${item.category}", suggest
 Source content: ${sourceContent}`;
 
     // All providers already down this run → fail fast, don't hammer
-  if (providerDown.glm && providerDown.groq && providerDown.cloudflare && providerDown.groq20b && providerDown.nvidia && providerDown.nvidia2) {
-    throw new Error('All providers throttled — pausing this run');
-  }
-
-  if (!providerDown.glm) {
-    try { return await callGLM(prompt); }
-    catch (err) {
-      if (/429|timeout|abort/i.test(err.message)) { providerDown.glm = true; console.warn('GLM throttled/hung — skipping rest of this run'); }
-      else console.warn(`GLM failed, falling back: ${err.message}`);
-    }
-  }
-  if (!providerDown.groq) {
-    try { return await callGroq(prompt); }
-    catch (err) {
-      if (/429|rate|unavailable for free|403/i.test(err.message)) { providerDown.groq = true; console.warn('Groq throttled — skipping rest of this run'); }
-      else console.warn(`Groq failed, falling back: ${err.message}`);
-    }
-  }
-    // BazaarLink free tier — afternoon rescue
-  if (!providerDown.Bazaar && process.env.BAZAARLINK_API_KEY) {
-    try { return await callBazaar(prompt); }
-    catch (err) {
-      console.log('BazaarLink failed, falling back: ' + err.message);
-    }
-  }
-    // Cloudflare Workers AI — new free provider, tried FIRST
-  if (!providerDown.Cloudflare && process.env.CLOUDFLARE_API_TOKEN && process.env.CF_ACCOUNT_ID) {
-    try { return await callCloudflare(prompt); }
-    catch (err) {
-      if (/429|rate|quota|timeout|abort|degraded|401|402|403|404|410/i.test(err.message)) {
-        providerDown.Cloudflare = true;
-        console.log('Cloudflare throttled — skipping rest of this run');
-      } else {
-        console.log('Cloudflare failed, falling back: ' + err.message);
-      }
-    }
-  }
-  if (!providerDown.groq20b) {
-    try { return await callGroq20B(prompt); }
-    catch (err) {
-      if (/429|413/i.test(err.message)) { providerDown.groq20b = true; console.warn('Groq20B throttled — skipping rest of this run'); }
-      else console.warn(`Groq20B failed, falling back: ${err.message}`);
-    }
-  }
-  if (!providerDown.nvidia) {
-    try { return await callNvidia(prompt); }
-    catch (err) {
-      if (/429|rate|404|410|not found|end of life/i.test(err.message)) { providerDown.nvidia = true; console.warn('NVIDIA GLM throttled — skipping rest of this run'); }
-      else console.warn(`NVIDIA failed, falling back: ${err.message}`);
-    }
-  }
-  if (!providerDown.nvidia2) {
-    try { return await callNvidia2(prompt); }
-    catch (err) {
-      if (/429|rate|404|410|not found|end of life/i.test(err.message)) { providerDown.nvidia2 = true; console.warn('NVIDIA Llama throttled — skipping rest of this run'); }
-      else console.warn(`NVIDIA2 failed, falling back: ${err.message}`);
-    }
-  }
-
-  const rOr   = await callOpenRouter(prompt);  if (rOr)   return rOr;
-  const rAxf  = await callAxforge(prompt);     if (rAxf)  return rAxf;
-  const rKilo = await callKilo(prompt);        if (rKilo) return rKilo;
-
-  throw new Error('All AI providers failed');
-}
-
-async function retryFetch(url, options) {
-  let res = await fetch(url, { ...options, signal: AbortSignal.timeout(60000) });
-  if (res.status === 429) {
-    await new Promise(r => setTimeout(r, 2500));
-    res = await fetch(url, { ...options, signal: AbortSignal.timeout(60000) });
-  }
-  return res;
-}
-
-function safeParseJSON(text) {
-  if (typeof text !== 'string' || !text.trim()) return null;
-  try {
-    const start = text.indexOf('{');
-    const end = text.lastIndexOf('}');
-    if (start === -1 || end <= start) return null;      // no JSON object in the reply at all
-    const parsed = JSON.parse(text.slice(start, end + 1));
-    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return null;
-    if (Object.keys(parsed).length === 0) return null;  // bare {} is junk, not a success
-    return parsed;
-  } catch {
-    return null;
-  }
-}
-
-let glmDownUntil = 0;
-
-async function callGLM(prompt) {
-  if (Date.now() < glmDownUntil) return null;
-
-  if (!process.env.GLM_API_KEY) {
-    console.log('[glm] GLM_API_KEY not set — skipping');
-    glmDownUntil = Date.now() + 6 * 60 * 60 * 1000;
-    return null;
-  }
-
-  const waits = [6000, 18000]; // before retry 2 and 3
-
-  for (let attempt = 1; attempt <= 3; attempt++) {
-    try {
-      const res = await fetch('https://open.bigmodel.cn/api/paas/v4/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${process.env.GLM_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: 'glm-4.7-flash',
-          thinking: { type: 'disabled' },
-          messages: [
-            { role: 'system', content: 'You are a professional news writer and editor. Respond with valid JSON only, no extra text.' },
-            { role: 'user', content: prompt },
-          ],
-          temperature: 0.4,
-        }),
-        signal: AbortSignal.timeout(90000),
-      });
-
-      if (res.status === 429 && attempt <= 2) {
-        console.log(`[glm] congestion (429) — retry ${attempt + 1}/3 in ${waits[attempt - 1] / 1000}s`);
-        await new Promise((r) => setTimeout(r, waits[attempt - 1]));
-        continue;
-      }
-
-      if (!res.ok) {
-        const body = await res.text().catch(() => '');
-        const snippet = body.slice(0, 120).replace(/\s+/g, ' ');
-        let minutes;
-        if (res.status === 402) minutes = 60;
-        else if ([401, 403, 404].includes(res.status)) minutes = 360;
-        else if (res.status === 429) minutes = 1.5;  // 3rd strike — short nap, rejoins this same run
-        else minutes = 15;
-        glmDownUntil = Date.now() + minutes * 60 * 1000;
-        console.log(`[glm] down for ${minutes}m — HTTP ${res.status} ${snippet}`);
-        return null;
-      }
-
-      const data = await res.json();
-      const text = data?.choices?.[0]?.message?.content;
-      if (!text) {
-        glmDownUntil = Date.now() + 15 * 60 * 1000;
-        console.log('[glm] down for 15m — empty response');
-        return null;
-      }
-
-      const article = normalizeArticleFields(repairArticleJSON(text));
-      if (!article) {
-        console.log('[glm] returned non-JSON reply, skipping to next provider');
-        return null;
-      }
-
-      article._provider = 'glm';
-      console.log('[glm] ok');
-      return article;
-
-    } catch (err) {
-      const cause = err?.name === 'TimeoutError' ? 'timeout' : (err?.cause?.code || err?.message || 'network error');
-      glmDownUntil = Date.now() + 15 * 60 * 1000;
-      console.log(`[glm] down for 15m — ${cause}`);
-      return null;
-    }
-  }
-
-  return null;
-}
-
-async function callGroq(prompt) {
-  if (!process.env.GROQ_API_KEY) throw new Error('GROQ_API_KEY not set');
-  const res = await retryFetch('https://api.groq.com/openai/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: 'openai/gpt-oss-120b',
-      messages: [{ role: 'user', content: prompt }],
-    }),
-  });
-  if (!res.ok) {
-    const errBody = await res.text();
-    throw new Error(`Groq error: ${res.status} — ${errBody.substring(0, 200)}`);
-  }
-  const data = await res.json();
-  return safeParseJSON(data.choices[0].message.content);
-}
-
-async function callBazaar(prompt) {
-  if (providerDown.Bazaar) throw new Error('BazaarLink already failed this run');
-  try {
-    const res = await retryFetch('https://api.bazaarlink.ai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.BAZAARLINK_API_KEY}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: 'deepseek/deepseek-v4-flash-0731free',
-        messages: [{ role: 'user', content: prompt }],
-        max_tokens: 4000
-      })
-    });
-    const data = await res.json();
-    if (!data.choices || !data.choices[0]) {
-      throw new Error('BazaarLink: ' + JSON.stringify(data).slice(0, 200));
-    }
-    let content = (data.choices[0].message.content || '').trim();
-    console.log(`BazaarLink responded (${content.length} chars)`);
-    console.log(`BazaarLink raw: ${content.slice(0, 120).replace(/\s+/g, ' ')}`);
-    content = content.replace(/<think>[\s\S]*?<\/think>/gi, '');
-    if (content.includes('<|message|>')) content = content.slice(content.lastIndexOf('<|message|>') + 11);
-    content = content.replace(/<\|start\|>|<\|end\|>|<\|channel\|>\s*final/g, '').trim();
-    const obj = normalizeArticleFields(repairArticleJSON(content));
-    console.log('BazaarLink JSON OK');
-    return JSON.stringify(obj);
-  } catch (err) {
     if (/429|rate|quota|unit|limit|concurrent|insufficient|balance|timeout|abort|401|402|403/i.test(err.message)) {
       providerDown.Bazaar = true;
       console.log('BazaarLink throttled — skipping rest of this run');
@@ -631,12 +410,12 @@ function repairArticleJSON(raw) {
   try { return JSON.parse(candidate.replace(/,\s*([}\]])/g, '$1')); } catch {}
   try {
     return JSON.parse(candidate
-      .replace(/[\u201c\u201d]/g, '"')
+      .replace(/[“”]/g, '"')
       .replace(/,\s*([}\]])/g, '$1'));
   } catch {}
   try {
     return JSON.parse(candidate
-      .replace(/[\u201c\u201d]/g, '"')
+      .replace(/[“”]/g, '"')
       .replace(/\r?\n/g, '\\n')
       .replace(/\t/g, '\\t')
       .replace(/,\s*([}\]])/g, '$1'));
@@ -773,7 +552,7 @@ async function isDuplicateStory(titles) {
     console.log('Dup shield error (ignored): ' + e.message);
     return null;
   }
-}  
+}
 
 async function callCloudflare(prompt) {
   if (providerDown.Cloudflare) throw new Error('Cloudflare already failed this run');
@@ -798,7 +577,7 @@ async function callCloudflare(prompt) {
     let content = (data.choices[0].message.content || '').trim();
     console.log(`Cloudflare responded (${content.length} chars)`);
     console.log('Cloudflare raw: ' + content.slice(0, 220).replace(/\s+/g, ' '));
-    content = content.replace(/<think>[\s\S]*?<\/think>/gi, '');
+    content = content.replace(/[\s\S]*?<\/think>/gi, '');
     if (content.includes('<|message|>')) content = content.slice(content.lastIndexOf('<|message|>') + 11);
     content = content.replace(/<\|start\|>|<\|end\|>|<\|channel\|>\s*final/g, '').trim();
     const obj = normalizeArticleFields(repairArticleJSON(content));
@@ -853,7 +632,7 @@ async function callGroq20B(prompt) {
     let content = (data.choices[0].message.content || '').trim();
     console.log(`Groq20B responded (${content.length} chars)`);
     console.log('Groq20B raw: ' + content.slice(0, 220).replace(/\s+/g, ' '));
-    content = content.replace(/<think>[\s\S]*?<\/think>/gi, '');
+    content = content.replace(/[\s\S]*?<\/think>/gi, '');
     if (content.includes('<|message|>')) content = content.slice(content.lastIndexOf('<|message|>') + 11);
     content = content.replace(/<\|start\|>|<\|end\|>|<\|channel\|>\s*final/g, '').trim();
     const obj = normalizeArticleFields(repairArticleJSON(content));
@@ -894,7 +673,7 @@ async function callNvidia(prompt) {
     if (!data.choices || !data.choices[0]) throw new Error('No choices in NVIDIA response');
     let content = (data.choices[0].message.content || '').trim();
     console.log(`NVIDIA responded (${content.length} chars)`);
-    content = content.replace(/<think>[\s\S]*?<\/think>/gi, '');
+    content = content.replace(/[\s\S]*?<\/think>/gi, '');
     const obj = normalizeArticleFields(repairArticleJSON(content));
     console.log('NVIDIA JSON OK');
     return JSON.stringify(obj);
@@ -931,7 +710,7 @@ async function callNvidia2(prompt) {
     if (!data.choices || !data.choices[0]) throw new Error('No choices in NVIDIA2 response');
     let content = (data.choices[0].message.content || '').trim();
     console.log(`NVIDIA2 responded (${content.length} chars)`);
-    content = content.replace(/<think>[\s\S]*?<\/think>/gi, '');
+    content = content.replace(/[\s\S]*?<\/think>/gi, '');
     const obj = normalizeArticleFields(repairArticleJSON(content));
     console.log('NVIDIA2 JSON OK');
     return JSON.stringify(obj);

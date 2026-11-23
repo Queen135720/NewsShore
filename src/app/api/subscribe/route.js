@@ -3,6 +3,17 @@ import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
+// ===== NEW (popup support): single source of truth for the social links =====
+// Returned with the success responses so the "Thanks for Subscribing" popup
+// always shows the same links the welcome email contains. If you later change
+// a link, update it here (and in the email footer inside sendWelcomeEmail).
+const SOCIALS = {
+  facebook: { label: 'Facebook', url: 'https://web.facebook.com/newsshore' },
+  whatsapp: { label: 'WhatsApp', url: 'https://whatsapp.com/channel/0029Vb8MT8c002THGmdgsd32' },
+  telegram: { label: 'Telegram', url: 'https://t.me/News_Shore' },
+};
+// ===== END NEW =====
+
 export async function POST(req) {
   try {
     return await handleSubscribe(req);
@@ -50,7 +61,7 @@ async function handleSubscribe(req) {
       const rows = await check.json();
       if (Array.isArray(rows) && rows.length > 0) {
         log('already subscribed:', email);
-        return NextResponse.json({ already: true });
+        return NextResponse.json({ already: true, socials: SOCIALS }); // NEW: socials added for the popup
       }
     }
   } catch (err) {
@@ -78,7 +89,7 @@ async function handleSubscribe(req) {
   // ---- 5. Welcome mail — best effort ----
   const mailStatus = await sendWelcomeEmail(email, log);
 
-  return NextResponse.json({ ok: true, mailStatus });
+  return NextResponse.json({ ok: true, mailStatus, socials: SOCIALS }); // NEW: socials added for the popup
 }
 
 // ================================================================

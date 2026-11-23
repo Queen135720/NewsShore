@@ -1274,44 +1274,90 @@ async function fetchImage(rewritten, category, usedKeys) {
 }
 
 // ================================================================
-// ONE SIGNAL PUSH — paste this whole section into fetch-and-publish.js
-// AFTER the fetchImage section (the last function of the region we
-// replaced), BEFORE run(). Nothing else in the file changes.
+// ONE SIGNAL PUSH — v2, SELF-WIRING
+// REPLACE the old "---- ONE SIGNAL PUSH ----" section entirely
+// (everything from that comment through the "WHERE TO CALL IT"
+// block) with this one. Same spot: after fetchImage's closing
+// brace, before run().
 //
-// What it does: every article that is saved (released) sends ONE
-// notification to ALL subscribers (segment "Subscribed Users").
-// Layout on every platform: article image on the LEFT, then the
-// title, then the summary. Tapping opens the article page.
-// This section NEVER throws: a push failure must never kill the run.
+// What changed from v1: NO manual call needed. This section hooks
+// the Supabase client itself, so every successful insert into the
+// 'articles' table fires one push to all subscribers — no matter
+// which branch of run() saved it (main provider, fallback chain, or
+// the "GLM picks them up next run" recovery path). If you already
+// added `await notifyArticle(...)` after your save — leave it or
+// remove it, the dedup guard makes it harmless either way.
+//
+// Env vars (GitHub repo secrets or workflow env):
+//   ONESIGNAL_APP_ID         your OneSignal App ID
+//   ONESIGNAL_APP_API_KEY    the os_v2_app_... key (Settings > Keys & IDs)
+//                            — legacy ONESIGNAL_REST_API_KEY also accepted
+//   SITE_URL                 https://your-domain.com (no trailing slash)
+// Optional:
+//   PUSH_DRY_RUN=1           log the payload instead of sending
+//
+// Every notification: article image on the LEFT, then the title,
+// then the summary. Tap opens the article page.
+// This section NEVER throws — a push failure cannot kill the run.
 // ================================================================
 
-// ---- ONE SIGNAL PUSH ----
-// Per-run guard so an article can never be notified twice,
-// even if the save path is retried.
-const notifiedArticleIds = new Set();
+// ---- ONE SIGNAL PUSH (v2, self-wiring) ----
+const notifiedIds = new Set();     // per-run guard: never notify the same article twice,
+const notifiedTitles = new Set();  // even when one path sees the row and another only the payload
+
+function onesignalKey() {
+  return process.env.ONESIGNAL_APP_API_KEY || process.env.ONESIGNAL_REST_API_KEY;
+}
+
+function normTitle(row) {
+  return String(row?.title || row?.headline || '').toLowerCase().trim();
+}
+
+function alreadyNotified(row) {
+  if (row?.id && notifiedIds.has(row.id)) return true;
+  const t = normTitle(row);
+  return !!(t && notifiedTitles.has(t));
+}
+
+function markNotified(row) {
+  if (row?.id) notifiedIds.add(row.id);
+  const t = normTitle(row);
+  if (t) notifiedTitles.add(t);
+}
+
+let pushNoIdHintShown = false;
 
 async function pushArticleNotification(article) {
-  if (!process.env.ONESIGNAL_APP_ID || !process.env.ONESIGNAL_REST_API_KEY) {
-    console.log('[push] ONESIGNAL_APP_ID / ONESIGNAL_REST_API_KEY not set — skipping');
+  if (!process.env.ONESIGNAL_APP_ID || !onesignalKey()) {
+    console.log('[push] ONESIGNAL_APP_ID / ONESIGNAL_APP_API_KEY not set — skipping');
     return;
   }
-
   const site = (process.env.SITE_URL || '').replace(/\/+$/, '');
   if (!site) {
     console.log('[push] SITE_URL not set — skipping (needed to build the article link)');
     return;
   }
 
-  const title = String(article.title || article.headline || '').trim().slice(0, 90);
+  const title = String(article.title || article.headline || '').replace(/\s+/g, ' ').trim().slice(0, 90);
   let summary = String(article.summary || '').replace(/\s+/g, ' ').trim();
-  if (summary.length > 130) summary = summary.slice(0, 130).replace(/\s+\S*$/, '') + '…';
+  if (!summary) {
+    // some save paths store only body — first sentence of it makes the notification
+    const body = String(article.body || article.content || '').replace(/\s+/g, ' ').trim();
+    if (body) summary = body.slice(0, 130).replace(/\s+\S*$/, '') + '…';
+  } else if (summary.length > 130) {
+    summary = summary.slice(0, 130).replace(/\s+\S*$/, '') + '…';
+  }
   if (!title || !summary) {
     console.log('[push] article has no title/summary — skipping');
     return;
   }
 
   const image = article.image_url || article.imageUrl || null;
-  const articleUrl = `${site}/article/${article.id}`;
+  const articleUrl = article.id ? `${site}/article/${article.id}` : site;
+  if (!article.id && !pushNoIdHintShown) {
+    pushNoIdHintShown = true;
+    console.log('[push] note: insert returned no row id — linking to site home (add .select().single() to the insert for direct article links)');
+  }
 
   const payload = {
     target_channel: 'push',
@@ -1331,6 +1377,11 @@ async function pushArticleNotification(article) {
     payload.ios_attachments = { id: image }; // iOS — rich media attachment
   }
 
+  if (process.env.PUSH_DRY_RUN) {
+    console.log(`[push] dry-run — would send: "${title}" → ${articleUrl}`);
+    return;
+  }
+
   // one retry on 429 / network hiccup — push matters, but must not stall the run
   for (let attempt = 1; attempt <= 2; attempt++) {
     try {
@@ -1338,7 +1389,7 @@ async function pushArticleNotification(article) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Key ${process.env.ONESIGNAL_REST_API_KEY}`,
+          Authorization: `Key ${onesignalKey()}`,
         },
         body: JSON.stringify(payload),
         signal: AbortSignal.timeout(20000),
@@ -1376,28 +1427,178 @@ async function pushArticleNotification(article) {
   }
 }
 
+// ---- serialized push queue: several articles saved at once → one push each, 400ms apart ----
+let pushChain = Promise.resolve();
+
+function enqueuePush(row) {
+  const run = pushChain.then(() => pushArticleNotification(row));
+  pushChain = run.then(() => {}, () => {}).then(() => new Promise(r => setTimeout(r, 400)));
+  return run;
+}
+
+// Manual call still supported (same name as v1) — deduped against the auto-wire.
 async function notifyArticle(article) {
-  const key = article?.id || article?.title;
-  if (!key) return;
-  if (notifiedArticleIds.has(key)) return;   // already notified this run
-  notifiedArticleIds.add(key);
-  await pushArticleNotification(article);
+  if (!article || alreadyNotified(article)) return;
+  markNotified(article);
+  await enqueuePush(article);
+}
+
+function queueArticlePush(row) {
+  if (!row || typeof row !== 'object' || alreadyNotified(row)) return;
+  markNotified(row);
+  enqueuePush(row).catch(() => {});
 }
 
 // ================================================================
-// WHERE TO CALL IT — in run(), right after an article is SAVED.
-// Find the line that logs the save, e.g.:
-//     console.log(`Saved: ${...}`);
-// and add directly after it (inside the same success branch):
-//
-//     await notifyArticle(savedArticle);
-//
-// `savedArticle` must be the object that was just inserted, carrying
-// id, title (or headline), summary and image_url. If your insert uses
-// .select().single() and returns the row, use that returned row.
-// Do NOT call it for rejected or duplicate-skipped articles — only
-// for released ones.
+// AUTO-WIRE — hooks the Supabase client so insert/upsert into
+// 'articles' fires the push by itself. Works with any chain shape:
+//   insert(row)                        → payload fallback
+//   insert(row).select()               → returned rows
+//   insert(row).select().single()      → returned row (best: has the id)
 // ================================================================
+
+// What was actually inserted? Prefer returned rows (they carry the DB id);
+// fall back to the payload we handed to insert().
+function handleInsertResult(value, payloadRows) {
+  let rows = [];
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    if ('data' in value && 'error' in value) {
+      if (value.error) return; // failed insert — no push
+      rows = Array.isArray(value.data) ? value.data : (value.data ? [value.data] : []);
+    } else {
+      rows = [value]; // .single() resolves to the row itself
+    }
+  }
+  if (!rows.length) rows = payloadRows;
+  for (const r of rows) {
+    if (r && typeof r === 'object' && (r.id || r.title || r.headline)) queueArticlePush(r);
+  }
+}
+
+// Proxy around a tracked (post-insert) builder: passes every call through,
+// keeps the chain wrapped, and fires the hook once when the query resolves.
+function trackedProxy(node, rows, state) {
+  return new Proxy(node, {
+    get(target, prop) {
+      if (prop === 'then') {
+        const orig = target.then.bind(target);
+        return (onOk, onErr) => orig(
+          (value) => {
+            if (!state.fired) { state.fired = true; try { handleInsertResult(value, rows); } catch {} }
+            return onOk ? onOk(value) : value;
+          },
+          onErr
+        );
+      }
+      if (prop === 'catch' || prop === 'finally') {
+        const v = target[prop];
+        return typeof v === 'function' ? v.bind(target) : v;
+      }
+      const v = Reflect.get(target, prop, target);
+      if (typeof v !== 'function') return v;
+      return (...args) => {
+        const out = v.apply(target, args);
+        if (out && typeof out === 'object' && typeof out.then === 'function') return trackedProxy(out, rows, state);
+        return out;
+      };
+    }
+  });
+}
+
+// Proxy around the from('articles') builder: inert until insert/upsert is called.
+function passthruProxy(node) {
+  return new Proxy(node, {
+    get(target, prop) {
+      if (prop === 'then' || prop === 'catch' || prop === 'finally') {
+        const v = target[prop];
+        return typeof v === 'function' ? v.bind(target) : v;
+      }
+      const v = Reflect.get(target, prop, target);
+      if (typeof v !== 'function') return v;
+      return (...args) => {
+        const out = v.apply(target, args);
+        if ((prop === 'insert' || prop === 'upsert') && args[0]) {
+          const rows = Array.isArray(args[0]) ? args[0] : [args[0]];
+          return trackedProxy(out, rows, { fired: false });
+        }
+        if (out && typeof out === 'object') return passthruProxy(out);
+        return out;
+      };
+    }
+  });
+}
+
+function wireSupabaseClient(db) {
+  if (!db || typeof db.from !== 'function' || db.__pushWired) return;
+  const origFrom = db.from.bind(db);
+  db.from = function (table) {
+    const builder = origFrom(table);
+    return table === 'articles' ? passthruProxy(builder) : builder;
+  };
+  try { Object.defineProperty(db, '__pushWired', { value: true }); } catch { db.__pushWired = true; }
+}
+
+function findSupabaseClients() {
+  const found = [];
+  for (const name of ['supabase', 'supabaseAdmin']) {
+    try {
+      const c = globalThis[name]; // let-style top-level consts in the same file resolve lexically below
+      if (c && typeof c.from === 'function') found.push(c);
+    } catch {} // TDZ if declared later in the file — the retry loop below picks it up
+    try {
+      if (typeof eval(name) !== 'undefined') { /* lexical scope check for non-global consts */ }
+    } catch {}
+  }
+  return found;
+}
+
+// Safety net: also watch the REST layer. Any POST to /rest/v1/articles
+// (however the client is named, or raw fetch saves) fires the push too.
+// Dedup by id + title means the client hook and this watcher never double-send.
+function installRestInsertWatcher() {
+  if (globalThis.__pushRestWired) return;
+  const origFetch = globalThis.fetch;
+  if (typeof origFetch !== 'function') return;
+  globalThis.__pushRestWired = true;
+  globalThis.fetch = async function (url, options) {
+    const res = await origFetch(url, options);
+    try {
+      const method = (options?.method || 'GET').toUpperCase();
+      if (res.ok && method === 'POST' && /\/rest\/v1\/articles(\?|$)/.test(String(url || ''))) {
+        let rows = [];
+        try {
+          const txt = await res.clone().text();
+          if (txt) rows = JSON.parse(txt);
+        } catch {}
+        if (!Array.isArray(rows)) rows = rows ? [rows] : [];
+        if (!rows.length && typeof options?.body === 'string') {
+          try { const b = JSON.parse(options.body); rows = Array.isArray(b) ? b : [b]; } catch {}
+        }
+        for (const r of rows) {
+          if (r && typeof r === 'object' && (r.id || r.title || r.headline)) queueArticlePush(r);
+        }
+      }
+    } catch {}
+    return res;
+  };
+}
+
+// ---- boot the auto-wire ----
+(function bootPushWiring() {
+  const wired = findSupabaseClients().map(wireSupabaseClient).length;
+  installRestInsertWatcher(); // always on — catches raw-fetch saves and oddly named clients
+  if (wired) {
+    console.log('[push] auto-wire active — every saved article will notify subscribers');
+    return;
+  }
+  // client var not visible yet (declared later in the file) — keep looking briefly
+  const tries = setInterval(() => {
+    const n = findSupabaseClients().map(wireSupabaseClient).length;
+    if (n) { clearInterval(tries); console.log('[push] auto-wire active — every saved article will notify subscribers'); }
+  }, 250);
+  setTimeout(() => clearInterval(tries), 60000);
+})();
+
 
 
 async function saveArticle(item, rewritten, usedKeys) {

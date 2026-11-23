@@ -1,16 +1,13 @@
 // src/components/SubscribeForm.jsx
 //
 // COMPLETE drop-in subscribe form with the "Thanks for Subscribing" navy
-// popup ALREADY WIRED. If you got no popup after subscribing, it's because
-// your old form never rendered <SubscribePopup/> — replace your form with
-// this file (or copy the 3 marked lines into your own form, see README).
+// popup ALREADY WIRED for the home page.
 //
 // Behavior:
-//   submit -> POST /api/subscribe
-//     ok      -> save, popup opens            (first-time subscriber)
-//     already -> save, popup opens            (repeat email — no 2nd mail)
-//     error   -> inline red message, no popup
-//   popup closes via X / Maybe later / Escape / backdrop click
+//   NEW email    -> saved, popup opens           (Thanks for Subscribing + socials)
+//   ALREADY saved -> NO popup, friendly inline note (no 2nd mail is ever sent)
+//   error        -> inline red message, no popup
+// Popup closes via the X (red on hover), Cancel button, Escape, or backdrop.
 //
 // Plain React + inline styles. No Tailwind, no deps.
 'use client';
@@ -20,7 +17,7 @@ import SubscribePopup from './SubscribePopup';
 
 export default function SubscribeForm({ source = 'site' } = {}) {
   const [email, setEmail] = useState('');
-  const [status, setStatus] = useState('idle'); // idle | sending | done | error
+  const [status, setStatus] = useState('idle'); // idle | sending | done | done-already | error
   const [message, setMessage] = useState('');
   const [socials, setSocials] = useState(null);
   const [showThanks, setShowThanks] = useState(false);
@@ -48,11 +45,19 @@ export default function SubscribeForm({ source = 'site' } = {}) {
 
       const data = await res.json().catch(() => ({}));
 
-      if (res.ok && (data.ok || data.already)) {
-        // ---- SUCCESS: popup opens here ----
+      if (res.ok && data.ok) {
+        // ---- NEW subscriber: the navy popup opens here ----
         setSocials(data.socials || null);   // links from the API (same as email)
         setShowThanks(true);
         setStatus('done');
+        setEmail('');
+        return;
+      }
+
+      if (res.ok && data.already) {
+        // ---- email already stored: NO popup, friendly note only ----
+        setStatus('done-already');
+        setMessage('You\u2019re already on the list — check your inbox for the welcome email.');
         setEmail('');
         return;
       }
@@ -120,14 +125,8 @@ export default function SubscribeForm({ source = 'site' } = {}) {
         </div>
 
         {message && (
-          <p style={{ margin: '10px 2px 0', fontSize: '13px', color: status === 'error' ? '#e5484d' : '#333', textAlign: 'left' }}>
+          <p style={{ margin: '10px 2px 0', fontSize: '13px', color: status === 'error' ? '#e5484d' : status === 'done-already' ? '#1d7a3d' : '#333', textAlign: 'left' }}>
             {message}
-          </p>
-        )}
-
-        {status === 'done' && !showThanks && (
-          <p style={{ margin: '10px 2px 0', fontSize: '13px', color: '#1d7a3d', textAlign: 'left' }}>
-            You&apos;re on the list — check your inbox for the welcome mail.
           </p>
         )}
       </form>

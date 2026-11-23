@@ -1354,23 +1354,4 @@ async function run() {
   console.log(`Run complete. Saved: ${saved}, Rejected: ${rejected}, Failed: ${failed}`);
 }
 
-// ================================================================
-// TEMP DIAGNOSTIC — prints problem functions to the workflow log.
-// Paste directly ABOVE the run(); line. Delete after the
-// empty-article bug is fixed.
-// ================================================================
-for (const [name, fn] of [
-  ['rewriteArticle', typeof rewriteArticle === 'function' ? rewriteArticle : null],
-  ['safeParseJSON', typeof safeParseJSON === 'function' ? safeParseJSON : null],
-  ['isDuplicateStory', typeof isDuplicateStory === 'function' ? isDuplicateStory : null],
-]) {
-  if (fn) {
-    console.log(`========== SOURCE OF ${name} ==========`);
-    console.log(fn.toString());
-    console.log(`========== END ${name} ==========`);
-  } else {
-    console.log(`========== ${name} NOT FOUND ==========`);
-  }
-}
-
 run();

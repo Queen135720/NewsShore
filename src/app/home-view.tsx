@@ -46,6 +46,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { toast } from 'sonner';
+import SubscribeForm from '@/components/SubscribeForm';
 
 /* ─────────────── constants ─────────────── */
 const NAV_CATEGORIES = ['Latest', 'AI News', 'Tech Giants', 'Tech News', 'Startups & Funding', 'Mobile & Social', 'Research', 'Deals', 'Global Tech'];
@@ -839,6 +840,12 @@ export default function SubscribeSection() {
           </button>
         </form>
       )}
+
+      <section>
+        <h2>Stay ahead of the story</h2>
+        <p>Get the tech stories that matter, straight to your inbox.</p>
+        <SubscribeForm source="home" />
+      </section>
 
       {status === 'ok' && (
         <div style={{ background: '#ecfdf5', border: '1px solid #a7f3d0', borderRadius: 10, padding: '16px 18px' }}>

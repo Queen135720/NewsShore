@@ -184,7 +184,7 @@ You're on the list. From now on, the tech stories that actually matter will land
 Join Our Socials:
 Telegram: https://t.me/News_Shore
 WhatsApp: https://whatsapp.com/channel/0029Vb8MT8c002THGmdgsd32
-Facebook: https://web.facebook.com/profile.php?id=61592735245077
+Facebook: https://web.facebook.com/newsshore
 
 We're glad you're here. Welcome aboard — let's stay informed, together.
 

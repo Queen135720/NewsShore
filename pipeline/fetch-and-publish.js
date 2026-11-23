@@ -254,7 +254,282 @@ Source title: ${item.title}
 Source site: ${item.sourceName} (suggested category: "${item.category}", suggested region: "${item.region}" — override these if the story content says otherwise)
 Source content: ${sourceContent}`;
 
-    // All providers already down this run → fail fast, don't hammer
+    // ================================================================
+  // PROVIDER CHAIN — rebuilt to end the empty-article bug for good.
+  //
+  // GLM remains the workhorse (ladder + naps untouched). What changed:
+  //   1. Every provider's answer is VALIDATED before it is returned.
+  //   2. null / junk from a provider means "next provider", never
+  //      "empty article" — the old code returned callGLM's null
+  //      straight back, which is where every "raw: {}" came from.
+  //   3. If nothing usable comes back, rewriteArticle THROWS — the
+  //      article stays pending and is retried next run. An empty
+  //      dump is now impossible by construction.
+  //   4. Fallbacks are rationed (MAX_FALLBACK_ARTICLES per run) so
+  //      the small free tiers still have quota late in the day.
+  //      GLM writes the bulk; fallbacks are an emergency reserve.
+  // ================================================================
+
+  const validResult = (r) =>
+    r && typeof r === 'object' && (
+      r.reject === true ||                                          // a rejection verdict IS a valid result
+      ((typeof r.title === 'string' && r.title.trim()) ||            // normalizeArticleFields shape
+       (typeof r.headline === 'string' && r.headline.trim())) &&     // raw model shape
+      typeof r.body === 'string' && r.body.trim().length > 0
+    );
+
+  const accept = (raw, name) => {
+    let r = raw;
+    if (typeof r === 'string') {                                    // Bazaar/Cloudflare/Groq20B/NVIDIA return JSON strings
+      try { r = JSON.parse(r); } catch { r = null; }
+    }
+    if (validResult(r)) {
+      if (!r._provider) r._provider = name;
+      return r;
+    }
+    if (r) console.log(`[chain] ${name} returned unusable output — skipping to next provider`);
+    return null;
+  };
+
+  // ---- 1. GLM — primary writer ----
+  // A short nap (the 429 third strike, 1.5m) means GLM rejoins this
+  // same run — wait it out instead of spending fallback quota.
+  // Max 2 such waits per run so a congestion storm can't stall it.
+  const glmNapLeft = glmDownUntil - Date.now();
+  if (glmNapLeft > 0 && glmNapLeft <= 2 * 60 * 1000 && glmShortWaitsThisRun < 2) {
+    glmShortWaitsThisRun++;
+    console.log(`[glm] short nap — waiting ${Math.round(glmNapLeft / 1000)}s for GLM to rejoin this run`);
+    await new Promise((r) => setTimeout(r, glmNapLeft + 1000));
+  }
+
+  if (Date.now() >= glmDownUntil) {
+    const r = accept(await callGLM(prompt), 'glm');                 // callGLM never throws — it returns an article or null
+    if (r) return r;                                                // null → GLM had nothing this time, fall through
+  }
+
+  // ---- 2. Fallback budget — this is what protects the free tiers ----
+  if (fallbackArticlesThisRun >= MAX_FALLBACK_ARTICLES) {
+    if (!providerDown.__budgetNotice) {
+      providerDown.__budgetNotice = true;
+      console.log(`[chain] fallback budget (${MAX_FALLBACK_ARTICLES}/run) already spent — remaining articles stay pending; GLM picks them up next run`);
+    }
+    throw new Error('GLM unavailable, fallback budget spent — staying pending');
+  }
+  fallbackArticlesThisRun++;
+
+  // ---- 3. Free-tier fallbacks (each benches itself for the run on throttle) ----
+  const freeFallbacks = [
+    // [log name, down-flag, env ready, call]
+    ['groq',       'groq',       !!process.env.GROQ_API_KEY,       () => callGroq(prompt)],
+    ['bazaar',     'Bazaar',     !!process.env.BAZAARLINK_API_KEY, () => callBazaar(prompt)],
+    ['cloudflare', 'Cloudflare', !!(process.env.CLOUDFLARE_API_TOKEN && process.env.CF_ACCOUNT_ID), () => callCloudflare(prompt)],
+    ['groq20b',    'Groq20B',    !!process.env.GROQ_API_KEY,       () => callGroq20B(prompt)],
+    ['nvidia',     'NVIDIA',     !!process.env.NVIDIA_API_KEY,     () => callNvidia(prompt)],
+    ['nvidia2',    'NVIDIA2',    !!process.env.NVIDIA_API_KEY,     () => callNvidia2(prompt)],
+  ];
+  for (const [name, flag, envOk, call] of freeFallbacks) {
+    if (!envOk || providerDown[flag]) continue;
+    try {
+      const r = accept(await call(), name);
+      if (r) return r;
+    } catch (err) {
+      const msg = String(err?.message || err);
+      if (/already failed this run/.test(msg)) continue;            // provider benched itself — gate skips it next article
+      if (name === 'groq' && /429|rate|unavailable for free|403/i.test(msg)) {
+        providerDown.groq = true;                                   // groq is the only one that can't bench itself
+        console.warn('Groq throttled — skipping rest of this run');
+        continue;
+      }
+      console.warn(`${name} failed, falling back: ${msg.slice(0, 160)}`);
+    }
+  }
+
+  // ---- 4. Last-resort tier — smallest daily quotas, tried last ----
+  for (const [name, call] of [
+    ['openrouter', () => callOpenRouter(prompt)],
+    ['axforge',    () => callAxforge(prompt)],
+    ['kilo',       () => callKilo(prompt)],
+  ]) {
+    try {
+      const r = accept(await call(), name);
+      if (r) return r;
+    } catch (err) {
+      console.warn(`${name} failed, falling back: ${String(err?.message || err).slice(0, 160)}`);
+    }
+  }
+
+  // ---- 5. Nothing usable from anyone — throw so the article stays pending ----
+  throw new Error('no provider produced a usable article this run — staying pending');
+}
+
+// ---- run-scoped chain state (fresh process = fresh workflow run) ----
+let fallbackArticlesThisRun = 0;   // articles handed to non-GLM providers this run
+const MAX_FALLBACK_ARTICLES = 3;   // the one dial: raise = more fallback writing, lower = protect quotas harder
+let glmShortWaitsThisRun = 0;      // short-nap waits used this run (max 2)
+
+async function retryFetch(url, options) {
+  let res = await fetch(url, { ...options, signal: AbortSignal.timeout(60000) });
+  if (res.status === 429) {
+    await new Promise(r => setTimeout(r, 2500));
+    res = await fetch(url, { ...options, signal: AbortSignal.timeout(60000) });
+  }
+  return res;
+}
+
+function safeParseJSON(text) {
+  if (typeof text !== 'string' || !text.trim()) return null;
+  try {
+    const start = text.indexOf('{');
+    const end = text.lastIndexOf('}');
+    if (start === -1 || end <= start) return null;      // no JSON object in the reply at all
+    const parsed = JSON.parse(text.slice(start, end + 1));
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return null;
+    if (Object.keys(parsed).length === 0) return null;  // bare {} is junk, not a success
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+let glmDownUntil = 0;
+
+async function callGLM(prompt) {
+  if (Date.now() < glmDownUntil) return null;
+
+  if (!process.env.GLM_API_KEY) {
+    console.log('[glm] GLM_API_KEY not set — skipping');
+    glmDownUntil = Date.now() + 6 * 60 * 60 * 1000;
+    return null;
+  }
+
+  const waits = [6000, 18000]; // before retry 2 and 3
+
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const res = await fetch('https://open.bigmodel.cn/api/paas/v4/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${process.env.GLM_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: 'glm-4.7-flash',
+          thinking: { type: 'disabled' },
+          messages: [
+            { role: 'system', content: 'You are a professional news writer and editor. Respond with valid JSON only, no extra text.' },
+            { role: 'user', content: prompt },
+          ],
+          temperature: 0.4,
+        }),
+        signal: AbortSignal.timeout(90000),
+      });
+
+      if (res.status === 429 && attempt <= 2) {
+        console.log(`[glm] congestion (429) — retry ${attempt + 1}/3 in ${waits[attempt - 1] / 1000}s`);
+        await new Promise((r) => setTimeout(r, waits[attempt - 1]));
+        continue;
+      }
+
+      if (!res.ok) {
+        const body = await res.text().catch(() => '');
+        const snippet = body.slice(0, 120).replace(/\s+/g, ' ');
+        let minutes;
+        if (res.status === 402) minutes = 60;
+        else if ([401, 403, 404].includes(res.status)) minutes = 360;
+        else if (res.status === 429) minutes = 1.5;  // 3rd strike — short nap, rejoins this same run
+        else minutes = 15;
+        glmDownUntil = Date.now() + minutes * 60 * 1000;
+        console.log(`[glm] down for ${minutes}m — HTTP ${res.status} ${snippet}`);
+        return null;
+      }
+
+      const data = await res.json();
+      const text = data?.choices?.[0]?.message?.content;
+      if (!text) {
+        glmDownUntil = Date.now() + 15 * 60 * 1000;
+        console.log('[glm] down for 15m — empty response');
+        return null;
+      }
+
+      const article = normalizeArticleFields(repairArticleJSON(text));
+      if (!article) {
+        console.log('[glm] returned non-JSON reply, skipping to next provider');
+        return null;
+      }
+
+      article._provider = 'glm';
+      console.log('[glm] ok');
+      return article;
+
+    } catch (err) {
+      const msg = String(err?.message || err);
+      // The model wrote garbage JSON — GLM itself is healthy, so NO nap:
+      // fall through and let the next provider try (GLM gets the next article).
+      if (/No JSON object|Unparseable article JSON|JSON has no|body too short/i.test(msg)) {
+        console.log('[glm] returned non-JSON reply, skipping to next provider');
+        return null;
+      }
+      const cause = err?.name === 'TimeoutError' ? 'timeout' : (err?.cause?.code || msg || 'network error');
+      glmDownUntil = Date.now() + 15 * 60 * 1000;
+      console.log(`[glm] down for 15m — ${cause}`);
+      return null;
+    }
+  }
+
+  return null;
+}
+
+async function callGroq(prompt) {
+  if (!process.env.GROQ_API_KEY) throw new Error('GROQ_API_KEY not set');
+  const res = await retryFetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model: 'openai/gpt-oss-120b',
+      messages: [{ role: 'user', content: prompt }],
+    }),
+  });
+  if (!res.ok) {
+    const errBody = await res.text();
+    throw new Error(`Groq error: ${res.status} — ${errBody.substring(0, 200)}`);
+  }
+  const data = await res.json();
+  return safeParseJSON(data.choices[0].message.content);
+}
+
+async function callBazaar(prompt) {
+  if (providerDown.Bazaar) throw new Error('BazaarLink already failed this run');
+  try {
+    const res = await retryFetch('https://api.bazaarlink.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.BAZAARLINK_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'deepseek/deepseek-v4-flash-0731free',
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 4000
+      })
+    });
+    const data = await res.json();
+    if (!data.choices || !data.choices[0]) {
+      throw new Error('BazaarLink: ' + JSON.stringify(data).slice(0, 200));
+    }
+    let content = (data.choices[0].message.content || '').trim();
+    console.log(`BazaarLink responded (${content.length} chars)`);
+    console.log(`BazaarLink raw: ${content.slice(0, 120).replace(/\s+/g, ' ')}`);
+    content = content.replace(/[\s\S]*?<\/think>/gi, '');
+    if (content.includes('<|message|>')) content = content.slice(content.lastIndexOf('<|message|>') + 11);
+    content = content.replace(/<\|start\|>|<\|end\|>|<\|channel\|>\s*final/g, '').trim();
+    const obj = normalizeArticleFields(repairArticleJSON(content));
+    console.log('BazaarLink JSON OK');
+    return JSON.stringify(obj);
+  } catch (err) {
+    
     if (/429|rate|quota|unit|limit|concurrent|insufficient|balance|timeout|abort|401|402|403/i.test(err.message)) {
       providerDown.Bazaar = true;
       console.log('BazaarLink throttled — skipping rest of this run');

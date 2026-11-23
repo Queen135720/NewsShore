@@ -211,10 +211,7 @@ const SOURCES = [
 
 ];
 
-module.exports = { SOURCES };
-
 // ===== Non-tech title filter =====
-
 // Hard rejects — brand rules that never pass, regardless of context
 const HARD_REJECT = /wallpaper|giveaway|contest|save on your pass|discount code|cyber monday|black friday|newsletter|podcast episode|techcrunch disrupt|\bgta\b|grand theft|switch 2|xbox|playstation|nintendo|witcher|steam deck|epic games|fortnite|valorant|gaming|gamepad|controller review|8bitdo|directv|multiview|smart tv|apple tv|google tv|homepod|home speakers?|smart speaker|soundbar|home theat(?:er|re)|bluetooth speaker|wireless speaker|speaker (?:review|launch|deal)|sony.*(?:microphone|speaker)|repair cost|repairability comparison|the verge|bitcoin|ethereum|solana|\bxrp\b|dogecoin|\bcrypto\b|cryptocurrency|price drop|stock exchange|listed compan|market value|market cap|equity market|all-?share index|\bngx\b|\bjse\b|bullish|bearish|sell-?off|(?:bank|banking)[a-z ]{0,30}(?:app|application|service|relaunch|deposit|loan|ussd|branch|737)|interest rate|inflation|\bgdp\b|central bank|mortgage|money supply|entertainment (?:company|industry)|\bidol\b|record label|celebrity|\bactor\b|\bsinger\b|box office|talent (?:recruit|show)|\bbetting\b|gambl|football|soccer|premier league|\bnba\b|cricket|tournament|championship|ambassadorial|election|parliament|senate|minister|presidency|digital divide|internet access (?:to|for) (?:public|schools|libraries)/i;
 

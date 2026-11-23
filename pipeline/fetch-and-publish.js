@@ -102,7 +102,7 @@ const PRICE_WORDS = /\b(?:falls?|fell|drops?|dropped|rise[sd]?|rose|surge[sd]?|p
 const MUSIC_WORDS = /\b(?:albums?|music|musicians?|synths?|synthesizers?|soundtracks?|concerts?|festivals?|remix(?:es)?|vinyl|dj)\b/i;
 
 // Updated: added spotify + data center as anchors
-const TECH_ANCHOR = /\b(?:ai|artificial intelligence|chatgpt|chatbot|llm|machine learning|chip|semiconductor|processor|gpu|smartphone|iphone|android|windows|ios|startup|funding|venture|cyber|hack|data breach|robot|drone|satellite|quantum|battery|5g|software|openai|google|apple|microsoft|nvidia|meta|amazon|tesla|tencent|alibaba|huawei|xiaomi|samsung|spacex|starlink|whatsapp|tiktok|instagram|telegram|snapchat|youtube|spotify|data cent(?:er|re))\b/i;
+const TECH_ANCHOR = /\b(?:ai|artificial intelligence|chatgpt|chatbot|llm|machine learning|chip|semiconductor|processor|gpu|smartphone|iphone|android|windows|ios|startup|funding|venture|cyber|hack|data breach|robot|drone|satellite|quantum|battery|5g|software|openai|anthropic|claude|gemini|copilot|deepseek|qwen|grok|mistral|google|apple|microsoft|nvidia|meta|amazon|tesla|tencent|alibaba|huawei|xiaomi|samsung|spacex|starlink|whatsapp|tiktok|instagram|telegram|snapchat|youtube|spotify|data cent(?:er|re))\b/i;
 
 // One filter, two checkpoints: fetch time (raw title) + save time (rewritten headline)
 function isOffBrand(text) {

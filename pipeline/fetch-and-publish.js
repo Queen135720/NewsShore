@@ -1274,7 +1274,7 @@ async function fetchImage(rewritten, category, usedKeys) {
 }
 
 // ================================================================
-// ONE SIGNAL PUSH — v2, SELF-WIRING
+// ONE SIGNAL PUSH — v2.1, SELF-WIRING
 // REPLACE the old "---- ONE SIGNAL PUSH ----" section entirely
 // (everything from that comment through the "WHERE TO CALL IT"
 // block) with this one. Same spot: after fetchImage's closing
@@ -1287,6 +1287,14 @@ async function fetchImage(rewritten, category, usedKeys) {
 // the "GLM picks them up next run" recovery path). If you already
 // added `await notifyArticle(...)` after your save — leave it or
 // remove it, the dedup guard makes it harmless either way.
+//
+// v2.1 fixes (found while diagnosing a missing notification):
+//   - auth scheme fallback: os_v2_ keys try "Key" then "Bearer";
+//     legacy keys try "Basic" then "Key". A 401 no longer kills push.
+//   - web_url set alongside url (the documented web-push click target).
+//   - "sent to 0 devices" now says so plainly, and reminds that EMAIL
+//     subscribers do not receive push notifications.
+//   - dry-run prints the full payload JSON for inspection.
 //
 // Env vars (GitHub repo secrets or workflow env):
 //   ONESIGNAL_APP_ID         your OneSignal App ID
@@ -1301,12 +1309,21 @@ async function fetchImage(rewritten, category, usedKeys) {
 // This section NEVER throws — a push failure cannot kill the run.
 // ================================================================
 
-// ---- ONE SIGNAL PUSH (v2, self-wiring) ----
+// ---- ONE SIGNAL PUSH (v2.1, self-wiring) ----
 const notifiedIds = new Set();     // per-run guard: never notify the same article twice,
 const notifiedTitles = new Set();  // even when one path sees the row and another only the payload
 
 function onesignalKey() {
   return process.env.ONESIGNAL_APP_API_KEY || process.env.ONESIGNAL_REST_API_KEY;
+}
+
+// Auth: os_v2_ keys are sent as "Key <k>" (Bearer as fallback); legacy keys as
+// "Basic <k>" (Key as fallback). The scheme that works is cached after first success.
+let pushAuthScheme = null;
+function pushAuthCandidates() {
+  const preferred = /^os_v2_/.test(String(onesignalKey() || '')) ? 'Key' : 'Basic';
+  const fallback = preferred === 'Key' ? 'Bearer' : 'Key';
+  return pushAuthScheme ? [pushAuthScheme] : [preferred, fallback];
 }
 
 function normTitle(row) {
@@ -1365,7 +1382,8 @@ async function pushArticleNotification(article) {
     included_segments: ['Subscribed Users'],
     headings: { en: title },
     contents: { en: summary },
-    url: articleUrl,
+    web_url: articleUrl, // web push click target
+    url: articleUrl,     // legacy alias — harmless, helps old mobile SDKs
   };
 
   if (image) {
@@ -1379,52 +1397,66 @@ async function pushArticleNotification(article) {
 
   if (process.env.PUSH_DRY_RUN) {
     console.log(`[push] dry-run — would send: "${title}" → ${articleUrl}`);
+    console.log(`[push] dry-run payload: ${JSON.stringify(payload)}`);
     return;
   }
 
-  // one retry on 429 / network hiccup — push matters, but must not stall the run
-  for (let attempt = 1; attempt <= 2; attempt++) {
-    try {
-      const res = await fetch('https://api.onesignal.com/notifications', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Key ${onesignalKey()}`,
-        },
-        body: JSON.stringify(payload),
-        signal: AbortSignal.timeout(20000),
-      });
+  // one retry on 429 / network hiccup per auth scheme — push matters, but must not stall the run
+  for (const scheme of pushAuthCandidates()) {
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        const res = await fetch('https://api.onesignal.com/notifications', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `${scheme} ${onesignalKey()}`,
+          },
+          body: JSON.stringify(payload),
+          signal: AbortSignal.timeout(20000),
+        });
 
-      const data = await res.json().catch(() => ({}));
+        const data = await res.json().catch(() => ({}));
 
-      if (res.status === 429 && attempt === 1) {
-        console.log('[push] rate limited (429) — retrying in 5s');
-        await new Promise(r => setTimeout(r, 5000));
-        continue;
-      }
+        if (res.status === 401 || res.status === 403) {
+          console.log(`[push] auth rejected with "${scheme}" — trying next scheme`);
+          break; // wrong scheme for this key → next candidate
+        }
 
-      if (!res.ok) {
-        console.log(`[push] failed — HTTP ${res.status} ${JSON.stringify(data).slice(0, 160)}`);
+        if (res.status === 429 && attempt === 1) {
+          console.log('[push] rate limited (429) — retrying in 5s');
+          await new Promise(r => setTimeout(r, 5000));
+          continue;
+        }
+
+        if (!res.ok) {
+          console.log(`[push] failed — HTTP ${res.status} ${JSON.stringify(data).slice(0, 160)}`);
+          return;
+        }
+
+        pushAuthScheme = scheme;
+
+        if (data.recipients === 0) {
+          console.log('[push] sent to 0 devices — nobody is PUSH-subscribed yet.');
+          console.log('[push] note: EMAIL subscribers do not receive push notifications — the browser prompt must be accepted on each device. Run "node send-push.js --check" to see the difference.');
+        } else if (!data.id) {
+          // 200 without an id = accepted, but nobody is subscribed yet — not an error
+          console.log('[push] accepted — no subscribed devices yet; will deliver once users subscribe');
+        } else {
+          console.log(`[push] sent to ${data.recipients ?? 'all'} subscriber(s) — notification id ${data.id}`);
+        }
+        return;
+      } catch (err) {
+        const cause = err?.name === 'TimeoutError' ? 'timeout' : (err?.cause?.code || err?.message || 'network error');
+        if (attempt === 1) {
+          console.log(`[push] ${cause} — retrying once`);
+          continue;
+        }
+        console.log(`[push] failed — ${cause}`);
         return;
       }
-
-      if (!data.id) {
-        // 200 without an id = accepted, but nobody is subscribed yet — not an error
-        console.log('[push] accepted — no subscribed devices yet; will deliver once users subscribe');
-      } else {
-        console.log(`[push] sent to ${data.recipients ?? 'all'} subscriber(s) — notification id ${data.id}`);
-      }
-      return;
-    } catch (err) {
-      const cause = err?.name === 'TimeoutError' ? 'timeout' : (err?.cause?.code || err?.message || 'network error');
-      if (attempt === 1) {
-        console.log(`[push] ${cause} — retrying once`);
-        continue;
-      }
-      console.log(`[push] failed — ${cause}`);
-      return;
     }
   }
+  console.log('[push] failed — authorization rejected for every auth scheme; check ONESIGNAL_APP_API_KEY');
 }
 
 // ---- serialized push queue: several articles saved at once → one push each, 400ms apart ----
@@ -1598,7 +1630,6 @@ function installRestInsertWatcher() {
   }, 250);
   setTimeout(() => clearInterval(tries), 60000);
 })();
-
 
 
 async function saveArticle(item, rewritten, usedKeys) {

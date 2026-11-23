@@ -8,7 +8,7 @@ console.log(`ClaudeToday exists: ${results.includes('claudeToday')}`);
 const pageStr = readFileSync('/home/z/my-project/src/app/page.tsx', 'utf-8');
 const hasTelegram = pageStr.includes('whatsapp.com/channel/0029Vb8MT8c002THGmds32');
 const hasWhatsApp = pageStr.includes('t.me/News_Shore');
-const hasFacebook = pageStr.includes('facebook.com/profile.php?id=61592735245077');
+const hasFacebook = pageStr.includes('facebook.com/newsshore');
 console.log(`Social links: Telegram=${hasTelegram}, WhatsApp=${hasWhatsApp}, Facebook=${hasFacebook}`);
 
 // Check inline images

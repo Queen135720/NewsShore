@@ -138,7 +138,7 @@ async function sendWelcomeEmail(email, log) {
                 <a href="https://whatsapp.com/channel/0029Vb8MT8c002THGmdgsd32" style="display:inline-block;background:#25D366;color:#ffffff;text-decoration:none;font-size:14px;font-weight:bold;padding:10px 18px;border-radius:6px;">WhatsApp</a>
               </td>
               <td style="padding:0 0 8px 0;">
-                <a href="https://web.facebook.com/profile.php?id=61592735245077" style="display:inline-block;background:#1877F2;color:#ffffff;text-decoration:none;font-size:14px;font-weight:bold;padding:10px 18px;border-radius:6px;">Facebook</a>
+                <a href="https://web.facebook.com/newsshore" style="display:inline-block;background:#1877F2;color:#ffffff;text-decoration:none;font-size:14px;font-weight:bold;padding:10px 18px;border-radius:6px;">Facebook</a>
               </td>
             </tr>
           </table>

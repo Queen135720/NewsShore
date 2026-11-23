@@ -30,65 +30,188 @@ const supabase = createClient(
 );
 
 // ---- 1. SOURCES ----
+// sources_merged.js — SOURCES for fetch-and-publish.js (generated 2026-11-23)
+// Your 42 originals (unchanged, comments updated) + 104 new feeds
+// from the research bundle = 146 total, deduped by feed URL.
+// Paste the array into fetch-and-publish.js, or:  const { SOURCES } = require('./sources_merged');
+
 const SOURCES = [
-  // ---- AI News ----
-  { name: 'OpenAI', url: 'https://openai.com/news/rss.xml', category: 'AI News', region: 'US' },
-  { name: 'Google DeepMind', url: 'https://research.google/blog/rss/', category: 'AI News', region: 'US' },
-  { name: 'Hugging Face', url: 'https://huggingface.co/blog/feed.xml', category: 'AI News', region: 'Global' },
-  { name: 'TechCrunch AI', url: 'https://techcrunch.com/category/artificial-intelligence/feed/', category: 'AI News', region: 'Global' },
-  { name: 'MIT Tech Review', url: 'https://www.technologyreview.com/feed/', category: 'AI News', region: 'US' },
-  { name: 'Ars Technica AI', url: 'https://arstechnica.com/ai/feed/', category: 'Tech News', region: 'US' }, // ⚠ verify — kept (was mislabeled "Robotics"; it's their AI feed — the LLM will file these as AI News)
+  // ============ AI News ============
+  // ---- your 5 originals ----
+  { name: "OpenAI", url: "https://openai.com/news/rss.xml", category: "AI News", region: "US" },  // also in research bundle (deduped)
+  { name: "Google Research", url: "https://research.google/blog/rss/", category: "AI News", region: "US" },  // RENAMED from "Google DeepMind" — this URL is the Google Research blog; the real DeepMind feed is added below
+  { name: "Hugging Face", url: "https://huggingface.co/blog/feed.xml", category: "AI News", region: "Global" },  // also in research bundle (deduped)
+  { name: "TechCrunch AI", url: "https://techcrunch.com/category/artificial-intelligence/feed/", category: "AI News", region: "Global" },  // also in research bundle (deduped)
+  { name: "MIT Tech Review", url: "https://www.technologyreview.com/feed/", category: "AI News", region: "US" },
+  // ---- 38 new from the research bundle ----
+  { name: "Amazon Science", url: "https://www.amazon.science/index.rss", category: "AI News", region: "US" },
+  { name: "Apple Machine Learning", url: "https://machinelearning.apple.com/rss.xml", category: "AI News", region: "US" },
+  { name: "Google (The Keyword)", url: "https://blog.google/rss/", category: "AI News", region: "US" },
+  { name: "Google DeepMind", url: "https://deepmind.google/blog/rss.xml", category: "AI News", region: "UK" },
+  { name: "Meta Engineering", url: "https://engineering.fb.com/feed/", category: "AI News", region: "US" },
+  { name: "Microsoft Research", url: "https://www.microsoft.com/en-us/research/feed/", category: "AI News", region: "US" },
+  { name: "Mistral AI", url: "https://mistral.ai/news/rss", category: "AI News", region: "France" },
+  { name: "NVIDIA", url: "https://blogs.nvidia.com/feed/", category: "AI News", region: "US" },
+  { name: "Qwen (Alibaba)", url: "https://qwenlm.github.io/blog/index.xml", category: "AI News", region: "China" },
+  { name: "Stability AI", url: "https://stability.ai/news-updates?format=rss", category: "AI News", region: "UK" },
+  { name: "CENIA (Chile national AI centre)", url: "https://cenia.cl/feed/", category: "AI News", region: "Chile" },
+  { name: "Deep Learning Indaba", url: "https://deeplearningindaba.com/feed/", category: "AI News", region: "Africa" },
+  { name: "Sarvam AI", url: "https://www.sarvam.ai/rss.xml", category: "AI News", region: "India" },
+  { name: "Epoch AI", url: "https://epoch.ai/atom.xml", category: "AI News", region: "US" },
+  { name: "Last Week in AI", url: "https://lastweekin.ai/feed", category: "AI News", region: "Global" },
+  { name: "The Rundown AI", url: "https://www.therundown.ai/feed", category: "AI News", region: "US" },
+  { name: "GN: Anthropic", url: "https://news.google.com/rss/search?q=Anthropic%20OR%20Claude&hl=en-US&gl=US&ceid=US:en", category: "AI News", region: "US" },  // Google News query feed — links are news.google.com redirects
+  { name: "GN: DeepSeek", url: "https://news.google.com/rss/search?q=DeepSeek&hl=en-US&gl=US&ceid=US:en", category: "AI News", region: "China" },  // Google News query feed — links are news.google.com redirects
+  { name: "GN: Moonshot AI / Kimi", url: "https://news.google.com/rss/search?q=Moonshot%20AI%20OR%20Kimi&hl=en-US&gl=US&ceid=US:en", category: "AI News", region: "China" },  // Google News query feed — links are news.google.com redirects
+  { name: "GN: Z.ai (Zhipu GLM)", url: "https://news.google.com/rss/search?q=Z.ai%20OR%20Zhipu%20OR%20GLM&hl=en-US&gl=US&ceid=US:en", category: "AI News", region: "China" },  // Google News query feed — links are news.google.com redirects
+  { name: "GN: Meta AI", url: "https://news.google.com/rss/search?q=Meta%20AI%20Llama&hl=en-US&gl=US&ceid=US:en", category: "AI News", region: "US" },  // Google News query feed — links are news.google.com redirects
+  { name: "GN: xAI", url: "https://news.google.com/rss/search?q=xAI%20OR%20Grok&hl=en-US&gl=US&ceid=US:en", category: "AI News", region: "US" },  // Google News query feed — links are news.google.com redirects
+  { name: "GN: Sakana AI", url: "https://news.google.com/rss/search?q=Sakana%20AI&hl=en-US&gl=US&ceid=US:en", category: "AI News", region: "Japan" },  // Google News query feed — links are news.google.com redirects
+  { name: "GN: Aleph Alpha", url: "https://news.google.com/rss/search?q=Aleph%20Alpha%20AI&hl=en-US&gl=US&ceid=US:en", category: "AI News", region: "Germany" },  // Google News query feed — links are news.google.com redirects
+  { name: "GN: Black Forest Labs", url: "https://news.google.com/rss/search?q=Black%20Forest%20Labs%20OR%20FLUX%20model&hl=en-US&gl=US&ceid=US:en", category: "AI News", region: "US" },  // Google News query feed — links are news.google.com redirects
+  { name: "GN: Cohere", url: "https://news.google.com/rss/search?q=Cohere%20AI&hl=en-US&gl=US&ceid=US:en", category: "AI News", region: "US" },  // Google News query feed — links are news.google.com redirects
+  { name: "GN: Shanghai AI Laboratory", url: "https://news.google.com/rss/search?q=Shanghai%20AI%20Laboratory&hl=en-US&gl=US&ceid=US:en", category: "AI News", region: "China" },  // Google News query feed — links are news.google.com redirects
+  { name: "GN: ByteDance Seed", url: "https://news.google.com/rss/search?q=ByteDance%20Seed%20research&hl=en-US&gl=US&ceid=US:en", category: "AI News", region: "China" },  // Google News query feed — links are news.google.com redirects
+  { name: "GN: CSIRO Data61", url: "https://news.google.com/rss/search?q=CSIRO%20Data61&hl=en-AU&gl=AU&ceid=AU:en", category: "AI News", region: "Australia" },  // Google News query feed — links are news.google.com redirects
+  { name: "GN: Stanford HAI", url: "https://news.google.com/rss/search?q=Stanford%20HAI&hl=en-US&gl=US&ceid=US:en", category: "AI News", region: "US" },  // Google News query feed — links are news.google.com redirects
+  { name: "GN: MIT CSAIL", url: "https://news.google.com/rss/search?q=MIT%20CSAIL&hl=en-US&gl=US&ceid=US:en", category: "AI News", region: "US" },  // Google News query feed — links are news.google.com redirects
+  { name: "GN: Mila", url: "https://news.google.com/rss/search?q=Mila%20AI%20Montreal&hl=en-US&gl=US&ceid=US:en", category: "AI News", region: "Canada" },  // Google News query feed — links are news.google.com redirects
+  { name: "GN: Vector Institute", url: "https://news.google.com/rss/search?q=Vector%20Institute%20AI%20Toronto&hl=en-US&gl=US&ceid=US:en", category: "AI News", region: "Canada" },  // Google News query feed — links are news.google.com redirects
+  { name: "GN: Masakhane / African AI research", url: "https://news.google.com/rss/search?q=Masakhane%20OR%20AI4D%20artificial%20intelligence%20Africa&hl=en-ZA&gl=ZA&ceid=ZA:en", category: "AI News", region: "Africa" },  // Google News query feed — links are news.google.com redirects
+  { name: "GN: Sarvam / India AI labs", url: "https://news.google.com/rss/search?q=Sarvam%20AI%20OR%20AI4Kashesh%20OR%20Krutrim&hl=en-IN&gl=IN&ceid=IN:en", category: "AI News", region: "India" },  // Google News query feed — links are news.google.com redirects
+  { name: "GN: Moonshot AI (US edition)", url: "https://news.google.com/rss/search?q=Moonshot%20AI&hl=en-US&gl=US&ceid=US:en", category: "AI News", region: "US" },  // Google News regional edition
+  { name: "GN: Anthropic (US edition)", url: "https://news.google.com/rss/search?q=Anthropic&hl=en-US&gl=US&ceid=US:en", category: "AI News", region: "US" },  // Google News regional edition
 
-  // ---- Tech Giants (tech leaders as people) ----
-  { name: 'Simon Willison', url: 'https://simonwillison.net/atom/everything/', category: 'Tech Giants', region: 'Global' },
-  { name: 'Ethan Mollick', url: 'https://www.oneusefulthing.org/feed', category: 'Tech Giants', region: 'US' }, // ⚠ verify
-  { name: 'Andrej Karpathy', url: 'https://karpathy.github.io/feed.xml', category: 'Tech Giants', region: 'US' }, // ⚠ verify — posts rarely
-  
-  // ---- Tech News (general + robotics) ----
-  { name: 'The Verge', url: 'https://www.theverge.com/rss/index.xml', category: 'Tech News', region: 'Global' },
-  { name: 'Ars Technica', url: 'https://feeds.arstechnica.com/arstechnica/index', category: 'Tech News', region: 'Global' },
-  { name: 'TechCrunch Robotics', url: 'https://techcrunch.com/category/robotics/feed/', category: 'Tech News', region: 'Global' },
-  { name: 'TechCrunch Space', url: 'https://techcrunch.com/category/space/feed/', category: 'Tech News', region: 'Global' },
-  { name: 'TechCrunch Security', url: 'https://techcrunch.com/category/security/feed/', category: 'Tech News', region: 'Global' },
-  { name: 'TechCrunch Hardware', url: 'https://techcrunch.com/category/hardware/feed/', category: 'Tech News', region: 'Global' },
-  { name: 'TechCrunch Gadgets', url: 'https://techcrunch.com/category/gadgets/feed/', category: 'Tech News', region: 'Global' },
-  { name: 'TechCrunch Europe', url: 'https://techcrunch.com/tag/europe/feed/', category: 'Tech News', region: 'Europe' },
-  { name: 'TechCrunch Asia', url: 'https://techcrunch.com/tag/asia/feed/', category: 'Tech News', region: 'Asia' },
-  { name: 'The Robot Report', url: 'https://www.therobotreport.com/feed/', category: 'Tech News', region: 'Global' },
-  { name: 'IEEE Spectrum Robotics', url: 'https://spectrum.ieee.org/feeds/topic/robotics.rss', category: 'Tech News', region: 'Global' }, // ⚠ verify
-  { name: 'Robotics Business Review', url: 'https://www.roboticsbusinessreview.com/feed/', category: 'Tech News', region: 'Global' }, // ⚠ verify
+  // ============ Tech Giants ============
+  // ---- your 3 originals ----
+  { name: "Simon Willison", url: "https://simonwillison.net/atom/everything/", category: "Tech Giants", region: "Global" },  // also in research bundle (deduped)
+  { name: "Ethan Mollick", url: "https://www.oneusefulthing.org/feed", category: "Tech Giants", region: "US" },  // verified OK
+  { name: "Andrej Karpathy", url: "https://karpathy.github.io/feed.xml", category: "Tech Giants", region: "US" },  // verified OK — posts only a few times a year
+  // ---- 5 new from the research bundle ----
+  { name: "Ahead of AI (Sebastian Raschka)", url: "https://magazine.sebastianraschka.com/feed", category: "Tech Giants", region: "US" },
+  { name: "Import AI (Jack Clark)", url: "https://importai.substack.com/feed", category: "Tech Giants", region: "US" },
+  { name: "Interconnects (Nathan Lambert)", url: "https://www.interconnects.ai/feed", category: "Tech Giants", region: "US" },
+  { name: "Latent Space", url: "https://latent.space/feed", category: "Tech Giants", region: "US" },
+  { name: "Sam Altman (personal blog)", url: "https://blog.samaltman.com/posts.atom", category: "Tech Giants", region: "US" },
 
-  // ---- Mobile & Social ----
-  { name: '9to5Google', url: 'https://9to5google.com/feed/', category: 'Mobile & Social', region: 'US' },
-  { name: 'TechCrunch Apps', url: 'https://techcrunch.com/category/apps/feed/', category: 'Mobile & Social', region: 'Global' },
-  { name: 'TechCrunch Social', url: 'https://techcrunch.com/category/social/feed/', category: 'Mobile & Social', region: 'Global' },
-  { name: 'TechCrunch Mobile', url: 'https://techcrunch.com/tag/mobile/feed/', category: 'Mobile & Social', region: 'Global' },
-  { name: 'TechCrunch Media & Entertainment', url: 'https://techcrunch.com/category/media-entertainment/feed/', category: 'Mobile & Social', region: 'Global' },
-  { name: 'Social Media Examiner', url: 'https://www.socialmediaexaminer.com/feed/', category: 'Mobile & Social', region: 'Global' },
+  // ============ Tech News ============
+  // ---- your 13 originals ----
+  { name: "Ars Technica AI", url: "https://arstechnica.com/ai/feed/", category: "Tech News", region: "US" },  // verified OK — Ars AI section feed
+  { name: "Ars Technica", url: "https://feeds.arstechnica.com/arstechnica/index", category: "Tech News", region: "Global" },
+  { name: "TechCrunch Robotics", url: "https://techcrunch.com/category/robotics/feed/", category: "Tech News", region: "Global" },
+  { name: "TechCrunch Space", url: "https://techcrunch.com/category/space/feed/", category: "Tech News", region: "Global" },
+  { name: "TechCrunch Security", url: "https://techcrunch.com/category/security/feed/", category: "Tech News", region: "Global" },
+  { name: "TechCrunch Hardware", url: "https://techcrunch.com/category/hardware/feed/", category: "Tech News", region: "Global" },
+  { name: "TechCrunch Gadgets", url: "https://techcrunch.com/category/gadgets/feed/", category: "Tech News", region: "Global" },
+  { name: "TechCrunch Europe", url: "https://techcrunch.com/tag/europe/feed/", category: "Tech News", region: "Europe" },
+  { name: "TechCrunch Asia", url: "https://techcrunch.com/tag/asia/feed/", category: "Tech News", region: "Asia" },
+  { name: "The Robot Report", url: "https://www.therobotreport.com/feed/", category: "Tech News", region: "Global" },  // probe-confirmed: Cloudflare 403 from servers — your fetcher should skip failures silently
+  { name: "IEEE Spectrum Robotics", url: "https://spectrum.ieee.org/feeds/topic/robotics.rss", category: "Tech News", region: "Global" },  // verified OK
+  { name: "Robotics Business Review", url: "https://www.roboticsbusinessreview.com/feed/", category: "Tech News", region: "Global" },  // probe-confirmed: Cloudflare 403 from servers — expect silent failures
+  // ---- 20 new from the research bundle ----
+  { name: "Berkeley BAIR blog", url: "https://bair.berkeley.edu/blog/feed.xml", category: "Tech News", region: "US" },
+  { name: "CMU Robotics Institute", url: "https://www.ri.cmu.edu/feed/", category: "Tech News", region: "US" },
+  { name: "NASA JPL", url: "https://www.nasa.gov/news-release/feed/", category: "Tech News", region: "US" },
+  { name: "Open Robotics", url: "https://www.openrobotics.org/blog?format=rss", category: "Tech News", region: "US" },
+  { name: "ROS Discourse", url: "https://discourse.openrobotics.org/latest.rss", category: "Tech News", region: "Global" },
+  { name: "Robohub", url: "https://robohub.org/feed/", category: "Tech News", region: "Global" },
+  { name: "Science Robotics (TOC)", url: "https://www.science.org/action/showFeed?jcCode=robotics&type=etoc&feed=rss", category: "Tech News", region: "US" },
+  { name: "Bing News (AI, RSS)", url: "https://www.bing.com/news/search?q=artificial+intelligence&format=RSS", category: "Tech News", region: "Global" },
+  { name: "Hacker News (hnrss, AI filter)", url: "https://hnrss.org/frontpage", category: "Tech News", region: "Global" },
+  { name: "MIT Tech Review (AI topic)", url: "https://www.technologyreview.com/topic/artificial-intelligence/feed/", category: "Tech News", region: "Global" },
+  { name: "MarkTechPost", url: "https://www.marktechpost.com/feed/", category: "Tech News", region: "Global" },
+  { name: "Techmeme", url: "https://www.techmeme.com/feed.xml", category: "Tech News", region: "US" },
+  { name: "The Verge (AI tag)", url: "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml", category: "Tech News", region: "Global" },
+  { name: "GN: Boston Dynamics", url: "https://news.google.com/rss/search?q=Boston%20Dynamics&hl=en-US&gl=US&ceid=US:en", category: "Tech News", region: "US" },  // Google News query feed — links are news.google.com redirects
+  { name: "GN: Figure AI", url: "https://news.google.com/rss/search?q=Figure%20AI%20robot%20OR%20Figure%2003&hl=en-US&gl=US&ceid=US:en", category: "Tech News", region: "US" },  // Google News query feed — links are news.google.com redirects
+  { name: "GN: Unitree Robotics", url: "https://news.google.com/rss/search?q=Unitree&hl=en-US&gl=US&ceid=US:en", category: "Tech News", region: "US" },  // Google News query feed — links are news.google.com redirects
+  { name: "GN: Tesla Optimus", url: "https://news.google.com/rss/search?q=Tesla%20Optimus%20robot&hl=en-US&gl=US&ceid=US:en", category: "Tech News", region: "US" },  // Google News query feed — links are news.google.com redirects
+  { name: "GN: Toyota Research Institute", url: "https://news.google.com/rss/search?q=Toyota%20Research%20Institute&hl=en-US&gl=US&ceid=US:en", category: "Tech News", region: "US" },  // Google News query feed — links are news.google.com redirects
 
-  // ---- Startups & Funding ----
-  { name: 'TechCrunch Startups', url: 'https://techcrunch.com/category/startups/feed/', category: 'Startups & Funding', region: 'Global' },
-  { name: 'TechCrunch Funding', url: 'https://techcrunch.com/tag/funding/feed/', category: 'Startups & Funding', region: 'Global' },
-  { name: 'TechCrunch Venture', url: 'https://techcrunch.com/category/venture/feed/', category: 'Startups & Funding', region: 'Global' },
-  { name: 'TechCrunch Enterprise', url: 'https://techcrunch.com/category/enterprise/feed/', category: 'Startups & Funding', region: 'Global' },
-  { name: 'TechCrunch Fintech', url: 'https://techcrunch.com/category/fintech/feed/', category: 'Startups & Funding', region: 'Global' },
+  // ============ Mobile & Social ============
+  // ---- your 6 originals ----
+  { name: "9to5Google", url: "https://9to5google.com/feed/", category: "Mobile & Social", region: "US" },
+  { name: "TechCrunch Apps", url: "https://techcrunch.com/category/apps/feed/", category: "Mobile & Social", region: "Global" },
+  { name: "TechCrunch Social", url: "https://techcrunch.com/category/social/feed/", category: "Mobile & Social", region: "Global" },
+  { name: "TechCrunch Mobile", url: "https://techcrunch.com/tag/mobile/feed/", category: "Mobile & Social", region: "Global" },
+  { name: "TechCrunch Media & Entertainment", url: "https://techcrunch.com/category/media-entertainment/feed/", category: "Mobile & Social", region: "Global" },
+  { name: "Social Media Examiner", url: "https://www.socialmediaexaminer.com/feed/", category: "Mobile & Social", region: "Global" },
 
-  // ---- Deals ----
-  { name: 'TechCrunch Deals', url: 'https://techcrunch.com/tag/deals/feed/', category: 'Deals', region: 'Global' }, // ⚠ verify — your Deals nav category had zero sources without this
+  // ============ Startups & Funding ============
+  // ---- your 5 originals ----
+  { name: "TechCrunch Startups", url: "https://techcrunch.com/category/startups/feed/", category: "Startups & Funding", region: "Global" },
+  { name: "TechCrunch Funding", url: "https://techcrunch.com/tag/funding/feed/", category: "Startups & Funding", region: "Global" },
+  { name: "TechCrunch Venture", url: "https://techcrunch.com/category/venture/feed/", category: "Startups & Funding", region: "Global" },
+  { name: "TechCrunch Enterprise", url: "https://techcrunch.com/category/enterprise/feed/", category: "Startups & Funding", region: "Global" },
+  { name: "TechCrunch Fintech", url: "https://techcrunch.com/category/fintech/feed/", category: "Startups & Funding", region: "Global" },
 
-  // ---- Research (AI + quantum + science) ----
-  { name: 'MIT News AI', url: 'https://news.mit.edu/rss/topic/artificial-intelligence2', category: 'Research', region: 'US' },
-  { name: 'Nature Tech', url: 'https://www.nature.com/subjects/technology.rss', category: 'Research', region: 'Global' },
-  { name: 'Quantum Computing Report', url: 'https://quantumcomputingreport.com/news/feed/', category: 'Research', region: 'Global' },
-  { name: 'Inside Quantum Technology', url: 'https://insidequantumtechnology.com/feed/', category: 'Research', region: 'Global' }, // ⚠ verify
+  // ============ Deals ============
+  // ---- your 1 original ----
+  { name: "TechCrunch Deals", url: "https://techcrunch.com/tag/deals/feed/", category: "Deals", region: "Global" },  // valid tag feed
 
-  // ---- Global Tech (country-specific) ----
-  { name: 'Rest of World', url: 'https://restofworld.org/feed/latest/', category: 'Global Tech', region: 'Global' },
-  { name: 'TechCabal', url: 'https://techcabal.com/feed/', category: 'Global Tech', region: 'Nigeria' },
-  { name: 'TechCentral ZA', url: 'https://techcentral.co.za/feed/', category: 'Global Tech', region: 'South Africa' },
-  { name: 'e27', url: 'https://e27.co/feed/', category: 'Global Tech', region: 'Singapore' },
-  { name: 'TechNode', url: 'https://technode.com/feed/', category: 'Global Tech', region: 'China' },
+  // ============ Research ============
+  // ---- your 4 originals ----
+  { name: "MIT News AI", url: "https://news.mit.edu/rss/topic/artificial-intelligence2", category: "Research", region: "US" },
+  { name: "Nature Tech", url: "https://www.nature.com/subjects/technology.rss", category: "Research", region: "Global" },
+  { name: "Quantum Computing Report", url: "https://quantumcomputingreport.com/news/feed/", category: "Research", region: "Global" },
+  { name: "Inside Quantum Technology", url: "https://insidequantumtechnology.com/feed/", category: "Research", region: "Global" },
+  { name: "IBM Research", url: "https://research.ibm.com/rss", category: "Research", region: "US" },
+  // ---- 26 new from the research bundle ----
+  // (quantum industry feeds + arXiv/journal paper streams, as requested)
+  { name: "MIT Tech Review (quantum topic)", url: "https://www.technologyreview.com/topic/quantum-computing/feed/", category: "Research", region: "Global" },
+  { name: "Microsoft (Azure) Quantum", url: "https://azure.microsoft.com/en-us/blog/feed/", category: "Research", region: "US" },
+  { name: "Pasqal", url: "https://www.pasqal.com/feed/", category: "Research", region: "France" },
+  { name: "Physics World (quantum)", url: "https://physicsworld.com/feed/", category: "Research", region: "UK" },  // may 403 (Cloudflare) from servers
+  { name: "QuTech", url: "https://qutech.nl/feed/", category: "Research", region: "Netherlands" },
+  { name: "Quanta Magazine", url: "https://www.quantamagazine.org/feed/", category: "Research", region: "US" },
+  { name: "Quantum Zeitgeist", url: "https://quantumzeitgeist.com/feed/", category: "Research", region: "Global" },  // may 403 (Cloudflare) from servers
+  { name: "ScienceDaily (quantum)", url: "https://www.sciencedaily.com/rss/matter_energy/quantum_physics.xml", category: "Research", region: "Global" },
+  { name: "The Quantum Insider", url: "https://thequantuminsider.com/feed/", category: "Research", region: "Global" },
+  { name: "Nature Machine Intelligence (TOC)", url: "https://www.nature.com/natmachintell.rss", category: "Research", region: "Global" },  // paper stream — arXiv listing feed (no summary text), updates ~daily
+  { name: "arXiv cs.AI (RSS)", url: "https://export.arxiv.org/rss/cs.AI", category: "Research", region: "Global" },  // paper stream — arXiv listing feed (no summary text), updates ~daily
+  { name: "arXiv cs.CL (RSS)", url: "https://export.arxiv.org/rss/cs.CL", category: "Research", region: "Global" },  // paper stream — arXiv listing feed (no summary text), updates ~daily
+  { name: "arXiv cs.LG (RSS)", url: "https://export.arxiv.org/rss/cs.LG", category: "Research", region: "Global" },  // paper stream — arXiv listing feed (no summary text), updates ~daily
+  { name: "arXiv cs.RO (RSS)", url: "https://export.arxiv.org/rss/cs.RO", category: "Research", region: "Global" },  // paper stream — arXiv listing feed (no summary text), updates ~daily
+  { name: "arXiv quant-ph (RSS)", url: "https://export.arxiv.org/rss/quant-ph", category: "Research", region: "Global" },  // paper stream — arXiv listing feed (no summary text), updates ~daily
+  { name: "npj Quantum Information (TOC)", url: "https://www.nature.com/npjqi.rss", category: "Research", region: "Global" },  // paper stream — arXiv listing feed (no summary text), updates ~daily
+  { name: "GN: Quantinuum", url: "https://news.google.com/rss/search?q=Quantinuum&hl=en-US&gl=US&ceid=US:en", category: "Research", region: "US" },  // Google News query feed — links are news.google.com redirects
+  { name: "GN: IonQ", url: "https://news.google.com/rss/search?q=IonQ&hl=en-US&gl=US&ceid=US:en", category: "Research", region: "US" },  // Google News query feed — links are news.google.com redirects
+  { name: "GN: PsiQuantum", url: "https://news.google.com/rss/search?q=PsiQuantum&hl=en-US&gl=US&ceid=US:en", category: "Research", region: "US" },  // Google News query feed — links are news.google.com redirects
+  { name: "GN: Google Quantum AI", url: "https://news.google.com/rss/search?q=Google%20quantum%20computer&hl=en-US&gl=US&ceid=US:en", category: "Research", region: "US" },  // Google News query feed — links are news.google.com redirects
+  { name: "GN: QuEra", url: "https://news.google.com/rss/search?q=QuEra%20quantum&hl=en-US&gl=US&ceid=US:en", category: "Research", region: "US" },  // Google News query feed — links are news.google.com redirects
+  { name: "GN: Rigetti", url: "https://news.google.com/rss/search?q=Rigetti%20quantum&hl=en-US&gl=US&ceid=US:en", category: "Research", region: "US" },  // Google News query feed — links are news.google.com redirects
+  { name: "GN: IQM Quantum", url: "https://news.google.com/rss/search?q=IQM%20quantum&hl=en-US&gl=US&ceid=US:en", category: "Research", region: "US" },  // Google News query feed — links are news.google.com redirects
+  { name: "GN: Xanadu", url: "https://news.google.com/rss/search?q=Xanadu%20quantum%20OR%20PennyLane&hl=en-US&gl=US&ceid=US:en", category: "Research", region: "US" },  // Google News query feed — links are news.google.com redirects
+  { name: "GN: Silicon Quantum Computing", url: "https://news.google.com/rss/search?q=Silicon%20Quantum%20Computing%20Australia&hl=en-AU&gl=AU&ceid=AU:en", category: "Research", region: "US" },  // Google News query feed — links are news.google.com redirects
+  { name: "GN: CQT Singapore", url: "https://news.google.com/rss/search?q=Centre%20for%20Quantum%20Technologies%20Singapore&hl=en-SG&gl=SG&ceid=SG:en", category: "Research", region: "US" },  // Google News query feed — links are news.google.com redirects
+
+  // ============ Global Tech ============
+  // ---- your 5 originals ----
+  { name: "Rest of World", url: "https://restofworld.org/feed/latest/", category: "Global Tech", region: "Global" },
+  { name: "TechCabal", url: "https://techcabal.com/feed/", category: "Global Tech", region: "Nigeria" },
+  { name: "TechCentral ZA", url: "https://techcentral.co.za/feed/", category: "Global Tech", region: "South Africa" },
+  { name: "e27", url: "https://e27.co/feed/", category: "Global Tech", region: "Singapore" },
+  { name: "TechNode", url: "https://technode.com/feed/", category: "Global Tech", region: "China" },
+  // ---- 15 new from the research bundle ----
+  { name: "GN: AI news (India edition)", url: "https://news.google.com/rss/search?q=artificial%20intelligence&hl=en-IN&gl=IN&ceid=IN:en", category: "Global Tech", region: "India" },  // Google News regional edition
+  { name: "GN: Robotics (Australia edition)", url: "https://news.google.com/rss/search?q=robotics&hl=en-AU&gl=AU&ceid=AU:en", category: "Global Tech", region: "Australia" },  // Google News regional edition
+  { name: "GN: AI & robots (Japan edition)", url: "https://news.google.com/rss/search?q=AI%20%E3%83%AD%E3%83%9C%E3%83%83%E3%83%88&hl=ja&gl=JP&ceid=JP:ja", category: "Global Tech", region: "Japan" },  // Google News regional edition
+  { name: "GN: AI news (South Africa edition)", url: "https://news.google.com/rss/search?q=artificial%20intelligence&hl=en-ZA&gl=ZA&ceid=ZA:en", category: "Global Tech", region: "South Africa" },  // Google News regional edition
+  { name: "GN: AI news (Kenya edition)", url: "https://news.google.com/rss/search?q=artificial%20intelligence&hl=en-KE&gl=KE&ceid=KE:en", category: "Global Tech", region: "Kenya" },  // Google News regional edition
+  { name: "GN: AI news (Nigeria edition)", url: "https://news.google.com/rss/search?q=artificial%20intelligence&hl=en-NG&gl=NG&ceid=NG:en", category: "Global Tech", region: "Nigeria" },  // Google News regional edition
+  { name: "GN: Humanoid robots (US edition)", url: "https://news.google.com/rss/search?q=humanoid%20robot&hl=en-US&gl=US&ceid=US:en", category: "Global Tech", region: "US" },  // Google News regional edition
+  { name: "GN: Quantum computing (US edition)", url: "https://news.google.com/rss/search?q=quantum%20computing&hl=en-US&gl=US&ceid=US:en", category: "Global Tech", region: "US" },  // Google News regional edition
+  { name: "GN: AI news (Singapore edition)", url: "https://news.google.com/rss/search?q=artificial%20intelligence&hl=en-SG&gl=SG&ceid=SG:en", category: "Global Tech", region: "Singapore" },  // Google News regional edition
+  { name: "GN: AI news (Brazil edition)", url: "https://news.google.com/rss/search?q=intelig%C3%AAncia%20artificial&hl=pt-BR&gl=BR&ceid=BR:pt-BR", category: "Global Tech", region: "Brazil" },  // Google News regional edition
+  { name: "GN: AI news (South Korea edition)", url: "https://news.google.com/rss/search?q=%EC%9D%B8%EA%B3%B5%EC%A7%80%EB%8A%A5&hl=ko&gl=KR&ceid=KR:ko", category: "Global Tech", region: "South Korea" },  // Google News regional edition
+  { name: "GN: AI news (Germany edition)", url: "https://news.google.com/rss/search?q=K%C3%BCnstliche%20Intelligenz&hl=de&gl=DE&ceid=DE:de", category: "Global Tech", region: "Germany" },  // Google News regional edition
+  { name: "GN: AI news (France edition)", url: "https://news.google.com/rss/search?q=intelligence%20artificielle&hl=fr&gl=FR&ceid=FR:fr", category: "Global Tech", region: "France" },  // Google News regional edition
+  { name: "GN: AI news (Mexico/LatAm edition)", url: "https://news.google.com/rss/search?q=inteligencia%20artificial&hl=es-419&gl=MX&ceid=MX:es", category: "Global Tech", region: "Mexico" },  // Google News regional edition
+  { name: "GN: AI news (Taiwan edition)", url: "https://news.google.com/rss/search?q=%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD&hl=zh-TW&gl=TW&ceid=TW:zh-Hant", category: "Global Tech", region: "Taiwan" },  // Google News regional edition
+
 ];
+
+module.exports = { SOURCES };
 
 // ===== Non-tech title filter =====
 

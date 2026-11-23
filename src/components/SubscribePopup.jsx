@@ -125,7 +125,6 @@ export default function SubscribePopup({ open, onClose, socials }) {
           borderRadius: '16px',
           boxSizing: 'border-box',
           width: '100%',
-          width: '100%',
           maxWidth: '380px',
           padding: '32px 28px 26px',
           boxShadow: '0 24px 60px rgba(0,0,0,.45)',

@@ -1,7 +1,10 @@
 // src/components/SubscribePopup.jsx
 //
-// NAVY "Thanks for Subscribing" popup with the three social links.
-// Opens AFTER a successful subscribe (new signup OR "already subscribed").
+// NAVY "Thanks for Subscribing" popup with the three social buttons.
+// Opens ONLY for NEW subscribers (email not already stored) — repeat emails
+// never trigger it; the form shows a friendly inline note instead.
+// Close affordances: X in the upper-right corner (background turns RED on
+// hover), the "Cancel" button, the Escape key, or clicking the backdrop.
 // Plain React + inline styles: no Tailwind, no external icons, no deps —
 // works with any styling setup you have.
 //
@@ -135,10 +138,11 @@ export default function SubscribePopup({ open, onClose, socials }) {
           position: 'relative',
         }}
       >
-        {/* close X */}
+        {/* close X — upper-right corner, background turns red on hover */}
         <button
           onClick={() => onClose?.()}
           aria-label="Close"
+          className="sp-close-x"
           style={{
             position: 'absolute',
             top: '12px',
@@ -147,14 +151,17 @@ export default function SubscribePopup({ open, onClose, socials }) {
             height: '32px',
             borderRadius: '50%',
             border: 'none',
-            background: 'rgba(255,255,255,.1)',
+            padding: 0,
+            background: 'rgba(255,255,255,.12)',
             color: '#fff',
-            fontSize: '16px',
+            fontSize: '18px',
+            fontWeight: 600,
             lineHeight: 1,
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            transition: 'background .15s ease, color .15s ease, transform .15s ease',
           }}
         >
           ×
@@ -230,14 +237,16 @@ export default function SubscribePopup({ open, onClose, socials }) {
             cursor: 'pointer',
           }}
         >
-          Maybe later
+          Cancel
         </button>
       </div>
 
-      {/* keyframes injected once per page */}
+      {/* keyframes + close-X hover (red) — injected once per page */}
       <style>{`
         @keyframes sp-fade { from { opacity: 0 } to { opacity: 1 } }
         @keyframes sp-pop  { from { opacity: 0; transform: scale(.9) translateY(12px) } to { opacity: 1; transform: scale(1) translateY(0) } }
+        .sp-close-x:hover { background: #e5484d !important; }
+        .sp-close-x:hover { transform: scale(1.08); }
         @media (max-width: 640px) {
           @keyframes sp-pop { from { opacity: 0; transform: scale(.95) translateY(20px) } to { opacity: 1; transform: scale(1) translateY(0) } }
         }

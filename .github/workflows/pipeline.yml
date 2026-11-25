@@ -47,5 +47,7 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
+          ONESIGNAL_APP_ID: ${{ secrets.ONESIGNAL_APP_ID }}
+          ONESIGNAL_APP_API_KEY: ${{ secrets.ONESIGNAL_APP_API_KEY }}
           RESET_PENDING: ${{ github.event.inputs.reset_pending == 'true' && '1' || '' }}
         run: npm start

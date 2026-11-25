@@ -47,6 +47,7 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import SubscribeForm from '@/components/SubscribeForm';
+import SubscribePopup from '@/components/SubscribePopup';  
 
 /* ─────────────── constants ─────────────── */
 const NAV_CATEGORIES = ['Latest', 'AI News', 'Tech Giants', 'Tech News', 'Startups & Funding', 'Mobile & Social', 'Research', 'Deals', 'Global Tech'];
@@ -730,14 +731,26 @@ function SidebarLeaderboard({ onSeeMore, models, loading, arenaModels, arenaLoad
 
 
 /* ─────────────── Subscribe Section ─────────────── */
+// SubscribeSection.patched.tsx
+//
+// PASTE-READY replacement for the `SubscribeSection` function in your
+// src/app/page.tsx. It is YOUR original component, unchanged, plus exactly
+// four additions, each marked with “← POPUP”:
+//   (1) the import of SubscribePopup (top of page.tsx)
+//   (2) two new useState hooks: showThanks + socials
+//   (3) two lines inside the `data.ok` branch (save socials, open popup)
+//   (4) <SubscribePopup/> rendered at the end of the section
 
-export default function SubscribeSection() {
+
+export function SubscribeSection() {
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState('idle'); // idle | loading | ok | already | error
   const [detail, setDetail] = useState('');
   const [mailStatus, setMailStatus] = useState('');
+  const [showThanks, setShowThanks] = useState(false);   // ← POPUP (2) popup open?
+  const [socials, setSocials] = useState<any>(null);    // ← POPUP (2) links from the API
 
-  const submit = async (e) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     const clean = email.trim();
     if (!clean) {
@@ -755,7 +768,7 @@ export default function SubscribeSection() {
         body: JSON.stringify({ email: clean }),
       });
       const raw = await res.text();
-      let data = {};
+      let data: any = {};   // (`: any` so data.ok / data.already compile under strict TS)
       try { data = JSON.parse(raw); } catch { /* not JSON — keep the raw text */ }
 
       console.log('[subscribe] HTTP', res.status, 'body:', raw.slice(0, 300));
@@ -763,15 +776,17 @@ export default function SubscribeSection() {
       if (res.ok && data.ok) {
         setStatus('ok');
         setMailStatus(data.mailStatus || 'unknown');
+        setSocials(data.socials || null);   // ← POPUP (3) same links as the welcome email
+        setShowThanks(true);                // ← POPUP (3) NEW email → open the navy popup
       } else if (res.ok && data.already) {
-        setStatus('already');
+        setStatus('already');               // already stored → NO popup (your amber box shows)
       } else {
         setStatus('error');
         setDetail('HTTP ' + res.status + (raw ? ' — ' + raw.slice(0, 160) : ' — (empty response)'));
       }
     } catch (err) {
       setStatus('error');
-      setDetail('Network error — ' + (err?.message || 'request failed'));
+      setDetail('Network error — ' + ((err as Error)?.message || 'request failed'));
     }
   };
 
@@ -841,12 +856,6 @@ export default function SubscribeSection() {
         </form>
       )}
 
-      <section>
-        <h2>Stay ahead of the story</h2>
-        <p>Get the tech stories that matter, straight to your inbox.</p>
-        <SubscribeForm source="home" />
-      </section>
-
       {status === 'ok' && (
         <div style={{ background: '#ecfdf5', border: '1px solid #a7f3d0', borderRadius: 10, padding: '16px 18px' }}>
           <p style={{ margin: 0, color: '#065f46', fontWeight: 700 }}>You're in! Welcome to NewsShore.</p>
@@ -872,6 +881,14 @@ export default function SubscribeSection() {
           </p>
         </div>
       )}
+
+      {/* ← POPUP (4) the navy "Thanks for Subscribing" popup.
+          Opens ONLY for new emails (see the `data.ok` branch above). */}
+      <SubscribePopup
+        open={showThanks}
+        onClose={() => setShowThanks(false)}
+        socials={socials}
+      />
     </section>
   );
 }

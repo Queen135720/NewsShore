@@ -49,5 +49,6 @@ jobs:
           UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
           ONESIGNAL_APP_ID: ${{ secrets.ONESIGNAL_APP_ID }}
           ONESIGNAL_APP_API_KEY: ${{ secrets.ONESIGNAL_APP_API_KEY }}
+          SITE_URL: ${{ secrets.SITE_URL }}
           RESET_PENDING: ${{ github.event.inputs.reset_pending == 'true' && '1' || '' }}
         run: npm start

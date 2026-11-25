@@ -1272,7 +1272,6 @@ async function fetchImage(rewritten, category, usedKeys) {
   }
   return null;
 }
-
 // ================================================================
 // ONE SIGNAL PUSH — v2.1, SELF-WIRING
 // REPLACE the old "---- ONE SIGNAL PUSH ----" section entirely

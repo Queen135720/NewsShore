@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { Space_Grotesk, Poppins } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
+import { Inter } from "next/font/google";
+import { Toaster } from "@/components/ui/toaster";
+import OneSignalInit from '@/components/OneSignalInit';
 
 const spaceGrotesk = Space_Grotesk({ 
   variable: "--font-space-grotesk", 
@@ -52,6 +55,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${spaceGrotesk.variable} ${gilroy.variable} antialiased bg-background text-foreground`}>
         {children}
+        <OneSignalInit />
         <Toaster position="top-right" richColors closeButton />
       </body>
     </html>

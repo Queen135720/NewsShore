@@ -1738,7 +1738,7 @@ async function saveArticle(item, rewritten, usedKeys) {
     image_url: image?.url ?? null,
     image_credit_name: image?.creditName ?? null,
     image_credit_url: image?.creditUrl ?? null,
-  });
+  }).select('id, slug').single();
   if (error) {
     console.error(`Failed to save article: ${error.message}`);
     return false;

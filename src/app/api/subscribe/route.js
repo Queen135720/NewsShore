@@ -85,6 +85,16 @@ async function handleSubscribe(req) {
     return NextResponse.json({ error: 'server_error' }, { status: 500 });
   }
   log('saved:', email);
+  // link this device to the email + ask for push permission (same click)
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  window.OneSignalDeferred.push(async (OneSignal) => {
+    try {
+      await OneSignal.login(email);               // ties this browser to the email
+      if (!OneSignal.Notifications?.permission) {
+        await OneSignal.Notifications.requestPermission();  // shows the Allow prompt
+      }
+    } catch { /* never break subscribing because of push */ }
+  });
 
   // ---- 5. Welcome mail — best effort ----
   const mailStatus = await sendWelcomeEmail(email, log);
